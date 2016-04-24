@@ -1,0 +1,183 @@
+\documentclass{article}
+\setlength{\parindent}{0ex}
+\setlength{\parskip}{1em}
+\usepackage[utf8]{inputenc} 
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amstext}
+\usepackage{fancybox}
+\usepackage{tikz}
+\usepackage{tkz-euclide}
+\usepackage{gensymb}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{qtree}
+\usepackage{scrextend}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{algpseudocode}
+
+
+\tikzset{main node/.style={circle,fill=blue!20,draw,minimum size=1cm,inner sep=0pt},
+}
+
+
+%Kodestyling \begin{lstlisting}
+\usepackage{color}
+\usepackage{listings}
+\lstset{ %
+language=C++,                % choose the language of the code
+%basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+basicstyle=\ttfamily,
+%numbers=left,                   % where to put the line-numbers
+numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+stepnumber=1,                   % the step between two line-numbers. If it is 1 each line will be numbered
+numbersep=5pt,                  % how far the line-numbers are from the code
+backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+%frame=single,           % adds a frame around the code
+tabsize=2,          % sets default tabsize to 2 spaces
+captionpos=b,           % sets the caption-position to bottom
+breaklines=true,        % sets automatic line breaking
+breakatwhitespace=false,    % sets if automatic breaks should only happen at whitespace
+escapeinside={\%*}{*)},          % if you want to add a comment within your code
+mathescape
+}
+
+\usepackage{caption}
+\captionsetup[table]{name=Tabel}
+
+\usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+
+\def\meta#1{\mbox{$\langle\hbox{#1}\rangle$}}
+\def\macrowitharg#1#2{{\tt\string#1\bra\meta{#2}\ket}}
+
+{\escapechar-1 \xdef\bra{\string\{}\xdef\ket{\string\}}}
+
+\def\intro#1{{#1}{\cal I}}
+\def\elim#1{{#1}{\cal E}}
+
+\showboxbreadth 999
+\showboxdepth 999
+\tracingoutput 1
+
+
+\let\imp\to
+\def\elim#1{{{#1}{\cal E}}}
+\def\intro#1{{{#1}{\cal I}}}
+\def\lt{<}
+\def\eqdef{=}
+\def\eps{\mathrel{\epsilon}}
+\def\biimplies{\leftrightarrow}
+\def\flt#1{\mathrel{{#1}^\flat}}
+\def\setof#1{{\left\{{#1}\right\}}}
+\let\implies\to
+\def\KK{{\mathsf K}}
+\let\squashmuskip\relax
+
+\graphicspath{ {images/} }
+\usetikzlibrary{arrows}
+\tikzset{
+  leaf_/.style = {shape=rectangle,draw, align=center},
+  node_/.style     = {shape=circle,draw,align=center}
+}
+\author{Rune Kok Nielsen (qkd362), Andreas Holm (jnh508)}
+\title{Synopsis - Implementing GraphHoper in C++}
+\DeclareMathOperator{\Ran}{Ran}
+\DeclareMathOperator{\Dom}{Dom}
+
+\renewcommand*\contentsname{Indholdsfortegnelse}
+\begin{document}
+	
+\maketitle
+
+This document describes the purpose and basic plans for our bachelor's thesis titled \textit{Implementing GraphHopper in C++}.
+
+\section{Problem}
+The GraphHopper kernel for graph classification is implemented only in MATLAB. We wish to implement the kernel with a different approach using the strengths of C++ and compare the efficiency to the existing implementation.
+
+
+\section{Motivation}
+The quality of a kernel is measured in its accuracy as well as its efficiency. An efficient implementation lowering the running time of the kernel is therefore essential to its success. By implementing the kernel in a low-level language such as C++ we hope to achieve shorter running time and thereby faster classifications than the existing implementation.
+
+\section{Tasks}
+\begin{itemize}
+	\item Read and understand the GraphHopper kernel as described in \cite{graphhopper}.
+	\item Rewrite the GraphHopper kernel for loop-based implementation.
+	\item Design data structure.
+	\item Implement translation of MAT-files (MATLAB data files).
+	\item Implement reading formatted data into in-memory data structure.
+	\item Implement one-source shortest path algorithm.
+	\item Implement GraphHopper kernel.
+	\item Implement export functionality.
+	\item Test solution by comparing accuracy of results with results from existing MATLAB implementation.
+	\item Compare running time of implementations.
+	\item Document project.
+\end{itemize}
+
+\section{Schedule}
+\subsection{Week 16}
+\begin{itemize}
+	\item Project contract.
+	\item Scheduling.
+	\item Study GraphHopper kernel.
+\end{itemize}
+
+\subsection{Uge 17}
+\begin{itemize}
+	\item Rewrite GraphHopper kernel.
+	\item Hand in synopsis.
+	\item Design data structure.
+\end{itemize}
+\subsection{Uge 18}
+\begin{itemize}
+	\item Implement translation of MAT-files (MATLAB data files).
+	\item Implement reading formatted data into in-memory data structure.
+	\item Implement one-source shortest path algorithm.
+\end{itemize}
+\subsection{Uge 19}
+\begin{itemize}
+	\item Implement GraphHopper kernel.
+\end{itemize}
+\subsection{Uge 20}
+\begin{itemize}
+	\item Implement GraphHopper kernel.
+	\item Implement export functionality.
+\end{itemize}
+\subsection{Uge 21}
+\begin{itemize}
+	\item Test solution by comparing accuracy of results with results from existing MATLAB implementation.
+	\item Compare running time of implementations.
+\end{itemize}
+\subsection{Uge 22}
+\begin{itemize}
+	\item Write report
+\end{itemize}
+\subsection{Uge 23}
+\begin{itemize}
+	\item Write report
+\end{itemize}
+\subsection{Uge 24}
+\begin{itemize}
+	\item Hand in report monday (june 13th).
+\end{itemize}
+
+
+\newpage
+\renewcommand\refname{References}
+\begin{thebibliography}{9}
+	\bibitem{graphhopper}
+	Aasa Feragen, Niklas Kasenburg, Jens Petersen, Marleen de Bruijne, Karsten M. Borgwardt.
+	\emph{Scalable kernels for graphs with continuos attributes}.
+	In Advances in Neural Information Processing Systems, pages 216-224, 2013.
+\end{thebibliography}
+
+
+
+\end{document}
