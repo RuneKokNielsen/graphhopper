@@ -14,10 +14,11 @@ class Graph{
 
   vector<Node*> V;
 
-  void determineShortestPaths();
+  void calculateM();
+  int width = 0;
 
  private:
-  void determineShortestPathsFrom(Node *src);
+  void accountFor(Node *src);
 
 };
 

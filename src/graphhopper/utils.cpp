@@ -75,4 +75,9 @@ float msPassed(steady_clock::time_point tStart){
 return duration_cast<duration<double>>(steady_clock::now() - tStart).count() * 1000;
 }
 
+
+bool nodeCompare(Node *a, Node *b){
+  return a->tmp_d > b->tmp_d;
+}
+
 #endif

@@ -15,10 +15,13 @@
 using namespace std;
 using namespace std::chrono;
 
+int mCompleted = 0;
 
-void determineShortestPaths(vector<Graph*> graphs, int from, int to){
+void calculateM(vector<Graph*> graphs, int from, int to){
   for(int i=from; i<=to; i++){
-    graphs[i]->determineShortestPaths();
+    graphs[i]->calculateM();
+    mCompleted++;
+    cout << mCompleted << "\n";
   }
 }
 /*
@@ -42,7 +45,7 @@ int main(int argc, char **argv){
     cout << "Determining shortests paths..\n";
     tStart = steady_clock::now();
     vector<thread*> threads;
-    int maxThreads = 4;
+    int maxThreads = 10;
     /* for(int i=0; i<graphs.size(); i++){
       thread *t = new thread(determineShortestPaths, graphs[i]);
       threads.push_back(t);
@@ -50,20 +53,21 @@ int main(int argc, char **argv){
         t->join();
       }
       }*/
-   
+
     int chunkSize = ceil((float) graphs.size() / maxThreads);
     for(int i=0; i<maxThreads; i++){
-      thread *t = new thread(determineShortestPaths, graphs, i*chunkSize, min((i+1)*chunkSize, (int) graphs.size() - 1));
+      thread *t = new thread(calculateM, graphs, i*chunkSize, min((i+1)*chunkSize, (int) graphs.size() - 1));
       threads.push_back(t);
     }
     for(int i=0; i<maxThreads; i++){
       threads[i]->join();
     }
 
-    
-    cout << "Shortests paths determined in " << msPassed(tStart) << "ms\n";
-
-    dumpGraph(graphs[0]);
+    cout << "M matrices determined in " << msPassed(tStart) << "ms\n";
+    /*
+    for(int i=0; i<graphs[0]->V.size(); i++){
+      graphs[0]->V[i]->dumpM();
+      }*/
 
   }else{
     cout << "Usage: graphhopper <file>\n";
