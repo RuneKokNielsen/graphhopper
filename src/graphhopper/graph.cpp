@@ -15,6 +15,58 @@ void Graph::calculateM(){
   for(int i=0; i<V.size(); i++){
     accountFor(V[i]);
   }
+
+  /*M = new int**[V.size()];
+  for(int i=0; i<V.size(); i++){
+    Node *v = V[i];
+    M[i] = new int*[width];
+    for(int j=0; j<width; j++){
+      M[i][j] = new int[width];
+      for(int k=0; k<width; k++){
+        M[i][j][k] = (*(v->M))(j,k);
+      }
+    }
+    delete v->M;
+    }*/
+
+  M = new int**[V.size()];
+  //cout << V.size() << "\n";
+  //cout << width << "\n";
+  for(int vi=0; vi<V.size(); vi++){
+    M[vi] = new int*[width];
+    for(int i=0; i<width; i++){
+      M[vi][i] = new int[width];
+      for(int j=0; j<width; j++){
+        M[vi][i][j] = 0;
+      }
+    }
+  }
+  for(int vi=0; vi<V.size(); vi++){
+    Node *v = V[vi];
+    for(int ip=0; ip<v->sp.size(); ip++){
+      vector<int> p = v->sp[ip];
+      int j = p.size() - 1;
+      for(int i=0; i<=j; i++){
+        //cout << p[i] << " -> ";
+        //cout << p[i] << ", " << i << ", " << j << "\n";
+        M[p[i]][i][j]++;
+      }
+      // cout << "\n";
+    }
+    v->sp.clear();
+  }
+
+  /*for(int vi=0; vi<V.size(); vi++){
+    cout << "Node " << vi << "(" << V[vi]->label << ")\n";
+    for(int i=0; i<width; i++){
+      for(int j=0; j<width; j++){
+        cout << M[vi][i][j] << " ";
+      }
+      cout << "\n";
+    }
+    cout << "\n";
+    }*/
+
 }
 
 void Graph::accountFor(Node *src){
@@ -49,7 +101,6 @@ void Graph::accountFor(Node *src){
           v->tmp_sp.clear();
         }
         v->tmp_d = d;
-        make_heap(q.begin(), q.end(), nodeCompare);
 
         //Copy shortest paths to u and append v at end
         for(int j=0; j<u->tmp_sp.size(); j++){
@@ -59,6 +110,7 @@ void Graph::accountFor(Node *src){
         }
       }
     }
+    make_heap(q.begin(), q.end(), nodeCompare);
   }
 
   // cout << "\nShortest paths starting in " << src->index << "\n";
@@ -67,36 +119,14 @@ void Graph::accountFor(Node *src){
     Node *v = V[iv];
     for(int ip=0; ip<v->tmp_sp.size(); ip++){
       vector<Node*> p = v->tmp_sp[ip];
+      vector<int> sp;
       int j = p.size()-1;
-      width = max(j, width);
-      //  cout << "Path of length " << j+1 << "\n";
+      width = max(j + 1, width);
       for(int i=0; i<=j; i++){
-        // cout << v->tmp_sp[ip][i]->index << "->";
-        (*(p[i]->M))(i,j)+=1;
+        sp.push_back(p[i]->index);
       }
-      // cout << "\n";
+      src->sp.push_back(sp);
     }
   }
-
-  /*
-  //Save all sp's as sp's starting in src
-  src->sp.clear();
-  for(int i=0; i<V.size(); i++){
-    Node *v = V[i];
-    for(int j=0; j<v->tmp_sp.size(); j++){
-      src->sp.push_back(v->tmp_sp[j]);
-    }
-    v->tmp_sp.clear();
-    }*/
-  /*
-  cout << "result\n";
-  for(int i=0; i<src->sp.size(); i++){
-    for(int j=0; j<src->sp[i].size(); j++){
-      cout << src->sp[i][j]->index << "->";
-    }
-    cout << "\n";
-  }
-  
-  exit(1);*/
 
 }

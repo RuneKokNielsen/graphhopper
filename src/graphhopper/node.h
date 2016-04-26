@@ -3,8 +3,6 @@
 
 
 #include <vector>
-#include <boost/numeric/ublas/matrix_sparse.hpp>
-#include <boost/numeric/ublas/io.hpp>
 using namespace std;
 
 class Node{
@@ -18,12 +16,9 @@ class Node{
 
   int index;
   vector<Node*> adj;
-  vector<vector<Node*> > sp;
-  boost::numeric::ublas::coordinate_matrix<int> *M;
   int n;
-
-  void dumpM();
-
+  int label;
+  vector<vector<int> > sp;
   /*
    * Temporary variables used while calculating
    * shortest paths

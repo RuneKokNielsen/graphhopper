@@ -21,54 +21,63 @@ std::vector<std::string> split(const std::string &s, char delim) {
     return elems;
 }
 
-void dumpGraph(Graph *g){
-  cout << "Dumping graph..\n";
-  cout << "Nodes: " << g->V.size() << "\n";
-
-  for(int i=0; i<g->V.size(); i++){
-    Node *n = g->V[i];
-    cout << "Node #" << i << "\n";
-    cout << "Node edges: " <<  n->index << "->";
-    for(int j=0; j<n->adj.size(); j++){
-      cout << n->adj[j]->index << ",";
-    }
-    cout << "\nShortest paths: (" << n->sp.size() << ")\n";
-    for(int j=0; j<n->sp.size(); j++){
-      for(int k=0; k<n->sp[j].size(); k++){
-        cout << n->sp[j][k]->index << "->";
-      }
-      cout << "\n";
-     
-    }
- exit(1);
-    cout << "\n\n";
-  }
-
-
-}
 
 vector<Graph*> loadData(const char *file){
   vector<Graph*> graphs;
 
   string line;
   ifstream input(file);
+  int index = 0;
   if(input.is_open()){
+    Graph *g;
+    int n;
+    int i;
+    enum State {start, labels, edges};
+    State s = start;
     while(getline(input, line)){
-      Graph *g;
-      if(line.find(",") != string::npos){
-        vector<string> edge = split(line, ',');
-        int a = atoi(edge.at(0).c_str());
-        int b = atoi(edge.at(1).c_str());
-        g->V[a]->adj.push_back(g->V[b]);
-      }else{
-        int n = atoi(line.c_str());
+      switch(s){
+      case start:
+        n = atoi(line.c_str());
         g = new Graph(n);
+         g->index = index;
+         index++;
         graphs.push_back(g);
+        s = labels;
+        i = 0;
+        break;
+      case labels:
+        g->V[i]->label = atoi(line.c_str());
+        i++;
+        if(i == n){
+          s = edges;
+        }
+        break;
+      case edges:
+        if(line == "stop"){
+          s = start;
+        }else{
+          vector<string> edge = split(line, ',');
+          int a = atoi(edge[0].c_str());
+          int b = atoi(edge[1].c_str());
+          g->V[a]->adj.push_back(g->V[b]);
+        }
       }
     }
   }
 
   return graphs;
+}
+
+void writeKToFile(int **K, int size){
+  ofstream outputFile;
+  outputFile.open("output/K.dat");
+  for(int i=0; i<size; i++){
+    for(int j=0; j<size; j++){
+      outputFile << K[i][j] << " ";
+    }
+    outputFile << "\n";
+  }
+  outputFile.close();
 }
 
 float msPassed(steady_clock::time_point tStart){

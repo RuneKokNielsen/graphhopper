@@ -15,7 +15,9 @@ class Graph{
   vector<Node*> V;
 
   void calculateM();
+  int index;
   int width = 0;
+  int ***M;
 
  private:
   void accountFor(Node *src);

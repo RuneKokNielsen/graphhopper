@@ -39,16 +39,24 @@ int transform(const char *file){
   }
 
   const mxArray *am;
+  const mxArray *nl;
   const double *m;
   mxArray *row;
   mwIndex *ir, *jc;
   mwIndex starting_row_index, stopping_row_index, current_row_index;
   for(int i=0; i<nGraphs; i++){
-    mxArray *am = mxGetField(data, i, "am");
+    am = mxGetField(data, i, "am");
+    nl = mxGetField(data, i, "nl");
+    nl = mxGetField(nl, 0, "values");
     mwSize nNodes = (mwSize) mxGetM(am);
     outputFile << nNodes << "\n";
-    m = mxGetPr(am);
 
+    m = mxGetPr(nl);
+    for(int row=0; row<nNodes; row++){
+      outputFile << m[row] << "\n";
+    }
+
+    m = mxGetPr(am);
     if(mxIsSparse(am)){
       //Sparse am matrix
       int total = 0;
@@ -71,11 +79,12 @@ int transform(const char *file){
         for(int y=0; y<nNodes; y++){
           double v = m[x + y * nNodes];
           if(v > 0){
-            outputFile << x << "," << y << "," << v << "\n";
+            outputFile << x << "," << y << "\n";
           }
         }
       }
     }
+    outputFile << "stop\n";
   }
 
 
