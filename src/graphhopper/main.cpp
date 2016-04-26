@@ -11,7 +11,6 @@
 #include <thread>
 #include <chrono>
 #include <math.h>
-#include <boost/lockfree/queue.hpp>
 #include <atomic>
 
 using namespace std;
@@ -33,30 +32,6 @@ void calculateM(vector<Graph*> graphs, int from, int to){
   }
 }
 
-atomic<bool> qlock(false);
-bool popQueue(boost::lockfree::queue<Graph*> *queue, Graph **target){
-  bool expected = false;
-  while(!qlock.compare_exchange_weak(expected, true)){
-
-  }
-  bool result = queue->pop(*target);
-  qlock = false;
-  return result;
-}
-
-void calculateMQueue(boost::lockfree::queue<Graph*> *queue, int nGraphs){
-  Graph *g;
-  int reportEveryN = nGraphs / nGraphs;
-  while(popQueue(queue, &g)){
-    g->calculateM();
-    mCompleted++;
-    if(mCompleted % reportEveryN == 0 || mCompleted == nGraphs){
-      cout << "M calculated: " <<  mCompleted << "/" << nGraphs <<  "\n";
-    }
-  }
-
-}
-
 int main(int argc, char **argv){
 
   if(argc > 1){
@@ -74,19 +49,7 @@ int main(int argc, char **argv){
 
     cout << "Calculating M matrices..\n";
     tStart = steady_clock::now();
-    boost::lockfree::queue<Graph*> *queue =
-      new boost::lockfree::queue<Graph*>(nGraphs);
-
-    for(int i=0; i<nGraphs; i++){
-      queue->push(graphs[i]);
-    }
-    vector<thread*> threads;
-    int maxThreads = min(1, (int) nGraphs);
-    for(int i=0; i<maxThreads; i++){
-      thread *t = new thread(calculateMQueue, queue, nGraphs);
-      threads.push_back(t);
-    }
-    while(mCompleted<nGraphs);
+    calculateM(graphs, 0, graphs.size()-1);
 
     cout << "M matrices calculated in " << msPassed(tStart) << "ms\n";
 
@@ -117,8 +80,8 @@ int main(int argc, char **argv){
                //  cout << "Calc " << vi << ", " << vj << "\n";
                if(gi->V[vi]->label != gj->V[vj]->label) continue;
                int weight = 0;
-               for(int i=0; i<width; i++){
-                 for(int j=0; j<width; j++){
+               for(int j=0; j<width; j++){
+                 for(int i=0; i<=j; i++){
                    int a = gi->M[vi][i][j];
                    if(a==0) continue;
                      int b = gj->M[vj][i][j];
