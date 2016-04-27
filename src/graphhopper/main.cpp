@@ -21,7 +21,7 @@ int mCompleted = 0;
 
 void calculateM(vector<Graph*> graphs, int from, int to){
   int nGraphs = graphs.size();
-  int reportEveryN = nGraphs / 30;
+  int reportEveryN = max(nGraphs / 30, 1);
 
   for(int i=from; i<=to; i++){
     graphs[i]->calculateM();
