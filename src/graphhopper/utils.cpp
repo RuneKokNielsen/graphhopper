@@ -46,7 +46,8 @@ vector<Graph*> loadData(const char *file){
         i = 0;
         break;
       case labels:
-        g->V[i]->label = atoi(line.c_str());
+        g->V[i]->dLabel = atoi(line.c_str());
+        //g->V[i]->vLabel.push_back(atoi(line.c_str()));
         i++;
         if(i == n){
           s = edges;

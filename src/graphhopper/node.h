@@ -17,7 +17,8 @@ class Node{
   int index;
   vector<Node*> adj;
   int n;
-  int label;
+  int dLabel;
+  vector<double> vLabel;
   vector<vector<int> > sp;
   /*
    * Temporary variables used while calculating
