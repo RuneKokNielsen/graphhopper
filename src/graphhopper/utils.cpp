@@ -2,6 +2,7 @@
 #define UTILS_CPP
 
 #include <chrono>
+#include "kernel/kernelfactory.h"
 using namespace std::chrono;
 
 //http://stackoverflow.com/questions/236129/split-a-string-in-c
@@ -22,7 +23,7 @@ std::vector<std::string> split(const std::string &s, char delim) {
 }
 
 
-vector<Graph*> loadData(const char *file){
+vector<Graph*> loadData(const char *file, LabelType labelType){
   vector<Graph*> graphs;
 
   string line;
@@ -46,8 +47,17 @@ vector<Graph*> loadData(const char *file){
         i = 0;
         break;
       case labels:
-        g->V[i]->dLabel = atoi(line.c_str());
-        //g->V[i]->vLabel.push_back(atoi(line.c_str()));
+        switch(labelType){
+        case LabelType::Discrete:
+          g->V[i]->dLabel = atoi(line.c_str());
+          break;
+        case LabelType::Vector:
+          vector<string> vLabel = split(line, ' ');
+          for(int j=0; j<vLabel.size(); j++){
+            g->V[i]->vLabel.push_back(stod(vLabel[j]));
+          }
+          break;
+        }
         i++;
         if(i == n){
           s = edges;

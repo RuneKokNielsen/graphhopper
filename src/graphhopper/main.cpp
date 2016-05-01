@@ -39,7 +39,7 @@ int main(int argc, char **argv){
   if(argc > 3){
 
     string kernelType = argv[2];
-    string labelType = argv[3];
+    LabelType labelType = KernelFactory().getLabelType(argv[3]);
 
     NodeKernel *kernel = KernelFactory().
       getKernel(kernelType,
@@ -51,7 +51,7 @@ int main(int argc, char **argv){
 
     cout << "Loading data..\n";
     tStart = steady_clock::now();
-    vector<Graph*> graphs = loadData(argv[1]);
+    vector<Graph*> graphs = loadData(argv[1], labelType);
     int nGraphs = graphs.size();
     cout << "Data loaded in " << msPassed(tStart) << " ms\n";
 
@@ -72,7 +72,7 @@ int main(int argc, char **argv){
     cout << "K allocated in " << msPassed(tStart) << "ms\n";
 
     cout << "Compute K..\n";
-    KernelComputer *comp = new ThreadedLoops(4);
+    KernelComputer *comp = new ThreadedLoops(1);
 
     tStart = steady_clock::now();
     comp->computeK(K, &graphs, kernel);
