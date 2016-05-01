@@ -11,3 +11,15 @@ NodeKernel *KernelFactory::getKernel(string name, LabelType type){
   }
   throw std::invalid_argument("Unknown kernel specified: " + name);
 }
+
+NodeKernel *KernelFactory::getKernel(string name, string type){
+  if(type == "discrete"){
+    return getKernel(name, discrete);
+  }
+  if(type == "vector"){
+    return getKernel(name, vector);
+  }
+
+  throw std::invalid_argument(type + " does not name a proper label type. Options are discrete and vector");
+
+}

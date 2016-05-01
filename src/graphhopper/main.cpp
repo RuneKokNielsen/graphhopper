@@ -36,12 +36,14 @@ void computeM(vector<Graph*> graphs, int from, int to){
 int main(int argc, char **argv){
 
   try{
-  if(argc > 1){
+  if(argc > 3){
 
+    string kernelType = argv[2];
+    string labelType = argv[3];
 
     NodeKernel *kernel = KernelFactory().
-      getKernel("dirac",
-                KernelFactory::LabelType::discrete);
+      getKernel(kernelType,
+                labelType);
 
     cout << "\nApplying GraphHopper to file: " << argv[1] << "...\n";
     steady_clock::time_point tStart;
@@ -83,7 +85,12 @@ int main(int argc, char **argv){
       }*/
 
   }else{
-    cout << "Usage: graphhopper <file>\n";
+    cout << "\nUsage: graphhopper <file> <node kernel> <label type>\n"
+         << "<file>: The destination file.\n"
+         << "<node kernel>: Choose between:\n"
+         << "-dirac (Only discrete node labels)\n"
+         << "<label type>: discrete or vector\n"
+         << "\n\n";
   }
   }catch(std::exception& e){
     cout << e.what();

@@ -10,6 +10,8 @@ class KernelFactory{
 
   NodeKernel *getKernel(string name, LabelType type);
 
+  NodeKernel *getKernel(string name, string labelType);
+
 };
 
 
