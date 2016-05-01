@@ -31,7 +31,8 @@ vector<vector<int> > floyd(vector<vector<int> > V) {
   for(int k = 0; k < V.size(); k++) {
     for(int i = 0; i < V.size(); i++) {
       for(int j = 0; j < V.size(); j++) {
-        if(dist[i][j] > dist[i][k] + dist[k][j]) {
+        //if(dist[i][j] >= dist[i][k] + dist[k][j] && j != k) {
+	if(dist[i][j] > dist[i][k] + dist[k][j]) {
           dist[i][j] = dist[i][k] + dist[k][j];
 	  if (paths[i][j].size() != 0) {
             paths[i][j].erase(paths[i][j].begin(), paths[i][j].end());
@@ -39,6 +40,7 @@ vector<vector<int> > floyd(vector<vector<int> > V) {
 	  //paths[i][j].push_back(i);
 	  for(int q = 0; q < paths[i][k].size(); q++) {
 	    paths[i][j].push_back(paths[i][k][q]);
+	    cout << "k: " << k << " i: " << i << " j: " << j << " q: " << q << endl;
 	  }
 	  paths[i][j].push_back(j);
 	  //cout << k << " " << i << " " << j << " = " << dist[i][j] << endl;
