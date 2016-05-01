@@ -1,6 +1,7 @@
 #include <iostream>
 #include <climits>
 #include <vector>
+#include "node.h"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ vector<vector<int> > floyd(vector<vector<int> > V) {
     //Set dist to neighbours to 1.
     for(int u = 0; u < V.size(); u++) {
       dist[u][v] = V[u][v];//1;
-      cout << u + 1 << " " << v + 1 << " = " << dist[u][v] << endl;
+      //cout << u << " " << v << " = " << dist[u][v] << endl;
       if(dist[u][v] != INF) {
         paths[u][v].push_back(u);
 	paths[u][v].push_back(v);
@@ -35,16 +36,18 @@ vector<vector<int> > floyd(vector<vector<int> > V) {
 	  if (paths[i][j].size() != 0) {
             paths[i][j].erase(paths[i][j].begin(), paths[i][j].end());
 	  }
-	  paths[i][j].push_back(i);
-	  paths[i][j].push_back(k);
+	  //paths[i][j].push_back(i);
+	  for(int q = 0; q < paths[i][k].size(); q++) {
+	    paths[i][j].push_back(paths[i][k][q]);
+	  }
 	  paths[i][j].push_back(j);
-	  cout << k + 1 << " " << i + 1 << " " << j + 1 << " = " << dist[i][j] << endl;
+	  //cout << k << " " << i << " " << j << " = " << dist[i][j] << endl;
 	}
 	//cout << k + 1 << " " << i + 1 << " " << j + 1 << " = " << dist[i][j] << endl;
       }
     }
   }
-
+  
   cout << "Stored Paths: " << endl;
   for(int k = 0; k < paths.size(); k++) {
     cout << k << ": " << endl;
@@ -69,7 +72,7 @@ int main() {
       {INF,  -1,  INF,  0} };
   */
   int graph[4][4] =
-    { {  0,   5, INF,  10},
+    { {  0,   5,   11,  10},
       {INF,   0,   3, INF},
       {INF, INF,   0,   1},
       {INF, INF, INF,   0} };
