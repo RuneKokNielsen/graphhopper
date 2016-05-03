@@ -39,23 +39,30 @@ int transform(const char *file){
   }
 
   const mxArray *am;
+  const mxArray *nlc;
   const mxArray *nl;
   const double *m;
   mxArray *row;
   mwIndex *ir, *jc;
   mwIndex starting_row_index, stopping_row_index, current_row_index;
   for(int i=0; i<nGraphs; i++){
+
     am = mxGetField(data, i, "am");
-    nl = mxGetField(data, i, "nl");
-    nl = mxGetField(nl, 0, "values");
+    nlc = mxGetField(data, i, "nl");
+    nl = mxGetField(nlc, 0, "values");
+    if(nl == NULL) nl = mxGetField(nlc, 0, "vecvalues");
+    if(nl == NULL){
+      cout << "Unknown label value name in graph " << i
+           << "\nOptions are: values, vecvalues\n";
+    }
     mwSize nNodes = (mwSize) mxGetM(am);
+
     outputFile << nNodes << "\n";
 
     m = mxGetPr(nl);
     for(int row=0; row<nNodes; row++){
       outputFile << m[row] << "\n";
     }
-
     m = mxGetPr(am);
     if(mxIsSparse(am)){
       //Sparse am matrix

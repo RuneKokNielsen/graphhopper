@@ -25,7 +25,12 @@ class Node{
    * shortest paths
    */
   int tmp_d;
-  vector<vector<Node*> > tmp_sp;
+  vector<Node*> tmp_parents;
+  vector<Node*> tmp_children;
+  vector<int> *tmp_D;
+  bool *dComputed;
+  vector<int> *tmp_O;
+  vector<Node*> *tmp_ordered;
 };
 
 
