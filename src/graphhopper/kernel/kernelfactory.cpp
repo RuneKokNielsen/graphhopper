@@ -1,6 +1,7 @@
 #include "kernelfactory.h"
 #include "dirac.cpp"
 #include "linear.cpp"
+#include "gaussian.cpp"
 
 NodeKernel *KernelFactory::getKernel(string name, LabelType type){
   if(name == "dirac"){
@@ -13,6 +14,11 @@ NodeKernel *KernelFactory::getKernel(string name, LabelType type){
   if(name == "linear"){
     return new Linear(type);
   }
+  /*
+  if(name == "gaussian") {
+    return new Gaussian(type, sigma);
+  }
+  */
   throw std::invalid_argument("Unknown kernel specified: " + name);
 }
 
