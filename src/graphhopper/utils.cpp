@@ -100,4 +100,50 @@ bool nodeCompare(Node *a, Node *b){
   return a->tmp_d > b->tmp_d;
 }
 
+vector<Graph*> matlabRead(int nrhs, const mxArray *data) {
+  
+  mwSize nGraphs = mxGetNumberOfElements(data);
+
+  const mxArray *am;
+  const mxArray *nlc;
+  const mxArray *nl;
+  const double *m;
+  mxArray *row;
+  mwIndex *ir, *jc;
+  mwIndex starting_row_index, stopping_row_index, current_row_index;
+
+  vector<Graph*> graphs(nGraphs);
+  Graph *g;
+  for(int i = 0; i < nGraphs; i++) {  
+    am = mxGetField(data, i, "am");
+    nlc = mxGetField(data, i, "nl");
+    nl = mxGetField(nlc, 0, "values");
+    if(nl == NULL) nl = mxGetField(nlc, 0, "vecvalues");
+
+    mwSize nNodes = mxGetM(am);
+    g = new Graph(nNodes);
+    g -> index = i;
+
+    m = mxGetPr(nl);
+    //Missing vector implementation!
+    for(int j = 0; j < nNodes; j++) {
+      g -> V[j] -> dLabel = m[j];
+    }
+    m = mxGetPr(am);
+    //if(mxIsSparse(am)) {
+    //} else {
+      for(int j = 0; j < nNodes; j++) {
+        for(int k = 0; k < nNodes; k++) {
+          double v = m[j + k * nNodes];
+	  if(v > 0) {
+            g -> V[j] -> adj.push_back(g -> V[k]);
+	  }
+	}
+      }
+      //} 
+    graphs[i] = g;
+  }
+  return graphs;
+}
+
 #endif
