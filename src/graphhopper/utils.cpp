@@ -100,7 +100,7 @@ bool nodeCompare(Node *a, Node *b){
   return a->tmp_d > b->tmp_d;
 }
 
-vector<Graph*> matlabRead(int nrhs, const mxArray *data) {
+vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
   
   mwSize nGraphs = mxGetNumberOfElements(data);
 
@@ -126,9 +126,23 @@ vector<Graph*> matlabRead(int nrhs, const mxArray *data) {
 
     m = mxGetPr(nl);
     //Missing vector implementation!
-    for(int j = 0; j < nNodes; j++) {
-      g -> V[j] -> dLabel = m[j];
+    switch(labelType) {
+    case LabelType::Discrete:
+      for(int j = 0; j < nNodes; j++) {
+        g -> V[j] -> dLabel = m[j];
+      }
+      break;
+      /*
+    case LabelType::Vector:
+      for(int j = 0; j < nNodes; j++) {
+        for(int k = 0; k < nNodes; k++) {
+
+	}
+      }
+      break;
+      */
     }
+
     m = mxGetPr(am);
     //if(mxIsSparse(am)) {
     //} else {

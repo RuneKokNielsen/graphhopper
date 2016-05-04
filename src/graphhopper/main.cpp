@@ -57,7 +57,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     mexPrintf("Loading data..\n");
     tStart = steady_clock::now();
     //vector<Graph*> graphs = loadData(argv[1], labelType);
-    vector<Graph*> graphs = matlabRead(nrhs, prhs[0]);
+    vector<Graph*> graphs = matlabRead(prhs[0], labelType);
     int nGraphs = graphs.size();
     //cout << "Data loaded in " << msPassed(tStart) << " ms\n";
     mexPrintf("Data loaded in: %f ms\n", msPassed(tStart));
