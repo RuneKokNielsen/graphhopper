@@ -17,12 +17,22 @@ double Gaussian::compute(Node *v1, Node *v2, double sigma) {
 }
 
 double Gaussian::computeVector(Node *v1, Node *v2, double sigma) {
-  vector<double> xny(v1 -> vLabel.size());
-  for(int i = 0; i < v1 -> vLabel.size(); i++) {
+  int maxLength = std::max(v1 -> vLabel.size(), v2 -> vLabel.size());
+  if (v1 -> vLabel.size() < v2 -> vLabel.size()) {
+    for(int i = v1 -> vLabel.size() - 1; i < v2 -> vLabel.size(); i++) {
+      v1 -> vLabel.push_back(0);
+    }
+  } else if(v1 -> vLabel.size() > v2 -> vLabel.size()) {
+    for(int i = v2 -> vLabel.size() - 1; i < v1 -> vLabel.size(); i++) {
+      v2 -> vLabel.push_back(0);
+    }
+  }
+  vector<double> xny(maxLength);
+  for(int i = 0; i < maxLength; i++) {
     xny[i] = v1 -> vLabel[i] - v2 -> vLabel[i];
   }
   double normxny = 0;
-  for(int i = 0; i < v1 -> vLabel.size(); i++) {
+  for(int i = 0; i < maxLength; i++) {
     normxny += xny[i] * xny[i];
   }
   return exp(-normxny/(pow(2.0*sigma, 2.0)));
