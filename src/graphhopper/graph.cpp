@@ -13,8 +13,12 @@ Graph::Graph(int n){
 
 
 void Graph::calculateM(){
+  calculateM(false);
+}
+
+void Graph::calculateM(bool gaps){
   for(int i=0; i<V.size(); i++){
-    accountFor(V[i]);
+    prepareNode(V[i], gaps);
   }
 
   M = new int**[V.size()];
@@ -48,8 +52,8 @@ void Graph::calculateM(){
     delete[] (v->O);
   }
 
-
-  /*for(int vi=0; vi<V.size(); vi++){
+  /*
+  for(int vi=0; vi<V.size(); vi++){
     cout << "Node " << vi << "(" << V[vi]->dLabel << ")\n";
     for(int i=0; i<width; i++){
       for(int j=0; j<width; j++){
@@ -58,13 +62,12 @@ void Graph::calculateM(){
       cout << "\n";
     }
     cout << "\n";
-  }
-  */
+    }*/
 }
 
 
 
-void Graph::accountFor(Node *src){
+void Graph::prepareNode(Node *src, bool gaps){
   //Init tmp values
   vector<Node*> q;
   for(int i=0; i<V.size(); i++){
@@ -107,6 +110,8 @@ void Graph::accountFor(Node *src){
   for(int i=0; i<maxWidth; i++){
     src->tmp_ordered[i] = vector<Node*>();
   }
+
+
   src->tmp_dComputed = new bool[V.size()];
   src->D = new vector<int>[V.size()];
   src->O = new vector<int>[V.size()];
@@ -117,9 +122,40 @@ void Graph::accountFor(Node *src){
     src->tmp_dComputed[i] = false;
     Node *v = V[i];
     if(v->tmp_d == 999999) continue;
+
     src->tmp_ordered[v->tmp_d].push_back(v);
     for(int j=0; j<v->tmp_parents.size(); j++){
       v->tmp_parents[j]->tmp_children.push_back(v);
+      if(gaps){
+        //Add grand parents
+        for(int k=0; k<v->tmp_parents[j]->tmp_parents.size(); k++){
+          v->tmp_grandParents.push_back(v->tmp_parents[j]->tmp_parents[k]);
+        }
+      }
+    }
+  }
+
+  if(gaps){
+    //Add grand children
+    for(int i=0; i<V.size(); i++){
+      Node *v = V[i];
+      for(int j=0; j<v->tmp_children.size(); j++){
+        for(int k=0; k<v->tmp_children[j]->tmp_children.size(); k++){
+          v->tmp_grandChildren.push_back(v->tmp_children[j]->tmp_children[k]);
+        }
+      }
+    }
+    //Use grand parents as children
+    for(int i=0; i<V.size(); i++){
+      Node *v = V[i];
+      while(!v->tmp_grandParents.empty()){
+        v->tmp_parents.push_back(v->tmp_grandParents.back());
+        v->tmp_grandParents.pop_back();
+      }
+      while(!v->tmp_grandChildren.empty()){
+        v->tmp_children.push_back(v->tmp_grandChildren.back());
+        v->tmp_grandChildren.pop_back();
+      }
     }
   }
 
@@ -158,7 +194,7 @@ vector<int> *Graph::compDRec(Node *src, Node *v){
     int sizea = src->D[v->index].size();
     int sizeb = b.size();
     for(int i=0; i<sizeb; i++){
-      int ia = i + 1;
+      int ia = i + 1; 
       if(ia < sizea){
         src->D[v->index][ia] += b[i];
       }else{

@@ -29,6 +29,8 @@ class Node{
   int tmp_d;
   vector<Node*> tmp_parents;
   vector<Node*> tmp_children;
+  vector<Node*> tmp_grandChildren;
+  vector<Node*> tmp_grandParents;
   bool *tmp_dComputed;
   vector<Node*> *tmp_ordered;
 };

@@ -18,6 +18,7 @@ using namespace std;
 using namespace std::chrono;
 
 int mCompleted = 0;
+bool gaps = false;
 
 
 void computeM(vector<Graph*> graphs, int from, int to){
@@ -25,7 +26,7 @@ void computeM(vector<Graph*> graphs, int from, int to){
   int reportEveryN = max(nGraphs / 30, 1);
 
   for(int i=from; i<=to; i++){
-    graphs[i]->calculateM();
+    graphs[i]->calculateM(true);
     mCompleted++;
     if(mCompleted % reportEveryN == 0 || mCompleted == nGraphs){
        cout << "M computed: " <<  mCompleted << "/" << nGraphs <<  "\n";
@@ -36,7 +37,7 @@ void computeM(vector<Graph*> graphs, int from, int to){
 int main(int argc, char **argv){
 
   try{
-    if(argc > 3){
+    if(argc > 4){
 
     string kernelType = argv[2];
     LabelType labelType = KernelFactory().getLabelType(argv[3]);
@@ -45,6 +46,8 @@ int main(int argc, char **argv){
       getKernel(kernelType,
                 labelType,
 		atof(argv[4]));
+
+    gaps = argc > 5 && ((string) argv[5]) == "gaps";
 
     cout << "\nApplying GraphHopper to file: " << argv[1] << "...\n";
     steady_clock::time_point tStart;
@@ -88,6 +91,8 @@ int main(int argc, char **argv){
          << "<node kernel>: Choose between:\n"
          << "-dirac (Only discrete node labels)\n"
          << "<label type>: discrete or vector\n"
+         << "<node kernel parameter> decimal\n"
+         << "<gaps> (optional) Type \"gaps\" to run with gaps. Only use on trees!\n"
          << "\n\n";
   }
   }catch(std::exception& e){
