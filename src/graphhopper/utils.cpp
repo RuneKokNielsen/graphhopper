@@ -99,7 +99,7 @@ return duration_cast<duration<double>>(steady_clock::now() - tStart).count() * 1
 bool nodeCompare(Node *a, Node *b){
   return a->tmp_d > b->tmp_d;
 }
-
+/*
 vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
   
   mwSize nGraphs = mxGetNumberOfElements(data);
@@ -132,7 +132,7 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
         g -> V[j] -> dLabel = m[j];
       }
       break;
-      /*
+      
     case LabelType::Vector:
       for(int j = 0; j < nNodes; j++) {
         for(int k = 0; k < nNodes; k++) {
@@ -140,7 +140,7 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
 	}
       }
       break;
-      */
+      
     }
 
     m = mxGetPr(am);
@@ -159,5 +159,5 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
   }
   return graphs;
 }
-
+*/
 #endif
