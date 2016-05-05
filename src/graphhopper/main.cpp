@@ -43,7 +43,8 @@ int main(int argc, char **argv){
 
     NodeKernel *kernel = KernelFactory().
       getKernel(kernelType,
-                labelType);
+                labelType,
+		atof(argv[4]));
 
     cout << "\nApplying GraphHopper to file: " << argv[1] << "...\n";
     steady_clock::time_point tStart;

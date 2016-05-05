@@ -2,8 +2,9 @@
 #include "dirac.cpp"
 #include "linear.cpp"
 #include "gaussian.cpp"
+#include "bridge.cpp"
 
-NodeKernel *KernelFactory::getKernel(string name, LabelType type){
+NodeKernel *KernelFactory::getKernel(string name, LabelType type, double sigma){
   if(name == "dirac"){
     if(type == Discrete){
       return new Dirac();
@@ -14,16 +15,17 @@ NodeKernel *KernelFactory::getKernel(string name, LabelType type){
   if(name == "linear"){
     return new Linear(type);
   }
-  /*
   if(name == "gaussian") {
     return new Gaussian(type, sigma);
   }
-  */
+  if(name == "bridge") {
+    return new Bridge(type, sigma);
+  }
   throw std::invalid_argument("Unknown kernel specified: " + name);
 }
 
-NodeKernel *KernelFactory::getKernel(string name, string type){
-  return getKernel(name, getLabelType(type));
+NodeKernel *KernelFactory::getKernel(string name, string type, double sigma){
+  return getKernel(name, getLabelType(type), sigma);
 }
 LabelType KernelFactory::getLabelType(string type){
   if(type == "discrete"){
