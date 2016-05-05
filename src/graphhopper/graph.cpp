@@ -18,8 +18,6 @@ void Graph::calculateM(){
   }
 
   M = new int**[V.size()];
-  //cout << V.size() << "\n";
-  //cout << width << "\n";
   for(int vi=0; vi<V.size(); vi++){
     M[vi] = new int*[width];
     for(int i=0; i<width; i++){
@@ -36,13 +34,20 @@ void Graph::calculateM(){
       for(int j=0; j<width; j++){
         for(int i=0; i<=j; i++){
           int a = j - i;
-          if(r->tmp_D[vi].size() > a && r->tmp_O[vi].size() > i){
-            M[vi][i][j] += r->tmp_D[vi][a] * r->tmp_O[vi][i];
+          if(r->D[vi].size() > a && r->O[vi].size() > i){
+            M[vi][i][j] += r->D[vi][a] * r->O[vi][i];
           }
         }
       }
     }
   }
+
+  for(int vi=0; vi<V.size(); vi++){
+    Node *v = V[vi];
+    delete[] (v->D);
+    delete[] (v->O);
+  }
+
 
   /*for(int vi=0; vi<V.size(); vi++){
     cout << "Node " << vi << "(" << V[vi]->dLabel << ")\n";
@@ -102,14 +107,14 @@ void Graph::accountFor(Node *src){
   for(int i=0; i<maxWidth; i++){
     src->tmp_ordered[i] = vector<Node*>();
   }
-  src->dComputed = new bool[V.size()];
-  src->tmp_D = new vector<int>[V.size()];
-  src->tmp_O = new vector<int>[V.size()];
+  src->tmp_dComputed = new bool[V.size()];
+  src->D = new vector<int>[V.size()];
+  src->O = new vector<int>[V.size()];
   for(int i=0; i<V.size(); i++){
-    src->tmp_D[i] = vector<int>();
-    src->tmp_D[i].push_back(1);
-    src->tmp_O[i] = vector<int>();
-    src->dComputed[i] = false;
+    src->D[i] = vector<int>();
+    src->D[i].push_back(1);
+    src->O[i] = vector<int>();
+    src->tmp_dComputed[i] = false;
     Node *v = V[i];
     if(v->tmp_d == 999999) continue;
     src->tmp_ordered[v->tmp_d].push_back(v);
@@ -120,11 +125,11 @@ void Graph::accountFor(Node *src){
 
   compDRec(src, src);
 
-  src->tmp_O[src->index].push_back(1);
+  src->O[src->index].push_back(1);
   compO(src, maxWidth);
 
-
-
+  delete[] (src->tmp_dComputed);
+  delete[] (src->tmp_ordered);
 }
 
 void Graph::compO(Node *src, int maxWidth){
@@ -133,12 +138,12 @@ void Graph::compO(Node *src, int maxWidth){
       Node *v = src->tmp_ordered[i][j];
       for(int k=0; k<v->tmp_children.size(); k++){
         Node *c = v->tmp_children[k];
-        for(int h=0; h<src->tmp_O[v->index].size(); h++){
+        for(int h=0; h<src->O[v->index].size(); h++){
           int ic = h + 1;
-          while(ic >= src->tmp_O[c->index].size()){
-            src->tmp_O[c->index].push_back(0);
+          while(ic >= src->O[c->index].size()){
+            src->O[c->index].push_back(0);
           }
-          src->tmp_O[c->index][ic] += src->tmp_O[v->index][h];
+          src->O[c->index][ic] += src->O[v->index][h];
         }
       }
     }
@@ -146,21 +151,21 @@ void Graph::compO(Node *src, int maxWidth){
 }
 
 vector<int> *Graph::compDRec(Node *src, Node *v){
-  if(src->dComputed[v->index]) return &(src->tmp_D[v->index]);
+  if(src->tmp_dComputed[v->index]) return &(src->D[v->index]);
   for(int i=0; i<v->tmp_children.size(); i++){
     Node *c = v->tmp_children[i];
     vector<int> b = *compDRec(src, c);
-    int sizea = src->tmp_D[v->index].size();
+    int sizea = src->D[v->index].size();
     int sizeb = b.size();
     for(int i=0; i<sizeb; i++){
       int ia = i + 1;
       if(ia < sizea){
-        src->tmp_D[v->index][ia] += b[i];
+        src->D[v->index][ia] += b[i];
       }else{
-        src->tmp_D[v->index].push_back(b[i]);
+        src->D[v->index].push_back(b[i]);
       }
     }
   }
-  src->dComputed[v->index] = true;
-  return &(src->tmp_D[v->index]);
+  src->tmp_dComputed[v->index] = true;
+  return &(src->D[v->index]);
 }

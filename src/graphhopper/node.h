@@ -19,7 +19,9 @@ class Node{
   int n;
   int dLabel;
   vector<double> vLabel;
-  vector<vector<int> > sp;
+
+  vector<int> *D;
+  vector<int> *O;
   /*
    * Temporary variables used while calculating
    * shortest paths
@@ -27,9 +29,7 @@ class Node{
   int tmp_d;
   vector<Node*> tmp_parents;
   vector<Node*> tmp_children;
-  vector<int> *tmp_D;
-  bool *dComputed;
-  vector<int> *tmp_O;
+  bool *tmp_dComputed;
   vector<Node*> *tmp_ordered;
 };
 
