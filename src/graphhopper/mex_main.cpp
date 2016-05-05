@@ -68,12 +68,13 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
       break;
       /*
       case LabelType::Vector:
-      for(int j = 0; j < nNodes; j++) {
-	int vectorSize = ;
-        for(int k = 0; k < nNodes; k++) {
-          g -> V[j] -> vLabel.push_back(m[j + k * vectorSize]);
+        for(int j = 0; j < nNodes; j++) {
+	  string tmp = m[j];
+	  vector<string> vLabel = split(tmp, ' ');
+	  for(int k = 0; k < vLabel.size(); k++) {
+            g -> V[j] -> vLabel.push_back(stod(vLabel[k]));
+	  }
         }
-      }
       break;
       */
     }
