@@ -26,7 +26,7 @@ void computeM(vector<Graph*> graphs, int from, int to){
   int reportEveryN = max(nGraphs / 30, 1);
 
   for(int i=from; i<=to; i++){
-    graphs[i]->calculateM(true);
+    graphs[i]->calculateM(gaps);
     mCompleted++;
     if(mCompleted % reportEveryN == 0 || mCompleted == nGraphs){
        cout << "M computed: " <<  mCompleted << "/" << nGraphs <<  "\n";
