@@ -60,25 +60,39 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
     g -> index = i;
 
     m = mxGetPr(nl);
-    //Missing vector implementation!
     switch(labelType) {
     case LabelType::Discrete:
       for(int j = 0; j < nNodes; j++) {
         g -> V[j] -> dLabel = m[j];
       }
       break;
-      /*case LabelType::Vector:
+      /*
+      case LabelType::Vector:
       for(int j = 0; j < nNodes; j++) {
+	int vectorSize = ;
         for(int k = 0; k < nNodes; k++) {
-
+          g -> V[j] -> vLabel.push_back(m[j + k * vectorSize]);
         }
       }
-      break;*/
+      break;
+      */
     }
 
     m = mxGetPr(am);
-    //if(mxIsSparse(am)) {
-    //} else {
+    if(mxIsSparse(am)) {
+      int total = 0;
+
+      ir = mxGetIr(am);
+      jc = mxGetJc(am);
+
+      for(int j = 0; j < nNodes; j++) {
+	starting_row_index = jc[j];
+	stopping_row_index = jc[j + 1];
+        for(current_row_index = starting_row_index; current_row_index < stopping_row_index; current_row_index++) {
+          g -> V[current_row_index] -> adj.push_back(g -> V[j]);
+	}
+      }
+    } else {
       for(int j = 0; j < nNodes; j++) {
         for(int k = 0; k < nNodes; k++) {
           double v = m[j + k * nNodes];
@@ -87,7 +101,7 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
 	  }
 	}
       }
-      //}
+    }
     graphs[i] = g;
   }
   return graphs;
@@ -103,7 +117,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     NodeKernel *kernel = KernelFactory().
       getKernel(kernelType,
-                labelType);
+                labelType,
+		mxGetScalar(prhs[3]));
 
     steady_clock::time_point tStart;
     steady_clock::time_point tStartTotal = steady_clock::now();
