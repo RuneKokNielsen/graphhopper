@@ -5,6 +5,7 @@
 #include <string>
 #include <stdlib.h>
 #include "mex.h"
+//#include "matrix.h"
 #include "graph.cpp"
 #include "utils.cpp"
 #include <time.h>
@@ -81,16 +82,21 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
 
     m = mxGetPr(am);
     if(mxIsSparse(am)) {
+      mexPrintf("Is Sparse!\n");
       int total = 0;
-
+      mexPrintf("0\n");
       ir = mxGetIr(am);
+      mexPrintf("0.5\n");
       jc = mxGetJc(am);
-
+      mexPrintf("1\n");
       for(int j = 0; j < nNodes; j++) {
+	mexPrintf("2\n");
 	starting_row_index = jc[j];
 	stopping_row_index = jc[j + 1];
         for(current_row_index = starting_row_index; current_row_index < stopping_row_index; current_row_index++) {
-          g -> V[current_row_index] -> adj.push_back(g -> V[j]);
+          mexPrintf("3\n");
+		  // Missing!
+
 	}
       }
     } else {
@@ -105,6 +111,7 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
     }
     graphs[i] = g;
   }
+  mexPrintf("END!\n");
   return graphs;
 }
 
