@@ -13,7 +13,8 @@ main:
     -o ../build/graphhopper
 
 mex:
-	cd ../graphhopper; ${MATLABROOT}/bin/mex.bat mex_main.cpp; \
+	cd ../graphhopper; ${MATLABROOT}/bin/mex.bat -largeArrayDims \
+    mex_main.cpp; \
     mv mex_main.mexw64 ../build/mex_main.mexw64
 
 clean:
