@@ -1,6 +1,10 @@
 #include "threadedloops.h"
 #include <thread>
 
+#ifdef MEX
+#include "mex.h"
+#endif
+
 ThreadedLoops::ThreadedLoops(int nThreads){
   _nThreads = nThreads;
   _calculated = 0;
@@ -45,7 +49,12 @@ void ThreadedLoops::computeInterval(int **K, vector<Graph*> *pGraphs,
       _calculated ++;
       K[gji][gii] = sum;
       if(_calculated % _reportEveryN == 0 || _calculated == _kSize){
+        #ifdef MEX
+        mexPrintf("K computed: %i / %i\n", _calculated, _kSize);
+        mexEvalString("pause(.001);");
+        #else
         cout << "K computed: " << _calculated << "/" << _kSize << "\n";
+        #endif
       }
     }
   }

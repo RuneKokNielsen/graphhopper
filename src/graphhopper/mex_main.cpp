@@ -1,3 +1,6 @@
+
+#define MEX
+
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -5,7 +8,6 @@
 #include <string>
 #include <stdlib.h>
 #include "mex.h"
-//#include "matrix.h"
 #include "graph.cpp"
 #include "utils.cpp"
 #include <time.h>
@@ -17,21 +19,27 @@
 
 
 
+
 using namespace std;
 using namespace std::chrono;
 
-int mCompleted = 0;
+
+//Allows flushing printouts to matlab console
+void mexFlush(){
+  mexEvalString("pause(.001);");
+}
 
 
-void computeM(vector<Graph*> graphs, int from, int to){
+void computeM(vector<Graph*> graphs, int from, int to, bool gaps){
   int nGraphs = graphs.size();
   int reportEveryN = max(nGraphs / 30, 1);
-
+  int mCompleted = 0;
   for(int i=from; i<=to; i++){
-    graphs[i]->calculateM();
+    graphs[i]->calculateM(gaps);
     mCompleted++;
     if(mCompleted % reportEveryN == 0 || mCompleted == nGraphs){
-       cout << "M computed: " <<  mCompleted << "/" << nGraphs <<  "\n";
+      mexPrintf("M computed: %i / %i\n", mCompleted, nGraphs);
+      mexFlush();
     }
   }
 }
@@ -48,15 +56,33 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
   mwIndex *ir, *jc;
   mwIndex starting_row_index, stopping_row_index, current_row_index;
 
+  mexPrintf("Number of graphs: %i\n", nGraphs);
+  mexFlush();
+
   vector<Graph*> graphs(nGraphs);
   Graph *g;
   for(int i = 0; i < nGraphs; i++) {
     am = mxGetField(data, i, "am");
     nlc = mxGetField(data, i, "nl");
-    nl = mxGetField(nlc, 0, "values");
-    if(nl == NULL) nl = mxGetField(nlc, 0, "vecvalues");
 
-    mwSize nNodes = mxGetM(am);
+    switch(labelType){
+    case LabelType::Discrete:
+      nl = mxGetField(nlc, 0, "values");
+      if(nl == NULL){
+        mexPrintf("No labels found in \"values\"!");
+        throw std::runtime_error("No labels found in \"values\"");
+      }
+      break;
+    case LabelType::Vector:
+      nl = mxGetField(nlc, 0, "vecvalues");
+      if(nl == NULL){
+        mexPrintf("No labels found in \"vecvalues\"!");
+        throw std::runtime_error("No labels found in \"vecvalues\"");
+      }
+      break;
+      }
+
+    mwSize nNodes = (mwSize) mxGetM(am);
     g = new Graph(nNodes);
     g -> index = i;
 
@@ -80,40 +106,35 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
       */
     }
 
-    m = mxGetPr(am);
     if(mxIsSparse(am)) {
-      mexPrintf("Is Sparse!\n");
       int total = 0;
-      mexPrintf("0\n");
       ir = mxGetIr(am);
-      mexPrintf("0.5\n");
       jc = mxGetJc(am);
-      mexPrintf("1\n");
       for(int j = 0; j < nNodes; j++) {
-	mexPrintf("2\n");
-	starting_row_index = jc[j];
-	stopping_row_index = jc[j + 1];
-        for(current_row_index = starting_row_index; current_row_index < stopping_row_index; current_row_index++) {
-          mexPrintf("3\n");
-		  // Missing!
-
-	}
+        starting_row_index = jc[j];
+        stopping_row_index = jc[j + 1];
+        for(current_row_index = starting_row_index;
+            current_row_index < stopping_row_index;
+            current_row_index++) {
+           g->V[ir[current_row_index]]->adj.push_back(g->V[j]);
+        }
       }
     } else {
+      m = mxGetPr(am);
       for(int j = 0; j < nNodes; j++) {
         for(int k = 0; k < nNodes; k++) {
           double v = m[j + k * nNodes];
-	  if(v > 0) {
+          if(v > 0) {
             g -> V[j] -> adj.push_back(g -> V[k]);
-	  }
-	}
+          }
+        }
       }
     }
     graphs[i] = g;
   }
-  mexPrintf("END!\n");
   return graphs;
 }
+
 
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
@@ -132,35 +153,42 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     steady_clock::time_point tStartTotal = steady_clock::now();
 
     mexPrintf("Loading data..\n");
+    mexFlush();
+
     tStart = steady_clock::now();
     vector<Graph*> graphs = matlabRead(prhs[0], labelType);
+    
+
     int nGraphs = graphs.size();
 
     mexPrintf("Data loaded in: %f ms\n", msPassed(tStart));
     mexPrintf("Number of graphs: %d\n", graphs.size());
-
     mexPrintf("Computing M matrices..\n");
+    mexFlush();
+
     tStart = steady_clock::now();
-    computeM(graphs, 0, graphs.size()-1);
+    computeM(graphs, 0, graphs.size()-1, (int) mxGetScalar(prhs[4]) == 1);
 
     mexPrintf("M matrices computed in: %f ms\n", msPassed(tStart));
-
     mexPrintf("Allocate K (%dX%d)..\n", nGraphs, nGraphs);
+    mexFlush();
+
     tStart = steady_clock::now();
     int **K = new int*[nGraphs];
     for(int i=0; i<nGraphs; i++){
       K[i] = new int[nGraphs];
     }
     mexPrintf("K allocted in: %f ms\n", msPassed(tStart));
-
     mexPrintf("Compute K..\n");
+    mexFlush();
     KernelComputer *comp = new ThreadedLoops(1);
 
     tStart = steady_clock::now();
     comp->computeK(K, &graphs, kernel);
-    mexPrintf("K computed in: %f ms\n", msPassed(tStart));
 
+    mexPrintf("K computed in: %f ms\n", msPassed(tStart));
     mexPrintf("Total time used: %f ms\n", msPassed(tStartTotal));
+    mexFlush();
 
 
     //Create matlab output!

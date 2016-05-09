@@ -15,7 +15,7 @@ main:
 mex:
 	cd ../graphhopper; ${MATLABROOT}/bin/mex.bat -largeArrayDims \
     mex_main.cpp; \
-    mv mex_main.mexw64 ../build/mex_main.mexw64
+    mv mex_main.mexw64 ../build/ghopper.mexw64
 
 clean:
 	rm -f build/mattrans.exe

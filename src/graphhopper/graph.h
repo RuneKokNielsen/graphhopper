@@ -16,7 +16,7 @@ class Graph{
   vector<Node*> V;
 
   void calculateM(bool gaps);
-  void calculateM(); 
+  void calculateM();
   int index;
   int width = 0;
   int ***M;
