@@ -6,7 +6,7 @@
 class KernelComputer{
 
  public:
-  virtual void computeK(int **K, vector<Graph*> *graphs, NodeKernel *kernel) = 0;
+  virtual void computeK(double **K, vector<Graph*> *graphs, NodeKernel *kernel) = 0;
 
 };
 

@@ -8,7 +8,7 @@ class ThreadedLoops: public KernelComputer{
  public:
   ThreadedLoops(int nThreads);
 
-  void computeK(int **K, vector<Graph*> *graphs, NodeKernel *kernel);
+  void computeK(double **K, vector<Graph*> *graphs, NodeKernel *kernel);
 
  private:
   int _nThreads;
@@ -17,7 +17,7 @@ class ThreadedLoops: public KernelComputer{
   int _nGraphs;
   int _kSize;
 
-  void computeInterval(int **K, vector<Graph*> *graphs, NodeKernel *kernel,
+  void computeInterval(double **K, vector<Graph*> *graphs, NodeKernel *kernel,
                        int from, int to);
 };
 

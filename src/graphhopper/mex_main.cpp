@@ -93,17 +93,15 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
         g -> V[j] -> dLabel = m[j];
       }
       break;
-      /*
       case LabelType::Vector:
+        mwSize vLength = (mwSize) mxGetN(nl);
         for(int j = 0; j < nNodes; j++) {
-	  string tmp = m[j];
-	  vector<string> vLabel = split(tmp, ' ');
-	  for(int k = 0; k < vLabel.size(); k++) {
-            g -> V[j] -> vLabel.push_back(stod(vLabel[k]));
-	  }
+          Node *v = g->V[j];
+          for(int k=0; k<vLength; k++){
+            v->vLabel.push_back(m[k * nNodes + j]);
+          }
         }
-      break;
-      */
+        break;
     }
 
     if(mxIsSparse(am)) {
@@ -157,8 +155,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     tStart = steady_clock::now();
     vector<Graph*> graphs = matlabRead(prhs[0], labelType);
-    
-
     int nGraphs = graphs.size();
 
     mexPrintf("Data loaded in: %f ms\n", msPassed(tStart));
@@ -174,9 +170,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     mexFlush();
 
     tStart = steady_clock::now();
-    int **K = new int*[nGraphs];
+    double **K = new double*[nGraphs];
     for(int i=0; i<nGraphs; i++){
-      K[i] = new int[nGraphs];
+      K[i] = new double[nGraphs];
     }
     mexPrintf("K allocted in: %f ms\n", msPassed(tStart));
     mexPrintf("Compute K..\n");
@@ -193,10 +189,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     //Create matlab output!
     //https://se.mathworks.com/matlabcentral/newsreader/view_thread/301952
-    plhs[0] = mxCreateNumericMatrix(nGraphs, nGraphs, mxINT32_CLASS, mxREAL);
-    int *outputMatrix = (int*) mxGetPr(plhs[0]);
-    int **outputMalloc;
-    outputMalloc = (int**) mxMalloc(nGraphs*sizeof(*outputMalloc));
+    plhs[0] = mxCreateDoubleMatrix(nGraphs, nGraphs, mxREAL);
+    double *outputMatrix = (double*) mxGetPr(plhs[0]);
+    double **outputMalloc;
+    outputMalloc = (double**) mxMalloc(nGraphs*sizeof(*outputMalloc));
     for(int i = 0; i < nGraphs; i++) {
       outputMalloc[i] = outputMatrix + i * nGraphs;
     }

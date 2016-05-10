@@ -10,7 +10,7 @@ ThreadedLoops::ThreadedLoops(int nThreads){
   _calculated = 0;
 }
 
-void ThreadedLoops::computeInterval(int **K, vector<Graph*> *pGraphs,
+void ThreadedLoops::computeInterval(double **K, vector<Graph*> *pGraphs,
                                     NodeKernel *kernel,
                                     int from, int to){
 
@@ -19,7 +19,7 @@ void ThreadedLoops::computeInterval(int **K, vector<Graph*> *pGraphs,
     for(int gji=gii; gji<_nGraphs; gji++){
       Graph *gi = graphs[gii];
       Graph *gj = graphs[gji];
-      int sum = 0;
+      double sum = 0;
       if(gji < gii){ //Using symmetric property
         sum = K[gji][gii];
       }else{
@@ -61,7 +61,7 @@ void ThreadedLoops::computeInterval(int **K, vector<Graph*> *pGraphs,
 }
 
 
-void ThreadedLoops::computeK(int **K, vector<Graph*> *pGraphs,
+void ThreadedLoops::computeK(double **K, vector<Graph*> *pGraphs,
                              NodeKernel *kernel){
   _nGraphs = pGraphs->size();
   _kSize = (_nGraphs * _nGraphs) / 2;
