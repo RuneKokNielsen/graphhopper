@@ -36,11 +36,13 @@ double Gaussian::computeVector(Node *v1, Node *v2) {
   for(int i = 0; i <  maxLength; i++) {
     normxny += xny[i] * xny[i];
   }
-  return exp(-normxny/(pow(2.0*sigma, 2.0)));
+  normxny = sqrt(normxny);
+  //return exp(-normxny/(pow(2.0*sigma, 2.0)));
+  return exp(-sigma * pow(normxny, 2.0));
 }
 
 double Gaussian::computeDiscrete(Node *v1, Node *v2) {
-  double xny = v1 -> dLabel - v2 -> dLabel;
-  return exp(-(xny*xny)/(pow(2.0*sigma, 2.0)));
+  double normxny = v1 -> dLabel - v2 -> dLabel;
+  //return exp(-(normxny*normxny)/(2.0 * pow(sigma, 2.0)));
+  return exp(-sigma * pow(normxny, 2.0));
 }
-
