@@ -16,7 +16,7 @@ void Graph::calculateM(){
   calculateM(false);
 }
 
-void Graph::calculateM(bool gaps){
+void Graph::calculateM(int gaps){
   for(int i=0; i<V.size(); i++){
     prepareNode(V[i], gaps);
   }
@@ -67,7 +67,7 @@ void Graph::calculateM(bool gaps){
 
 
 
-void Graph::prepareNode(Node *src, bool gaps){
+void Graph::prepareNode(Node *src, int gaps){
   //Init tmp values
   vector<Node*> q;
   for(int i=0; i<V.size(); i++){
@@ -135,8 +135,9 @@ void Graph::prepareNode(Node *src, bool gaps){
     }
   }
 
-  if(gaps){
+  if(gaps > 0){
     //Add grand children
+    /*
     for(int i=0; i<V.size(); i++){
       Node *v = V[i];
       for(int j=0; j<v->tmp_children.size(); j++){
@@ -145,6 +146,23 @@ void Graph::prepareNode(Node *src, bool gaps){
         }
       }
     }
+    */
+    int s = gaps; //Temp -> Needs to be made as a param!
+    for(int i=0; i<V.size(); i++){
+      Node *v = V[i];
+      v -> tmp_grandChildren = v -> tmp_children;
+      vector<Node*> tmpNodes;
+      for(int k = 0; k < s; k++) {
+        tmpNodes = v -> tmp_grandChildren;
+	v -> tmp_grandChildren.clear();
+        for(int j=0; j<tmpNodes.size(); j++){
+	  for(int l = 0; l < tmpNodes[j] -> tmp_children.size(); l++) {
+            v -> tmp_grandChildren.push_back(tmpNodes[j] -> tmp_children[l]);
+	  }
+	}
+      }
+    }
+    
     //Use grand parents as children
     for(int i=0; i<V.size(); i++){
       Node *v = V[i];

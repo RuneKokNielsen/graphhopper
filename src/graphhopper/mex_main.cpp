@@ -30,7 +30,7 @@ void mexFlush(){
 }
 
 
-void computeM(vector<Graph*> graphs, int from, int to, bool gaps){
+void computeM(vector<Graph*> graphs, int from, int to, int gaps){
   int nGraphs = graphs.size();
   int reportEveryN = max(nGraphs / 30, 1);
   int mCompleted = 0;
@@ -163,7 +163,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     mexFlush();
 
     tStart = steady_clock::now();
-    computeM(graphs, 0, graphs.size()-1, (int) mxGetScalar(prhs[4]) == 1);
+    computeM(graphs, 0, graphs.size()-1, mxGetScalar(prhs[4]));
 
     mexPrintf("M matrices computed in: %f ms\n", msPassed(tStart));
     mexPrintf("Allocate K (%dX%d)..\n", nGraphs, nGraphs);

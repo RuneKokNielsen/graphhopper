@@ -16,10 +16,10 @@ class Gaussian: public NodeKernel{
 
   double (Gaussian::*_fCompute)(Node *v1, Node *v2);
 
-  double sigma;
+  double mu;
 
  public:
-  Gaussian(LabelType labelType, double sigma);
+  Gaussian(LabelType labelType, double mu);
   double compute(Node *v1, Node *v2);
 };
 

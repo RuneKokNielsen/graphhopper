@@ -15,14 +15,14 @@ class Graph{
 
   vector<Node*> V;
 
-  void calculateM(bool gaps);
+  void calculateM(int gaps);
   void calculateM();
   int index;
   int width = 0;
   int ***M;
 
  private:
-  void prepareNode(Node *src, bool gaps);
+  void prepareNode(Node *src, int gaps);
   vector<int> *compDRec(Node *src, Node *v);
   void compO(Node *src, int maxWidth);
 };
