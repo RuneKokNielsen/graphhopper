@@ -97,8 +97,35 @@ mathescape
 	
 \maketitle
 
+\section{Introduction}
+
+\section{SVM (Kort opsummering)}
+\subsection{Kernels}
+
+\section{GraphHopper}
+\subsection{Implementation (Pseudo kode)}
+\subsection{Gaps}
+\subsubsection{Implementation (Pseudo kode)}
+
+\section{Node kernels}
+\subsection{Dirac}
+\subsection{Linear}
+\subsection{Gaussian}
+\subsection{Bridge}
+\subsection{Dirac X Gaussian}
+
+\section{Experiments}
+\subsection{Runtime experiments (C++ vs MATLAB)}
+\subsubsection{Results}
+\subsubsection{Discussion}
+\subsection{Accuracy experiments (Gaps vs. no Gaps)}
+\subsubsection{Results}
+\subsubsection{Discussion}
+
+\section{Conclusion}
 
 
+\iffalse
 \section{The GraphHopper kernel}
 Description of kernel as 
 
@@ -125,9 +152,10 @@ Further, since we do not need to eqaute the left hand equation to the product of
 \begin{equation}
 w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}\left(\sum_{\tilde{v}\in V}(\mathfrak{d}_{\tilde{v}}^v)_{j-i+1}(\mathfrak{o}_{\tilde{v}}^v)_i\right)\left(\sum_{\tilde{v'}\in V'}(\mathfrak{d}_{\tilde{v'}}^{v'})_{j-i+1}(\mathfrak{o}_{\tilde{v'}}^{v'})_i\right)
 \end{equation}
-
+\fi
 
 \newpage
+
 \renewcommand\refname{References}
 \begin{thebibliography}{9}
 		\bibitem{graphhopper}
