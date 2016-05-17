@@ -68,9 +68,9 @@ int main(int argc, char **argv){
     cout << "M matrices computed in " << msPassed(tStart) << "ms\n";
     cout << "Allocate K (" << nGraphs << "X" << nGraphs << ")..\n";
     tStart = steady_clock::now();
-    int **K = new int*[nGraphs];
+    double **K = new double*[nGraphs];
     for(int i=0; i<nGraphs; i++){
-      K[i] = new int[nGraphs];
+      K[i] = new double[nGraphs];
     }
     cout << "K allocated in " << msPassed(tStart) << "ms\n";
     cout << "Compute K..\n";
