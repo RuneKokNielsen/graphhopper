@@ -17,6 +17,8 @@
 \usepackage{multirow}
 \usepackage{float}
 \usepackage{algpseudocode}
+\usepackage[bottom]{footmisc}
+\usepackage[toc,page]{appendix}
 
 
 \tikzset{main node/.style={circle,fill=blue!20,draw,minimum size=1cm,inner sep=0pt},
@@ -103,6 +105,203 @@ mathescape
 \subsection{Kernels}
 
 \section{GraphHopper}
+The following description of the GraphHopper kernel is based on the presentation in \cite{graphhopper}.
+
+GraphHopper is a graph kernel, i.e. a kernel for comparing graph data. Informally, the kernel is a sum of path kernel $k_p$ over each pair of shortest paths $\pi\in P,\ \pi'\in P'$ for graphs $G=(V,E),\ G'=(V',E')$. I.e.:
+\begin{equation}
+k_{graphhopper}(G,G')=\sum_{\pi\in P}\sum_{\pi'\in P'}k_p(\pi, \pi')
+\end{equation}
+The path kernel $k_p$ is a sum of some node kernel $k_n$ on each pair $v\in\pi,\ v'\in\pi'$ such that $v$ and $v'$ appears at the same place in $\pi$ and $\pi'$ and $\pi$ and $\pi'$ are of equal discrete length\footnote{Discrete length meaning that $\pi$ and $\pi'$ contains the same number of nodes.}. I.e.
+\begin{equation}
+k_p(\pi, \pi')=\begin{cases}
+\sum_{i=1}^{|\pi|}k_n(\pi(i), \pi'(i)) & \text{for }|\pi|=|\pi'|\\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+where $\pi(i)$ denotes the $i$'th node in $\pi$. The node kernels that we have chosen to implement are all described in a later section and are not essential in describing the kernel itself.
+
+Using the definition above we now present a simple example. Consider the two graphs, $G$ and $G'$ in figure \ref{fig:shortest-path-graph}.
+
+
+\begin{figure}[H]
+	\begin{minipage}[t]{0.7\linewidth}
+		\begin{tikzpicture}[-,>=stealth',shorten >=1pt,auto,node distance=4cm,
+		thick,main node/.style={circle,fill=blue!20,draw,font=\sffamily\Large\bfseries}]
+		
+		\node[main node] (a) [label=a] {};
+		\node[main node] (b) [below of=a, label=b] {};
+		\node[main node] (c) [right of=a, label=c] {};
+		
+		
+		\path[every node/.style={font=\sffamily\small}]
+		(a) edge [bend right] node {}(b)
+		(a) edge node {}(c)
+		;
+		\end{tikzpicture}
+	\end{minipage}
+	\begin{minipage}[t]{0.2\linewidth}
+		\begin{tikzpicture}[-,>=stealth',shorten >=1pt,auto,node distance=4cm,
+		thick,main node/.style={circle,fill=blue!20,draw,font=\sffamily\Large\bfseries}]
+		
+		
+		\node[main node] (d) [label=d] {};
+		\node[main node] (e) [below of=d, label=e] {};
+		
+		
+		\path[every node/.style={font=\sffamily\small}]
+		(d) edge [bend right] node {}(e)
+		;
+		\end{tikzpicture}
+	\end{minipage}
+	\caption{\textit{Left: G. Right: G'}}
+	\label{fig:shortest-path-graph}
+\end{figure}
+Identifying shortest paths we get
+\begin{align*}
+P&=\{[a], [a,b], [a,c], [b], [b,a], [b,a,c], [c], [c,a], [c,a,b]\}\\
+P'&=\{[d],[d,e],[e],[e,d]\}
+\end{align*}
+We can now compute $k_{graphhopper}$ by summing over all paths $\pi\in P$ and $\pi'\in P'$ such that $|\pi|=|\pi'|$. E.g. the pair $\pi=[a]\in P,\ \pi'=[d]\in P'$ are of equal length, so we add $k_n(a, d)$ to the sum. Identifying more pairs we find that $|\pi|=|\pi'|$ for $\pi=[a,b]\in P,\ \pi'=[d,e]\in P'$ so we add $k_n(a,d) + k_n(b, e)$.
+
+Observe how we added $k_n(a,d)$ multiple times to the final sum. Naturally, the number of times $k_n(v, v')$ will be added (where $v\in V,\ v'\in V'$) will be exactly the number of pairs of paths $\pi\in P,\ \pi'\in P'$ such that $|\pi|=|\pi'|$ and $\pi(i)=v,\ \pi'(i)=v'$ for some $i$.
+
+Let $w(v, v')$ be the number of times we have to add $k_n(v, v')$ for some pair $v\in V,\ v'\in V'$ as described above. Instead of computing and adding $k_n(v, v')$ multiple ($w(v, v')$) times we may instead add $w(v,v') k_n(v, v')$. We call $w(v, v')$ the $\textit{weight}$ between the two nodes and redefine the kernel as a sum between pairs of nodes:
+\begin{equation}
+k_{graphhopper}(G,G')=\sum_{v\in V}\sum_{v'\in V'}w(v,v')k_n(v,v')
+\end{equation}
+
+
+When calculating $w(v,v')$ we sum the number of pairs $\pi,\pi'$ such that $|\pi|=|\pi'|$ and $\pi(i)=\pi'(i)$ for some $i$. Let $width(G)$ be the discrete length of the longest shortest path $\pi\in P$ and let $\delta=min(width(G), width(G'))$. Since we only consider pairs of paths of same length we do not have to consider any paths of length greater than $\delta$.
+
+\textbf{Proof}\\
+Consider any two graphs $G,\ G'$ such that $width(G)=\delta$. Then we either have $\delta=width(G')$ or $\delta<width(G')$.\\
+Let $width(G)=\delta=width(G')$ and let $\pi'\in P'$ such that $|\pi'|>\delta$. Since $G'$ is at least as wide as any shortest paths within it we have $width(G')\geq |\pi'|>\delta = width(G')$ which is an absurdity.\\
+Let $width(G)=\delta < width(G')$ and let $\pi'\in P'$ such that $|\pi'|>\delta$. Now assume that there exists some $\pi\in P$ such that $|\pi|=|\pi'|$. We now see that $width(G)\geq |\pi| = |\pi'|>\delta=width(G)$ which is an absurdity.\\
+We have now proven that there can not exist any pairs of paths $\pi,\ \pi'$ such that $|\pi|=|\pi'|>\delta$.
+
+Beside from this limitation it is trivial that for a pair of paths $\pi,\ \pi'$ such that $|\pi|=|\pi'|=j$ we only have to consider nodes at index $i=1..j$ since there cannot exist any nodes at index $i>j$.
+
+
+We can now formalize $w(v,v')$ as
+\begin{equation}
+w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}|\{(\pi, \pi')\ |\ \pi(i)=v,\ \pi'(i)=v',\ |\pi|=|\pi'|=j\}|
+\end{equation}
+
+
+Let $\delta=width(G)$ and let $M$ be a $|V|\times\delta\times\delta$ matrix such that $M(v)_{ij}$ is the number of shortest paths $\pi\in P$ such that $|\pi|=j$ and $\pi(i)=v$. We then have
+\begin{equation}
+w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}M(v)_{ij}*M'(v')_{ij}
+\end{equation}
+allowing us to easily find the weight between pairs of nodes by first computing $M$ and $M'$. Furthermore, when computing K for multiple graphs we may compute all M matrices beforehand and use them in the pairwise computations instead of computing them for each pair of graphs.
+
+
+\subsection{Computing M	}
+The M matrix can be computed in a number of ways. We will be using the message-passing algorithms presented in \cite{graphhopper}
+
+Let $\tilde{v}$ be a node in $V$ and let $P_{\tilde{v}}$ be the set of shortest paths in $G$ starting in $\tilde{v}$. Then, naturally, $M(v)_{ij}$ becomes $\sum_{\tilde{v}\in V}$ number of times $v$ appears as the $i$'th node in each $\pi_{\tilde{v}}\in P_{\tilde{v}}$ of discrete length $j$. This means that we can compute $M$ by iterating over each node $\tilde{v}\in V$ and finding all shortest paths starting in $\tilde{v}$.
+
+Before we move on, we will first introduce the shortest path DAG $G_{\tilde{v}}$ for $\tilde{v}$. The shortest path DAG $G_{\tilde{v}}$ is created by removing all unneccesary edges from $G$ so that it only contains edges that are part of some shortest path starting in $\tilde{v}$. We call $\tilde{v}$ as the root node in the resulting DAG. This is illustrated in figure \ref{fig:shortest-path-dag} where we present a graph $G$ and the shortest path DAG $G_{\tilde{a}}$ rooted in $a$.
+
+\begin{figure}[H]
+	\begin{minipage}[t]{0.7\linewidth}
+		\begin{tikzpicture}[-,>=stealth',shorten >=1pt,auto,node distance=4cm,
+		thick,main node/.style={circle,fill=blue!20,draw,font=\sffamily\Large\bfseries}]
+		
+		\node[main node] (a) [label=a] {};
+		\node[main node] (b) [below of=a, label=b] {};
+		\node[main node] (c) [right of=a, label=c] {};
+		\node[main node] (d) [below of=c, label=d] {};
+		
+		
+		\path[every node/.style={font=\sffamily\small}]
+		(a) edge [bend right] node {2}(b)
+		(a) edge node {3}(c)
+		(a) edge [bend right] node {1}(d)
+		(d) edge [bend right] node {2}(c)
+		(b) edge node {2}(d)
+		(b) edge [bend right] node {3}(c)
+		;
+		\end{tikzpicture}
+	\end{minipage}
+	\begin{minipage}[t]{0.2\linewidth}
+		\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=4cm,
+		thick,main node/.style={circle,fill=blue!20,draw,font=\sffamily\Large\bfseries}]
+		
+		
+		\node[main node] (a) [label=a] {};
+		\node[main node] (b) [below of=a, label=b] {};
+		\node[main node] (c) [right of=a, label=c] {};
+		\node[main node] (d) [below of=c, label=d] {};
+		
+		
+		\path[every node/.style={font=\sffamily\small}]
+		(a) edge [bend right] node {2}(b)
+		(a) edge node {3}(c)
+		(a) edge [bend right] node {1}(d)
+		(d) edge [bend right] node {2}(c)
+		;
+		\end{tikzpicture}
+	\end{minipage}
+	\caption{\textit{Left: G. Right: $G_{\tilde{a}}$}}
+	\label{fig:shortest-path-dag}
+\end{figure}
+
+We now introduce two more constructs used for computing M: $\mathfrak{O}_{\tilde{v}}$ and $\mathfrak{D}_{\tilde{v}}$. 
+
+\subsubsection{Computing $\mathfrak{O}_{\tilde{v}}$}
+Let $\mathfrak{O}_{\tilde{v}}$ be a $n\times\delta$ matrix where $\mathfrak{O}_{\tilde{v}}(v,i)$ is the number of paths from $\tilde{v}$ to $v$ in the shortest path DAG $G_{\tilde{v}}$ with discrete length $i$.
+
+\textbf{Example}\\
+Using the graph illustrated in figure \ref{fig:shortest-path-dag}, we find that there are two paths from $a$ to $c$ of discrete length 2 and 3 so $\mathfrak{O}_{a}(c,1)=0,\ \mathfrak{O}_{a}(c,2)=1,\ \mathfrak{O}_{a}(c,3)=1$.
+
+The rows of $\mathfrak{O}_{\tilde{v}}$, identified as $\mathfrak{o}_{\tilde{v}}^v$, are computed recursively using a message-passing algorithm starting at the root. Intuitively, there is always exactly one path from the root to itself in the shortest path DAG and this path is of discrete length 1 so $\mathfrak{o}_{\tilde{v}}^{\tilde{v}}=[1]$. From the current node, the algorithm passes a message to each of its reachable neighbours containing its own row shifted one place to the right and adds the contents to the child's row. The algorithm then repeats on the next level of nodes. This is illustrated in figure \ref{fig:compute_o}.
+
+
+\begin{figure}[H]
+	\includegraphics[width=12cm]{compute_o}
+	\caption{\textit{Computing $\mathfrak{O}_{\tilde{a}}$ using message-passing}}
+	\label{fig:compute_o}
+\end{figure}
+
+
+Before defining the algorithm for computing $\mathfrak{O}_{\tilde{v}}$ we must define two constructs. First, let $\oplus$ be left-aligned addition between two vectors such that their length is aligned. I.e.:
+\begin{equation}
+[a, b] \oplus [c, d, e] = [a + c, b + d, e]
+\end{equation}
+Now, let $V_{\tilde{v}}^j$ be the nodes in $G_{\tilde{v}}$ such that there exists some path from the root to $v$ in $G_{\tilde{v}}$ with discrete length $j$. The algorithm is shown in figure \ref{algorithm:o}.
+
+\begin{figure}[H]
+\begin{lstlisting}
+$\mathfrak{o}_{\tilde{v}}^{\tilde{v}}=[1]$
+$\mathfrak{o}_{\tilde{v}}^v=[0], for\ v\in V \ {\tilde{v}}$
+for j=1..$\delta$
+   for $v\in V_{\tilde{V}}^j$
+      for $(v,w)\in E_{\tilde{v}}$
+         $\mathfrak{o}_{\tilde{v}}^w=\mathfrak{o}_{\tilde{v}}^w\oplus[0,\mathfrak{o}_{\tilde{v}}^v]$
+      end
+   end
+end
+
+\end{lstlisting}
+\caption{Algorithm for computing $\mathfrak{O}_{\tilde{v}}$}
+\label{algorithm:o}
+\end{figure}
+
+\subsubsection{Computing $\mathfrak{D}_{\tilde{v}}$}
+Let $\mathfrak{D}_{\tilde{v}}$ be a $n\times\delta$ matrix where $\mathfrak{D}_{\tilde{v}}(v, i)$ is the number of paths of discrete length $i$ in $G_{\tilde{v}}$ starting in $v$.
+
+\textbf{Example}\\
+Consider the node $d$ in figure \ref{fig:shortest-path-dag}. From this node there is one path to itself of discrete length 1 ($\pi_1=[d]$) and one path to $c$ of discrete length 2 ($\pi_2=[d,c]$) so $\mathfrak{D}_a(d,1)=1,\ \mathfrak{D}_a(d,2)=1,\ \mathfrak{D}_a(d,i)=0$ for $i\notin\{1,2\}$.
+
+The algorithm for computing $\mathfrak{D}_{\tilde{v}}$ will, like in the case of $\mathfrak{O}_{\tilde{v}}$, be using a message-passing approach. In this case the row for node $v$ in $\mathfrak{D}_{\tilde{v}}$ is denoted by $\mathfrak{d}_{\tilde{v}}^v$. We start by observing that all nodes must have exactly one path of discrete length 1 (the path to themselves) so we initialize $\mathfrak{d}_{\tilde{v}}^v=[1],\ \forall v\in V$. The $\mathfrak{d}_{\tilde{v}}^v$ row for $v$ is then computed by adding (using the $\oplus$ operation defined earlier) the rows of its children shifted one place to the right. The rows of the children are computed recursively until a leaf node is reached and the result is then send up through the stack of recursive calls. This is illustrated in figure \ref{fig:compute_d}.
+
+\begin{figure}[H]
+	\includegraphics[width=12cm]{compute_d}
+	\caption{\textit{Computing $\mathfrak{d}_{\tilde{a}}$ using message-passing}}
+	\label{fig:compute_d}
+\end{figure}
+
+
 \subsection{Implementation (Pseudo kode)}
 \subsection{Gaps}
 \subsubsection{Implementation (Pseudo kode)}
@@ -117,12 +316,70 @@ mathescape
 \section{Experiments}
 \subsection{Runtime experiments (C++ vs MATLAB)}
 \subsubsection{Results}
+
+System specs
+\begin{table}[H]
+	\centering
+	\hspace*{-0.7in}
+	\scalebox{0.7} {
+		\begin{tabular}{c|c|c|c}
+			ID & OS & CPU & Ram\\
+			\hline
+			A & Win7 64 bit & Intel i5-3320M @ 2.60GHz (4 cores) & 8GB 
+			
+		\end{tabular}
+	}
+	\caption{\textit{System specs}}
+	\label{table:specs}
+\end{table}
+
+
+Runtime in seconds for calculating K (without gaps).
+\begin{table}[H]
+	\centering
+	\hspace*{-0.7in}
+	\scalebox{0.7} {
+		\begin{tabular}{c|c|c|c|c|c}
+			Data set & Node kernel & Runtime in MATLAB & Runtime in Mex C++ & System spec & Ratio\\
+			\hline
+			Mutag & Dirac & 31.6 & \textbf{0.731} & A & 1:43.23\\
+			Enzymes & Dirac & 722.99 & \textbf{16.9} & A & 1:42.78\\
+			Airways subsampled & Gaussian & 5518.01 & \textbf{3305.11} & A & 1:1.67
+			
+		\end{tabular}
+	}
+	\caption{\textit{Runtime results}}
+	\label{table:runtime_results}
+\end{table}
+
 \subsubsection{Discussion}
 \subsection{Accuracy experiments (Gaps vs. no Gaps)}
+
 \subsubsection{Results}
+
+\begin{table}[H]
+	\centering
+	\hspace*{-0.7in}
+	\scalebox{0.7} {
+		\begin{tabular}{c|c|c|c}
+		Data set & Node kernel & Without gaps & With gaps (size 1)\\
+		\hline
+		Mutag & Dirac & $\mathbf{83.111 (std. 1.9633)}$ & $79.000 (std. 2.2801)$\\
+		Enzymes & Dirac & $\mathbf{35.133 (std. 2.050)}$ & $\mathbf{36.350 (std. 1.3888)}$\\
+		Enzymes (symmetrized) & Gaussian & $\mathbf{67.850 (std. 1.3482)}$ & $\mathbf{67.250 (std. 1.5138)}$\\
+		Airways subsampled & Gaussian & $\mathbf{63.180 (std. 1.7900)}$ & $\mathbf{62.600 (std. 1.3233)}$
+		\end{tabular}
+	}
+	\caption{\textit{Accuracy results}}
+	\label{table:raccuracy_results}
+\end{table}
+
 \subsubsection{Discussion}
 
 \section{Conclusion}
+
+
+
 
 
 \iffalse
@@ -154,6 +411,7 @@ w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}\left(\sum_{\tilde{v}\in V}(\mathfrak{d
 \end{equation}
 \fi
 
+
 \newpage
 
 \renewcommand\refname{References}
@@ -163,5 +421,26 @@ w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}\left(\sum_{\tilde{v}\in V}(\mathfrak{d
 		\emph{Scalable kernels for graphs with continuos attributes}.
 		In Advances in Neural Information Processing Systems, pages 216-224, 2013.
 \end{thebibliography}
+
+
+\newpage
+\begin{appendices}
+\section{Illustration comments}
+\label{appendix:illustrations}
+This section serves to explain the details of illustrations used in the report itself that may not be self-explanatory.
+\subsection{Figure \ref{fig:compute_d}}
+Reading left to right, top to bottom, the steps are as follows:
+\begin{enumerate}
+	\item The algorithm starts at the root node $a$.
+	\item The node $a$ asks $b$. Since $b$ is a leaf node it does not need to do any further work so it returns $[0, 1]$.
+	\item The result from $b$ is added to $a$: $[1] \oplus [0,1] = [1,1]$.
+	\item The node $a$ asks $c$. Like $b$, $c$ is a leaf node and returns $[0,1]$.
+	\item The result is added to $a$: $[1,1] \oplus [0,1] = [1,2]$.
+	\item The node $a$ asks $d$. Since $d$ is not a leaf node it must first determine its own value before returning.
+	\item The node $d$ asks $c$ which returns $[0,1]$.
+	\item The result from $c$ is added to $d$: $[1] \oplus [0,1] = [1,1]$ and $d$ returns $[0,1,1]$.
+	\item The result from $d$ is added to $a$: $[1,2]\oplus[0,1,1]=[1,3,1]$. The root node has now collected the values of all its children so the algorithm ends.
+\end{enumerate}
+\end{appendices}
 
 \end{document}
