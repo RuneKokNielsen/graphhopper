@@ -15,9 +15,9 @@ class Bridge: public NodeKernel{
 
   double (Bridge::*_fCompute)(Node *v1, Node *v2);
 
-  double sigma;
+  double c;
  public:
-  Bridge(LabelType labelType, double sigma);
+  Bridge(LabelType labelType, double c);
   double compute(Node *v1, Node *v2);
 };
 

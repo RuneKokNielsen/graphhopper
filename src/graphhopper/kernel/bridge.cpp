@@ -1,9 +1,8 @@
 
 #include "bridge.h"
 
-// c = sigma.
-Bridge::Bridge(LabelType labelType, double sigma) {
-  this -> sigma = sigma;
+Bridge::Bridge(LabelType labelType, double c) {
+  this -> c = c;
   switch(labelType) {
   case Discrete:
     _fCompute = &Bridge::computeDiscrete;
@@ -37,9 +36,10 @@ double Bridge::computeVector(Node *v1, Node *v2) {
   for(int i = 0; i <  maxLength; i++) {
     normxny += xny[i] * xny[i];
   }
-  return std::max(0.0, sigma - std::abs(normxny));
+  normxny = sqrt(normxny);
+  return std::max(0.0, c - std::abs(normxny));
 }
 
 double Bridge::computeDiscrete(Node *v1, Node *v2) {
-  return std::max(0.0, sigma - std::abs(v1 -> dLabel - v2 -> dLabel));
+  return std::max(0.0, c - std::abs(v1 -> dLabel - v2 -> dLabel));
 }

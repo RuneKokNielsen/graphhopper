@@ -8,9 +8,9 @@ class KernelFactory{
 
  public:
 
-  NodeKernel *getKernel(string name, LabelType type, double sigma);
+  NodeKernel *getKernel(string name, LabelType type, double kernelParameter);
 
-  NodeKernel *getKernel(string name, string labelType, double sigma);
+  NodeKernel *getKernel(string name, string labelType, double kernelParameter);
 
   LabelType getLabelType(string strType);
 

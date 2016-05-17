@@ -9,14 +9,14 @@
 class DiracTimesGaussian: public NodeKernel{
 
  private:
-  double computeVector(Node *v1, Node *v2, double sigma);
-  double computeDiscrete(Node *v1, Node *v2, double sigma);
+  double computeVector(Node *v1, Node *v2, double mu);
+  double computeDiscrete(Node *v1, Node *v2, double mu);
 
-  double (DiracTimesGaussian::*_fCompute)(Node *v1, Node *v2, double sigma);
+  double (DiracTimesGaussian::*_fCompute)(Node *v1, Node *v2, double mu);
 
  public:
-  DiracTimesGaussian(LabelType labelType, double sigma);
-  double compute(Node *v1, Node *v2, double sigma);
+  DiracTimesGaussian(LabelType labelType, double mu);
+  double compute(Node *v1, Node *v2, double mu);
 };
 
 #endif

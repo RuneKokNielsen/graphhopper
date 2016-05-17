@@ -1,8 +1,8 @@
 
 #include "gaussian.h"
 
-Gaussian::Gaussian(LabelType labelType, double sigma) {
-  this -> sigma = sigma;
+Gaussian::Gaussian(LabelType labelType, double mu) {
+  this -> mu = mu;
   switch(labelType) {
   case Discrete:
     _fCompute = &Gaussian::computeDiscrete;
@@ -38,11 +38,11 @@ double Gaussian::computeVector(Node *v1, Node *v2) {
   }
   normxny = sqrt(normxny);
   //return exp(-normxny/(pow(2.0*sigma, 2.0)));
-  return exp(-sigma * pow(normxny, 2.0));
+  return exp(-mu * pow(normxny, 2.0));
 }
 
 double Gaussian::computeDiscrete(Node *v1, Node *v2) {
   double normxny = v1 -> dLabel - v2 -> dLabel;
   //return exp(-(normxny*normxny)/(2.0 * pow(sigma, 2.0)));
-  return exp(-sigma * pow(normxny, 2.0));
+  return exp(-mu * pow(normxny, 2.0));
 }
