@@ -259,7 +259,7 @@ The rows of $\mathfrak{O}_{\tilde{v}}$, identified as $\mathfrak{o}_{\tilde{v}}^
 
 \begin{figure}[H]
 	\includegraphics[width=12cm]{compute_o}
-	\caption{\textit{Computing $\mathfrak{O}_{\tilde{a}}$ using message-passing}}
+	\caption{\textit{Computing $\mathfrak{O}_{\tilde{a}}$ using message-passing. Detailed in appendix \ref{appendix:illustrations_compute_o}.}}
 	\label{fig:compute_o}
 \end{figure}
 
@@ -281,26 +281,62 @@ for j=1..$\delta$
       end
    end
 end
-
 \end{lstlisting}
 \caption{Algorithm for computing $\mathfrak{O}_{\tilde{v}}$}
 \label{algorithm:o}
 \end{figure}
 
 \subsubsection{Computing $\mathfrak{D}_{\tilde{v}}$}
+
 Let $\mathfrak{D}_{\tilde{v}}$ be a $n\times\delta$ matrix where $\mathfrak{D}_{\tilde{v}}(v, i)$ is the number of paths of discrete length $i$ in $G_{\tilde{v}}$ starting in $v$.
 
 \textbf{Example}\\
 Consider the node $d$ in figure \ref{fig:shortest-path-dag}. From this node there is one path to itself of discrete length 1 ($\pi_1=[d]$) and one path to $c$ of discrete length 2 ($\pi_2=[d,c]$) so $\mathfrak{D}_a(d,1)=1,\ \mathfrak{D}_a(d,2)=1,\ \mathfrak{D}_a(d,i)=0$ for $i\notin\{1,2\}$.
 
 The algorithm for computing $\mathfrak{D}_{\tilde{v}}$ will, like in the case of $\mathfrak{O}_{\tilde{v}}$, be using a message-passing approach. In this case the row for node $v$ in $\mathfrak{D}_{\tilde{v}}$ is denoted by $\mathfrak{d}_{\tilde{v}}^v$. We start by observing that all nodes must have exactly one path of discrete length 1 (the path to themselves) so we initialize $\mathfrak{d}_{\tilde{v}}^v=[1],\ \forall v\in V$. The $\mathfrak{d}_{\tilde{v}}^v$ row for $v$ is then computed by adding (using the $\oplus$ operation defined earlier) the rows of its children shifted one place to the right. The rows of the children are computed recursively until a leaf node is reached and the result is then send up through the stack of recursive calls. This is illustrated in figure \ref{fig:compute_d}.
-
 \begin{figure}[H]
 	\includegraphics[width=12cm]{compute_d}
-	\caption{\textit{Computing $\mathfrak{d}_{\tilde{a}}$ using message-passing}}
+	\caption{\textit{Computing $\mathfrak{d}_{\tilde{a}}$ using message-passing.  Detailed in appendix \ref{appendix:illustrations_compute_d}.}}
 	\label{fig:compute_d}
 \end{figure}
 
+
+Let $v.children$ be the children of $v$ in $G_{\tilde{v}}$. A recursive algorithm for computing $\mathfrak{D}_{\tilde{v}}$ can then be written out as in figure \ref{algorithm:d}.
+
+\begin{figure}[H]
+	\begin{lstlisting}
+	
+	function compute_d_rec(v)
+	for w in v.children
+	$\mathfrak{d}_{\tilde{v}}^v = \mathfrak{d}_{\tilde{v}}^v \oplus $[0,compute_d_rec(w)]
+	end
+	return $\mathfrak{d}_{\tilde{v}}^v$
+	end
+	
+	initialize: $\mathfrak{d}_{\tilde{v}}^v=[1],\ \forall v\in V$
+	compute_d_rec($\tilde{v}$)
+	
+	\end{lstlisting}
+	\caption{Algorithm for computing $\mathfrak{D}_{\tilde{v}}$}
+	\label{algorithm:d}
+\end{figure}
+
+\subsubsection{Putting things together}
+Having computed $\mathfrak{O}_{\tilde{v}}$ and $\mathfrak{D}_{\tilde{v}}$ we now observe that the number of times that $v$ appears as the $i$'th node in a path of discrete length $j$ in $G_{\tilde{v}}$ must be the number of paths from $\tilde{v}$ to $v$ in $G_{\tilde{v}}$ of length $i$ times the number of paths of length $j-i+1$ in $G_{\tilde{v}}$ starting in $v$; i.e. $\mathfrak{O}_{\tilde{v}}^v(v,i)\mathfrak{D}_{\tilde{v}}(v,j - i + 1)$.
+
+\textbf{Example}\\
+Consider the node $d$ in figure \ref{fig:shortest-path-dag}. Trying to find the number of paths in $G_{a}$ such that $d$ is the 2nd node in a path of length 3 we can intuitively see that there is one such path: $[a,d,c]$. This could be computed using the $\mathfrak{o}_a^d$ and $\mathfrak{d}_a^d$ computed earlier in figures \ref{fig:compute_o} and \ref{fig:compute_d}:
+\begin{align}
+\mathfrak{o}_a^d(2)\mathfrak{d}_a^d(3-2+1)&=\mathfrak{o}_a^d(2)\mathfrak{d}_a^d(2)\\
+&=1 * 1\\
+&=1
+\end{align}
+
+Being able to efficiently count the number of times $v$ appears as the $i$'th node in a path of length $j$ in a shortest path from $\tilde{v}$ we can now look back at the definition of $M(v)$ and conclude that
+
+\begin{equation}
+M(v)_{ij} = \sum_{\tilde{v}\in V}\mathfrak{o}_{\tilde{v}}^v(i)\mathfrak{d}_{\tilde{v}}^v(j-i+1)
+\end{equation}
 
 \subsection{Implementation (Pseudo kode)}
 \subsection{Gaps}
@@ -478,7 +514,19 @@ w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}\left(\sum_{\tilde{v}\in V}(\mathfrak{d
 \section{Illustration comments}
 \label{appendix:illustrations}
 This section serves to explain the details of illustrations used in the report itself that may not be self-explanatory.
+\subsection{Figure \ref{fig:compute_o}}
+\label{appendix:illustrations_compute_o}
+Reading left to right, top to bottom, the steps are as follows:
+\begin{enumerate}
+	\item The root sends a message to its children.
+	\item The children's values are updated.
+	\item The only non-leaf node in the next level is $d$, so it sends a message to its only child, $c$.
+	\item The value of $c$ is updated. The only node in the next level is $c$, which is a leaf node, so the algorithm ends.
+\end{enumerate}
+
+
 \subsection{Figure \ref{fig:compute_d}}
+\label{appendix:illustrations_compute_d}
 Reading left to right, top to bottom, the steps are as follows:
 \begin{enumerate}
 	\item The algorithm starts at the root node $a$.
