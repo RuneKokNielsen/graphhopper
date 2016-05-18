@@ -426,14 +426,54 @@ end
 
 
 \subsection{Gaps}
+The following section is based on the description of GraphHopper with gaps from \cite{gappy}
+
+Because some of the graphs we are analysing using GraphHopper are based on medical images (especially \textit{Airways}), these graphs which is based on images, can sometimes contain mistakes, and to minimize the impact of these mistakes we create gaps, which can connect two nodes were an edge were missing.
+
+These gaps 
+
 \subsubsection{Implementation (Pseudo kode)}
 
 \section{Node kernels}
 \subsection{Dirac}
+Dirac in GraphHopper simply compare the 2 given nodes, to see if they are equal to each other, and if they are equal we return $1$, and if they are not equal we return $0$. This node kernels is mostly used when we compare graphs with discrete nodes. The node kernel can be seen formally described in (\ref{eq:dirac}).
+\begin{equation}
+\label{eq:dirac}
+k_{dirac}(x, x')=\begin{cases}
+1 & \text{for }x=x'\\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+
 \subsection{Linear}
+\begin{equation}
+\label{eq:linear}
+k_{linear}(x, x') = \sum_{i = 1}^{|x|}{x(i)^T x'(i)}
+\end{equation}
+
 \subsection{Gaussian}
+For our gaussian kernel we are using a simplified version of (\ref{eq:gaussian}), this will save  us time when we are calculating \textit{K}, our simplified version can be seen in (\ref{eq:gaussian_simple}) where $\mu = \frac{1}{2 \sigma^2}$, these two formulas will yield the same result, but when we use (\ref{eq:gaussian_simple}) we save time by eliminating some operations, because we are doing them beforehand, and this speeds up the process of calculating $K$.
+\begin{equation}
+\label{eq:gaussian}
+k_{gaussian}(x, x') = exp(-\frac{||x - x'||^2}{2\sigma^2})
+\end{equation}
+\begin{equation}
+\label{eq:gaussian_simple}
+k_{gaussian}(x, x') = exp(-\mu ||x - x'||^2)
+\end{equation}
+
 \subsection{Bridge}
-\subsection{Dirac X Gaussian}
+Our bridge kernel is based on \cite{shortest-path} bridge formula.
+\begin{equation}
+\label{eq:bridge}
+k_{bridge}(x, x') = \text{max}(0, c - |x - x'|)
+\end{equation}
+
+\subsection{Dirac times Gaussian}
+\begin{equation}
+\label{eq:diractimesgaussian}
+k_{diractimesgaussian}(x, x') = k_{dirac}(x, x') k_{gaussian}(x, x')
+\end{equation}
 
 \section{Experiments}
 \subsection{Runtime experiments (C++ vs MATLAB)}
@@ -542,6 +582,16 @@ w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}\left(\sum_{\tilde{v}\in V}(\mathfrak{d
 		Aasa Feragen, Niklas Kasenburg, Jens Petersen, Marleen de Bruijne, Karsten M. Borgwardt.
 		\emph{Scalable kernels for graphs with continuos attributes}.
 		In Advances in Neural Information Processing Systems, pages 216-224, 2013.
+
+		\bibitem{gappy}
+		Aasa Feragen, Karsten Borgwardt.
+		\emph{Efficient tree-path kernels for attributde trees}.
+		2013.
+
+		\bibitem{shortest-path}
+		Karsten M. Borgwardt, Hans-Peter Kriegel.
+		\emph{Shortest-path kernels on graphs}.
+		In Proceedings of the International Conference on Data Mining, pages 74-81, 2005.
 \end{thebibliography}
 
 
