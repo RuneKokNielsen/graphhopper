@@ -32,7 +32,7 @@
 language=C++,                % choose the language of the code
 %basicstyle=\footnotesize,       % the size of the fonts that are used for the code
 basicstyle=\ttfamily,
-%numbers=left,                   % where to put the line-numbers
+numbers=left,                   % where to put the line-numbers
 numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
 stepnumber=1,                   % the step between two line-numbers. If it is 1 each line will be numbered
 numbersep=5pt,                  % how far the line-numbers are from the code
@@ -40,7 +40,7 @@ backgroundcolor=\color{white},  % choose the background color. You must add \use
 showspaces=false,               % show spaces adding particular underscores
 showstringspaces=false,         % underline spaces within strings
 showtabs=false,                 % show tabs within strings adding particular underscores
-%frame=single,           % adds a frame around the code
+frame=single,           % adds a frame around the code
 tabsize=2,          % sets default tabsize to 2 spaces
 captionpos=b,           % sets the caption-position to bottom
 breaklines=true,        % sets automatic line breaking
@@ -98,6 +98,9 @@ mathescape
 \begin{document}
 	
 \maketitle
+\newpage
+\tableofcontents
+\newpage
 
 \section{Introduction}
 
@@ -107,11 +110,11 @@ mathescape
 \section{GraphHopper}
 The following description of the GraphHopper kernel is based on the presentation in \cite{graphhopper}.
 
-GraphHopper is a graph kernel, i.e. a kernel for comparing graph data. Informally, the kernel is a sum of path kernel $k_p$ over each pair of shortest paths $\pi\in P,\ \pi'\in P'$ for graphs $G=(V,E),\ G'=(V',E')$. I.e.:
+GraphHopper is a graph kernel, i.e. a kernel for comparing graph data. The kernel is a sum of path kernel $k_p$ over each pair of shortest paths $\pi\in P,\ \pi'\in P'$ for graphs $G=(V,E),\ G'=(V',E')$. I.e.:
 \begin{equation}
 k_{graphhopper}(G,G')=\sum_{\pi\in P}\sum_{\pi'\in P'}k_p(\pi, \pi')
 \end{equation}
-The path kernel $k_p$ is a sum of some node kernel $k_n$ on each pair $v\in\pi,\ v'\in\pi'$ such that $v$ and $v'$ appears at the same place in $\pi$ and $\pi'$ and $\pi$ and $\pi'$ are of equal discrete length\footnote{Discrete length meaning that $\pi$ and $\pi'$ contains the same number of nodes.}. I.e.
+The path kernel $k_p$ is a sum of some node kernel $k_n$ on each pair $v\in\pi,\ v'\in\pi'$ such that $v$ and $v'$ appears at the same place in $\pi$ and $\pi'$ iff $\pi$ and $\pi'$ are of equal discrete length\footnote{Discrete length meaning that $\pi$ and $\pi'$ contains the same number of nodes.}. I.e.
 \begin{equation}
 k_p(\pi, \pi')=\begin{cases}
 \sum_{i=1}^{|\pi|}k_n(\pi(i), \pi'(i)) & \text{for }|\pi|=|\pi'|\\
@@ -161,11 +164,11 @@ Identifying shortest paths we get
 P&=\{[a], [a,b], [a,c], [b], [b,a], [b,a,c], [c], [c,a], [c,a,b]\}\\
 P'&=\{[d],[d,e],[e],[e,d]\}
 \end{align*}
-We can now compute $k_{graphhopper}$ by summing over all paths $\pi\in P$ and $\pi'\in P'$ such that $|\pi|=|\pi'|$. E.g. the pair $\pi=[a]\in P,\ \pi'=[d]\in P'$ are of equal length, so we add $k_n(a, d)$ to the sum. Identifying more pairs we find that $|\pi|=|\pi'|$ for $\pi=[a,b]\in P,\ \pi'=[d,e]\in P'$ so we add $k_n(a,d) + k_n(b, e)$.
+We can now compute $k_{graphhopper}$ by summing over all paths $\pi\in P$ and $\pi'\in P'$ such that $|\pi|=|\pi'|$. E.g. the pair $\pi=[a]\in P,\ \pi'=[d]\in P'$ are of equal discrete length so we add $k_n(a, d)$ to the sum. Identifying more pairs we find, for instance, that $|\pi|=|\pi'|$ for $\pi=[a,b]\in P,\ \pi'=[d,e]\in P'$ so we add $k_n(a,d) + k_n(b, e)$.
 
 Observe how we added $k_n(a,d)$ multiple times to the final sum. Naturally, the number of times $k_n(v, v')$ will be added (where $v\in V,\ v'\in V'$) will be exactly the number of pairs of paths $\pi\in P,\ \pi'\in P'$ such that $|\pi|=|\pi'|$ and $\pi(i)=v,\ \pi'(i)=v'$ for some $i$.
 
-Let $w(v, v')$ be the number of times we have to add $k_n(v, v')$ for some pair $v\in V,\ v'\in V'$ as described above. Instead of computing and adding $k_n(v, v')$ multiple ($w(v, v')$) times we may instead add $w(v,v') k_n(v, v')$. We call $w(v, v')$ the $\textit{weight}$ between the two nodes and redefine the kernel as a sum between pairs of nodes:
+Let $w(v, v')$ be the number of times we have to add $k_n(v, v')$ for some pair $v\in V,\ v'\in V'$ as described above. Instead of computing and adding $k_n(v, v')$ repeatedly we may instead add $w(v,v') k_n(v, v')$ once. We call $w(v, v')$ the $\textit{weight}$ between the two nodes and redefine the kernel as a sum between pairs of nodes:
 \begin{equation}
 k_{graphhopper}(G,G')=\sum_{v\in V}\sum_{v'\in V'}w(v,v')k_n(v,v')
 \end{equation}
@@ -198,9 +201,9 @@ allowing us to easily find the weight between pairs of nodes by first computing 
 \subsection{Computing M	}
 The M matrix can be computed in a number of ways. We will be using the message-passing algorithms presented in \cite{graphhopper}
 
-Let $\tilde{v}$ be a node in $V$ and let $P_{\tilde{v}}$ be the set of shortest paths in $G$ starting in $\tilde{v}$. Then, naturally, $M(v)_{ij}$ becomes $\sum_{\tilde{v}\in V}$ number of times $v$ appears as the $i$'th node in each $\pi_{\tilde{v}}\in P_{\tilde{v}}$ of discrete length $j$. This means that we can compute $M$ by iterating over each node $\tilde{v}\in V$ and finding all shortest paths starting in $\tilde{v}$.
+Let $\tilde{v}$ be a node in $V$ and let $P_{\tilde{v}}$ be the set of shortest paths in $G$ starting in $\tilde{v}$. Then $M(v)_{ij}$ becomes $\sum_{\tilde{v}\in V}$ number of times $v$ appears as the $i$'th node in each $\pi_{\tilde{v}}\in P_{\tilde{v}}$ of discrete length $j$. This means that we can compute $M$ by iterating over each node $\tilde{v}\in V$ and finding all shortest paths starting in $\tilde{v}$.
 
-Before we move on, we will first introduce the shortest path DAG $G_{\tilde{v}}$ for $\tilde{v}$. The shortest path DAG $G_{\tilde{v}}$ is created by removing all unneccesary edges from $G$ so that it only contains edges that are part of some shortest path starting in $\tilde{v}$. We call $\tilde{v}$ as the root node in the resulting DAG. This is illustrated in figure \ref{fig:shortest-path-dag} where we present a graph $G$ and the shortest path DAG $G_{\tilde{a}}$ rooted in $a$.
+Before we move on, we will first introduce the shortest path DAG $G_{\tilde{v}}$ for $\tilde{v}$. The shortest path DAG $G_{\tilde{v}}$ is created by removing a minimum amount of edges from $G$ so that it only contains edges that are part of some shortest path starting in $\tilde{v}$. We call $\tilde{v}$ the root node in the resulting DAG. This is illustrated in figure \ref{fig:shortest-path-dag} where we present a graph $G$ and the shortest path DAG $G_{a}$ rooted in $a$.
 
 \begin{figure}[H]
 	\begin{minipage}[t]{0.7\linewidth}
@@ -254,7 +257,7 @@ Let $\mathfrak{O}_{\tilde{v}}$ be a $n\times\delta$ matrix where $\mathfrak{O}_{
 \textbf{Example}\\
 Using the graph illustrated in figure \ref{fig:shortest-path-dag}, we find that there are two paths from $a$ to $c$ of discrete length 2 and 3 so $\mathfrak{O}_{a}(c,1)=0,\ \mathfrak{O}_{a}(c,2)=1,\ \mathfrak{O}_{a}(c,3)=1$.
 
-The rows of $\mathfrak{O}_{\tilde{v}}$, identified as $\mathfrak{o}_{\tilde{v}}^v$, are computed recursively using a message-passing algorithm starting at the root. Intuitively, there is always exactly one path from the root to itself in the shortest path DAG and this path is of discrete length 1 so $\mathfrak{o}_{\tilde{v}}^{\tilde{v}}=[1]$. From the current node, the algorithm passes a message to each of its reachable neighbours containing its own row shifted one place to the right and adds the contents to the child's row. The algorithm then repeats on the next level of nodes. This is illustrated in figure \ref{fig:compute_o}.
+The rows of $\mathfrak{O}_{\tilde{v}}$, denoted by $\mathfrak{o}_{\tilde{v}}^v$, are computed recursively using a message-passing algorithm starting at the root. Intuitively, there is always exactly one path from the root to itself in the shortest path DAG and this path is of discrete length 1 so $\mathfrak{o}_{\tilde{v}}^{\tilde{v}}=[1]$. From the current node, the algorithm passes a message to each of its reachable neighbours (children) containing its own row shifted one place to the right and adds the contents to the child's row. The algorithm then repeats on the next level of nodes. This is illustrated in figure \ref{fig:compute_o}.
 
 
 \begin{figure}[H]
@@ -276,7 +279,7 @@ $\mathfrak{o}_{\tilde{v}}^{\tilde{v}}=[1]$
 $\mathfrak{o}_{\tilde{v}}^v=[0], for\ v\in V \ {\tilde{v}}$
 for j=1..$\delta$
    for $v\in V_{\tilde{V}}^j$
-      for $(v,w)\in E_{\tilde{v}}$
+      for w in v.children
          $\mathfrak{o}_{\tilde{v}}^w=\mathfrak{o}_{\tilde{v}}^w\oplus[0,\mathfrak{o}_{\tilde{v}}^v]$
       end
    end
@@ -300,17 +303,15 @@ The algorithm for computing $\mathfrak{D}_{\tilde{v}}$ will, like in the case of
 	\label{fig:compute_d}
 \end{figure}
 
-
-Let $v.children$ be the children of $v$ in $G_{\tilde{v}}$. A recursive algorithm for computing $\mathfrak{D}_{\tilde{v}}$ can then be written out as in figure \ref{algorithm:d}.
+A recursive algorithm for computing $\mathfrak{D}_{\tilde{v}}$ can then be written out as in figure \ref{algorithm:d}.
 
 \begin{figure}[H]
 	\begin{lstlisting}
-	
 	function compute_d_rec(v)
-	for w in v.children
-	$\mathfrak{d}_{\tilde{v}}^v = \mathfrak{d}_{\tilde{v}}^v \oplus $[0,compute_d_rec(w)]
-	end
-	return $\mathfrak{d}_{\tilde{v}}^v$
+		for w in v.children
+			$\mathfrak{d}_{\tilde{v}}^v = \mathfrak{d}_{\tilde{v}}^v \oplus $[0,compute_d_rec(w)]
+		end
+		return $\mathfrak{d}_{\tilde{v}}^v$
 	end
 	
 	initialize: $\mathfrak{d}_{\tilde{v}}^v=[1],\ \forall v\in V$
@@ -325,7 +326,8 @@ Let $v.children$ be the children of $v$ in $G_{\tilde{v}}$. A recursive algorith
 Having computed $\mathfrak{O}_{\tilde{v}}$ and $\mathfrak{D}_{\tilde{v}}$ we now observe that the number of times that $v$ appears as the $i$'th node in a path of discrete length $j$ in $G_{\tilde{v}}$ must be the number of paths from $\tilde{v}$ to $v$ in $G_{\tilde{v}}$ of length $i$ times the number of paths of length $j-i+1$ in $G_{\tilde{v}}$ starting in $v$; i.e. $\mathfrak{O}_{\tilde{v}}^v(v,i)\mathfrak{D}_{\tilde{v}}(v,j - i + 1)$.
 
 \textbf{Example}\\
-Consider the node $d$ in figure \ref{fig:shortest-path-dag}. Trying to find the number of paths in $G_{a}$ such that $d$ is the 2nd node in a path of length 3 we can intuitively see that there is one such path: $[a,d,c]$. This could be computed using the $\mathfrak{o}_a^d$ and $\mathfrak{d}_a^d$ computed earlier in figures \ref{fig:compute_o} and \ref{fig:compute_d}:
+Consider the node $d$ in figure \ref{fig:shortest-path-dag}. Trying to find the number of paths in $G_{a}$ such that $d$ is the 2nd node in a path of length 3 we can intuitively see that there is one such path: $[a,d,c]$. This equivalent to the number of paths of length 2 from $a$ to $d$ times the number of paths of length $3-2+1=2$ starting in $d$.
+This could be computed using the $\mathfrak{o}_a^d$ and $\mathfrak{d}_a^d$ computed earlier in figures \ref{fig:compute_o} and \ref{fig:compute_d}:
 \begin{align}
 \mathfrak{o}_a^d(2)\mathfrak{d}_a^d(3-2+1)&=\mathfrak{o}_a^d(2)\mathfrak{d}_a^d(2)\\
 &=1 * 1\\
@@ -338,7 +340,91 @@ Being able to efficiently count the number of times $v$ appears as the $i$'th no
 M(v)_{ij} = \sum_{\tilde{v}\in V}\mathfrak{o}_{\tilde{v}}^v(i)\mathfrak{d}_{\tilde{v}}^v(j-i+1)
 \end{equation}
 
-\subsection{Implementation (Pseudo kode)}
+\subsection{Implementation}
+In this section we present the algorithm used in our implementation of GraphHopper described using pseudo-code. Based on the theory explained earlier we are able to effectively split the computation into two steps:
+\begin{enumerate}
+	\item Compute M for all graphs.
+	\item Compute K using all pairs of M.
+\end{enumerate}
+The code presented here will not be a 1:1 match with the actual implementation but rather an introduction to the algorithm. We will exclude unneeded details including optimizations that are not required to understand the implementation.
+
+\subsubsection{Computing M}
+
+\begin{lstlisting}
+#Computes the M matrix for a graph
+function computeM($graph$){
+   for $\tilde{v}\in graph.V$
+      prepareNode($\tilde{v}$)
+   end
+   
+   #Let M be an $|V|\times\delta\times\delta$ array of zeros
+   $graph.M$ = array$[|graph.V|][graph.\delta][graph.\delta]$
+   #Now sum the data of $\mathfrak{D}$ and $\mathfrak{O}$
+   for $v\in graph.V$
+      for $\tilde{v}\in graph.V$
+         for $j\in 1..graph.\delta$
+            for $i\in 1..j$
+               $M[v][i][j] += \mathfrak{o}_{\tilde{v}}^v(i)\mathfrak{d}_{\tilde{v}}^v(j-i+1)$
+            end
+         end
+      end
+   end
+}
+
+#Computes $\mathfrak{O}_{\tilde{v}}$ and $\mathfrak{D}_{\tilde{v}}$
+#Starts by creating $G_{\tilde{v}}$ using Dijkstra 
+#before computing the matrices.
+function prepareNode($graph$, $\tilde{v}$)
+   #Prepare data for Dijkstra
+   $queue = []$
+   for $v\in graph.V$
+      $v.d = \infty$
+      $v.parents = []$
+      $v.children = []$
+      $queue.append(v)$
+   end
+   $\tilde{v}.d = 0$
+   #$queue$ is a min heap allowing us to pop
+   #the node with lowest d
+   $queue.make\_min\_heap()$
+   $\delta = 0$
+   while not $queue.empty()$
+      $u = queue.front()$
+      $queue.pop()$
+      
+      $d = u.d + 1$
+      for $v \in u.adjacent$
+         if $v.d \geq d$
+            if $v.d > d$
+               $v.parents = []$
+            end
+            $v.parents.append(u)$
+            $v.d = d$
+            $\delta=max(\delta, d)$
+         end
+      end
+      $queue.make\_min\_heap()$
+   end
+   #Set the graph's width to be the maximum width
+   #found computing Dijkstra for any $\tilde{v}$
+   $graph.\delta = max(graph.\delta, \delta)$
+   
+   #Putting nodes in buckets grouped and ordered
+   #by shortest distance to $\tilde{v}$
+   $\tilde{v}.ordered = $group_nodes($graph.V$)
+   
+   #Use $parents$ data to define $children$ in nodes
+   prepare_children($graph.V$)
+   
+   #Refer to algorithms in last theory section
+   computeO($\tilde{v},\ \delta$)
+   computeD($\tilde{v}$)
+end
+
+
+\end{lstlisting}
+
+
 \subsection{Gaps}
 \subsubsection{Implementation (Pseudo kode)}
 
