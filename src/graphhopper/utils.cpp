@@ -79,7 +79,7 @@ vector<Graph*> loadData(const char *file, LabelType labelType){
   return graphs;
 }
 
-void writeKToFile(int **K, int size){
+void writeKToFile(double **K, int size){
   ofstream outputFile;
   outputFile.open("output/K.dat");
   for(int i=0; i<size; i++){

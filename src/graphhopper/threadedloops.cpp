@@ -26,18 +26,17 @@ void ThreadedLoops::computeInterval(double **K, vector<Graph*> *pGraphs,
         int width = min(gi->width, gj->width);
         for(int vi=0; vi<gi->V.size(); vi++){
           for(int vj=0; vj<gj->V.size(); vj++){
-            //  cout << "Calc " << vi << ", " << vj << "\n";
             Node *va = gi->V[vi];
             Node *vb = gj->V[vj];
 
             double likeness = kernel->compute(va, vb);
             if(likeness == 0) continue;
-            int weight = 0;
+            double weight = 0;
             for(int j=0; j<width; j++){
               for(int i=0; i<=j; i++){
-                int a = gi->M[vi][i][j];
+                double a = gi->M[vi][i][j];
                 if(a==0) continue;
-                int b = gj->M[vj][i][j];
+                double b = gj->M[vj][i][j];
                 weight += a * b;
               }
             }
