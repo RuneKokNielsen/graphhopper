@@ -147,17 +147,17 @@ void Graph::prepareNode(Node *src, int gaps){
       }
     }
     */
-    int s = gaps; //Temp -> Needs to be made as a param!
+    //int s = gaps; //Temp -> Needs to be made as a param!
     for(int i=0; i<V.size(); i++){
       Node *v = V[i];
-      v -> tmp_grandChildren = v -> tmp_children;
-      vector<Node*> tmpNodes;
-      for(int k = 0; k < s; k++) {
-        tmpNodes = v -> tmp_grandChildren;
-	v -> tmp_grandChildren.clear();
-        for(int j=0; j<tmpNodes.size(); j++){
-	  for(int l = 0; l < tmpNodes[j] -> tmp_children.size(); l++) {
-            v -> tmp_grandChildren.push_back(tmpNodes[j] -> tmp_children[l]);
+      //v -> tmp_grandChildren = v -> tmp_children;
+      //vector<Node*> tmpNodes;
+      for(int k = 0; k < gaps; k++) {
+        //tmpNodes = v -> tmp_grandChildren;
+	//v -> tmp_grandChildren.clear();
+        for(int j=0; j< v -> tmp_children.size(); j++){
+	  for(int l = 0; l < v -> tmp_children[j] -> tmp_children.size(); l++) {
+            v -> tmp_grandChildren.push_back(v -> tmp_children[j] -> tmp_children[l]);
 	  }
 	}
       }
