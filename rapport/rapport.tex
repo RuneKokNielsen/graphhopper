@@ -111,12 +111,16 @@ mathescape
 \section{GraphHopper}
 The following description of the GraphHopper kernel is based on the presentation in \cite{graphhopper}.
 
-GraphHopper is a graph kernel, i.e. a kernel for comparing graph data. The kernel is a sum of path kernel $k_p$ over each pair of shortest paths $\pi\in P,\ \pi'\in P'$ for graphs $G=(V,E),\ G'=(V',E')$. I.e.:
+GraphHopper is a graph kernel, i.e. a kernel for comparing graph data. The kernel effectively analyses the structure of the graphs by comparing subtrees similarly to the \textit{shortest path kernel}\footnote{We introduce the shortest path kernel in our earlier work \cite{svm-graph-kernels}.} (SPK). An advantage of these kernels is that they may analyse not only the structure of the graphs but also the attributes of their nodes.
+While SPK compares all shortest paths with a complexity of $\mathcal{O}(n^4)$, where $n$ is the number of nodes, GraphHopper only compares shortest paths of equal length with complexity $\mathcal{O}(n^2(m+\log n+\delta^2 + d))$ where $m$ is the number of edges, $\delta$ is the diameter of the graph and $d$ is the dimension of the node attributes. The complexity will be explained along with the algorithm itself.
+
+Let $G=(V,E)$ and $G'=(V',E')$ be graphs such that $V,V'$ are nodes and $E,E'$ are edges and let $P,P'$ be the sets of all shortest paths in $G$ and $G'$ respectively. The kernel is then a sum of path kernel $k_p$ over each pair of shortest paths $\pi\in P,\ \pi'\in P'$:
+
 \begin{equation}
 \label{eq:k}
 k_{graphhopper}(G,G')=\sum_{\pi\in P}\sum_{\pi'\in P'}k_p(\pi, \pi')
 \end{equation}
-The path kernel $k_p$ is a sum of some node kernel $k_n$ on each pair $v\in\pi,\ v'\in\pi'$ such that $v$ and $v'$ appears at the same place in $\pi$ and $\pi'$ iff $\pi$ and $\pi'$ are of equal discrete length\footnote{Discrete length meaning that $\pi$ and $\pi'$ contains the same number of nodes.}. I.e.
+The path kernel $k_p$ is a sum of some node kernel $k_n$ on each pair of nodes $v\in\pi,\ v'\in\pi'$ such that $v$ and $v'$ appears at the same place in $\pi$ and $\pi'$ for pairs $\pi$ and $\pi'$ of equal discrete length\footnote{Discrete length meaning that $\pi$ and $\pi'$ contains the same number of nodes.}. I.e.
 \begin{equation}
 \label{eq:k_p}
 k_p(\pi, \pi')=\begin{cases}
@@ -187,14 +191,16 @@ k_{graphhopper}(G,G')=\sum_{v\in V}\sum_{v'\in V'}w(v,v')k_n(v,v')
 \end{equation}
 
 
-When calculating $w(v,v')$ we sum the number of pairs $\pi,\pi'$ such that $|\pi|=|\pi'|$ and $\pi(i)=\pi'(i)$ for some $i$. Let $width(G)$ be the discrete length of the longest shortest path $\pi\in P$ and let $\delta=min(width(G), width(G'))$. Since we only consider pairs of paths of same length we do not have to consider any paths of length greater than $\delta$.
+When calculating $w(v,v')$ we sum the number of pairs $\pi,\pi'$ such that $|\pi|=|\pi'|$ and $\pi(i)=\pi'(i)$ for some $i$. Let $width(G)$ be the discrete length of the longest shortest path $\pi\in P$ and let $\delta=min(width(G), width(G'))$. Since we only consider pairs of paths of same length and the longest shortest path we do not have to consider any paths of length greater than $\delta$.
 
-\begin{proof}[Proof of]
+\iffalse
+\begin{proof}[Proof: We may ignore paths of length greather than $\delta$]\\
 Consider any two graphs $G,\ G'$ such that $width(G)=\delta$. Then we either have $\delta=width(G')$ or $\delta<width(G')$.\\
 Let $width(G)=\delta=width(G')$ and let $\pi'\in P'$ such that $|\pi'|>\delta$. Since $G'$ is at least as wide as any shortest paths within it we have $width(G')\geq |\pi'|>\delta = width(G')$ which is an absurdity.\\
 Let $width(G)=\delta < width(G')$ and let $\pi'\in P'$ such that $|\pi'|>\delta$. Now assume that there exists some $\pi\in P$ such that $|\pi|=|\pi'|$. We now see that $width(G)\geq |\pi| = |\pi'|>\delta=width(G)$ which is an absurdity.\\
-We have now proven that there can not exist any pairs of paths $\pi,\ \pi'$ such that $|\pi|=|\pi'|>\delta$.
+We have now proven that there can not exist any pairs of paths $\pi\in P,\ \pi'\in P'$ such that $|\pi|=|\pi'|>\delta$.
 \end{proof}
+\fi
 
 Beside from this limitation it is trivial that for a pair of paths $\pi,\ \pi'$ such that $|\pi|=|\pi'|=j$ we only have to consider nodes at index $i=1..j$ since there cannot exist any nodes at index $i>j$.
 
@@ -217,7 +223,7 @@ The $M$ matrix can be computed in a number of ways. We will be using the message
 
 Let $\tilde{v}$ be a node in $V$ and let $P_{\tilde{v}}$ be the set of shortest paths in $G$ starting in $\tilde{v}$. Then $M(v)_{ij}$ becomes $\sum_{\tilde{v}\in V}$ number of times $v$ appears as the $i$'th node in each $\pi_{\tilde{v}}\in P_{\tilde{v}}$ of discrete length $j$. This means that we can compute $M$ by iterating over each node $\tilde{v}\in V$ and finding all shortest paths starting in $\tilde{v}$.
 
-Before we move on, we will first introduce the shortest path DAG $G_{\tilde{v}}$ for $\tilde{v}$. The shortest path DAG $G_{\tilde{v}}$ is created by removing a minimum amount of edges from $G$ so that it only contains edges that are part of some shortest path starting in $\tilde{v}$. We call $\tilde{v}$ the root node in the resulting DAG. This is illustrated in figure \ref{fig:shortest-path-dag} where we present a graph $G$ and the shortest path DAG $G_{a}$ rooted in $a$.
+Before we move on, we will first introduce the shortest path DAG $G_{\tilde{v}}=(V, E_{\tilde{v}})$ for $\tilde{v}$ where $E_{\tilde{v}}$ are edges kept in $G_{\tilde{v}}$. The shortest path DAG $G_{\tilde{v}}$ is created by removing a minimum amount of edges from $G$ so that it only contains edges that are part of some shortest path starting in $\tilde{v}$. We call $\tilde{v}$ the root node in the resulting DAG. This is illustrated in figure \ref{fig:shortest-path-dag} where we present a graph $G$ and the shortest path DAG $G_{a}$ rooted in $a$.
 
 \begin{figure}[H]
 	\begin{minipage}[t]{0.7\linewidth}
@@ -291,9 +297,9 @@ Now, let $V_{\tilde{v}}^j$ be the nodes in $G_{\tilde{v}}$ such that there exist
 \begin{lstlisting}
 $\mathfrak{o}_{\tilde{v}}^{\tilde{v}}=[1]$
 $\mathfrak{o}_{\tilde{v}}^v=[0], for\ v\in V \ {\tilde{v}}$
-for j=1..$\delta$
+for $j=1..\delta$
    for $v\in V_{\tilde{V}}^j$
-      for w in v.children
+      for $w$ in $v$.children
          $\mathfrak{o}_{\tilde{v}}^w=\mathfrak{o}_{\tilde{v}}^w\oplus[0,\mathfrak{o}_{\tilde{v}}^v]$
       end
    end
@@ -302,6 +308,8 @@ end
 \caption{Algorithm for computing $\mathfrak{O}_{\tilde{v}}$}
 \label{algorithm:o}
 \end{figure}
+
+When computing $\mathfrak{O}_{\tilde{v}}$ each node sends exactly one message of size $\leq \delta$ to all of its children which are then updated. I.e. $|E_{\tilde{v}}|$ messages of size $\leq \delta$ giving a complexity of $\mathcal{O}(|E_{\tilde{v}}|\delta) \leq \mathcal{O}(|E|\delta)$.
 
 \subsubsection{Computing $\mathfrak{D}_{\tilde{v}}$}
 
@@ -320,21 +328,27 @@ The algorithm for computing $\mathfrak{D}_{\tilde{v}}$ will, like in the case of
 A recursive algorithm for computing $\mathfrak{D}_{\tilde{v}}$ can then be written out as in figure \ref{algorithm:d}.
 
 \begin{figure}[H]
-	\begin{lstlisting}
-	function compute_d_rec(v)
-		for w in v.children
-			$\mathfrak{d}_{\tilde{v}}^v = \mathfrak{d}_{\tilde{v}}^v \oplus $[0,compute_d_rec(w)]
-		end
-		return $\mathfrak{d}_{\tilde{v}}^v$
-	end
+\begin{lstlisting}
+function compute_d_rec(v)
+   if not $\mathfrak{d}_{\tilde{v}}^v$.is_computed
+      for $w$ in $v$.children
+         $\mathfrak{d}_{\tilde{v}}^v = \mathfrak{d}_{\tilde{v}}^v \oplus $[0,compute_d_rec(w)]
+      end
+      $\mathfrak{d}_{\tilde{v}}^v$.is_computed = true
+   end
+   return $\mathfrak{d}_{\tilde{v}}^v$
+end
 	
-	initialize: $\mathfrak{d}_{\tilde{v}}^v=[1],\ \forall v\in V$
-	compute_d_rec($\tilde{v}$)
+initialize: $\mathfrak{d}_{\tilde{v}}^v=[1],\ \forall v\in V$
+compute_d_rec($\tilde{v}$)
 	
-	\end{lstlisting}
+\end{lstlisting}
 	\caption{Algorithm for computing $\mathfrak{D}_{\tilde{v}}$}
 	\label{algorithm:d}
 \end{figure}
+
+When computing $\mathfrak{D}_{\tilde{v}}$ with the algorithm detailed in figure \ref{algorithm:d} a node visits each of its children in $G_{\tilde{v}}$ exactly once when computing its row and in this process their rows are computed recursively. Effectively, each edge $e\in E_{\tilde{v}}$ will be traversed once and each time a message will be returned of size $\leq \delta$ which updates the calling node. This gives a complexity of $\mathcal{O}(|E_{\tilde{v}}|\delta)\leq(|E|\delta)$
+
 
 \subsubsection{Putting things together}
 Having computed $\mathfrak{O}_{\tilde{v}}$ and $\mathfrak{D}_{\tilde{v}}$ we now observe that the number of times that $v$ appears as the $i$'th node in a path of discrete length $j$ in $G_{\tilde{v}}$ must be the number of paths from $\tilde{v}$ to $v$ in $G_{\tilde{v}}$ of length $i$ times the number of paths of length $j-i+1$ in $G_{\tilde{v}}$ starting in $v$; i.e. $\mathfrak{O}_{\tilde{v}}^v(v,i)\mathfrak{D}_{\tilde{v}}(v,j - i + 1)$.
@@ -353,6 +367,41 @@ Being able to efficiently count the number of times $v$ appears as the $i$'th no
 \begin{equation}
 M(v)_{ij} = \sum_{\tilde{v}\in V}\mathfrak{o}_{\tilde{v}}^v(i)\mathfrak{d}_{\tilde{v}}^v(j-i+1)
 \end{equation}
+
+Computing $M$ may be achieved using the algorithm shown in figure \ref{alg:compute_M}. First we compute $G_{\tilde{v}},\mathfrak{O}_{\tilde{v}},\mathfrak{D}_{\tilde{v}}$ for all $\tilde{v}\in V$. Using a Dijkstra implementation with complexity $\mathcal{O}(m\log n)$\footnote{Using a binary-heap implementation as described in \cite{alg-bible} and assuming that all nodes are reachable.} to compute $G_{\tilde{v}}$ this gives a complexity of $\mathcal{O}(n((m\log n) + m\delta + m\delta)) = \mathcal{O}(n((m\log n + m\delta))$. We then iterate over each pair of $v,\tilde{v}$ and $j=1..\delta,i=1..j$ giving a complexity of $\mathcal{O}(n^2\delta^2)$. Adding this together we get a total complexity of
+\begin{align}
+\mathcal{O}(n(m\log n + m\delta) + n^2\delta^2)&=\mathcal{O}(n(m\log n + m\delta + n\delta^2))\\
+\end{align}
+
+\begin{figure}[H]
+\begin{lstlisting}
+for $\tilde{v}\in V$
+   compute $G_{\tilde{v}}$ using Dijkstra
+   compute $\mathfrak{O}_{\tilde{v}}$
+   compute $\mathfrak{D}_{\tilde{v}}$
+end
+let $M$ be a $n\times \delta \times \delta$ matrix of zeros
+for $v \in V$
+   for $\tilde{v}\in V$ 
+      for $j\in 1..\delta$
+         for $i\in 1..j$
+            $M(v)_{ij}+=\mathfrak{o}_{\tilde{v}}^v(i)\mathfrak{d}_{\tilde{v}}^v(j-i+1)$
+         end
+      end
+   end
+end
+\end{lstlisting}
+\caption{Algorithm for computing M.}
+\label{alg:compute_M}
+\end{figure}
+
+\subsection{Computational analysis}
+To compute $k_{graphopper}$ we sum over each pair of nodes which, given precomputed $w(v,v')$ and $k_n(v,v')$, gives a complexity of $\mathcal{O}(n^2)$. Assuming that the complexity of computing $k_n(v,v')$ grows linearly relative to the dimension $d$ of the node attributes the complexity of computing all $k_n(v,v')$ has a complexity of $\mathcal{O}(n^2d)$. Computing $w(v,v')$ consists of summing for $j\leq \delta,i\leq j$ giving $\mathcal{O}(\delta^2)$ and doing this for each pair gives a complexity of $\mathcal{O}(n^2\delta^2)$. Together this gives a complexity of $\mathcal{O}(n^2(d + \delta^2))$. Before doing these computations, however, we must compute the $M$ matrices as described earlier adding up to a total runtime of
+\begin{align}
+&\mathcal{O}(n^2(d + \delta^2) + n(m\log n + m\delta + n\delta^2))\\
+=\ &\mathcal{O}(n^2(d+\delta^2)+nm(\log n + \delta))
+\end{align}
+
 
 \subsection{Implementation}
 In this section we present the algorithm used in our implementation of GraphHopper described using pseudo-code. Based on the theory explained earlier we are able to effectively split the computation into two steps:
@@ -534,6 +583,8 @@ k_{bridge}(x, x') = \text{max}(0, c - |(||x - x'||)|)
 k_{diractimesgaussian}(x, x') = k_{dirac}(x, x') k_{gaussian}(x, x')
 \end{equation}
 
+\section{Product}
+
 \section{Experiments}
 \subsection{Runtime experiments (C++ vs MATLAB)}
 \subsubsection{Results}
@@ -567,7 +618,8 @@ Runtime in seconds for calculating $K$ (without gaps).
 			\hline
 			Mutag & Dirac & 31.6 & \textbf{0.731} & A & 1:43.23\\
 			Enzymes & Dirac & 722.99 & \textbf{16.9} & A & 1:42.78\\
-			Airways subsampled & Gaussian & 5518.01 & \textbf{3305.11} & A & 1:1.67
+			Enzymes (Symmetrized) & Gaussian & 256.14 & \textbf{26.55} & A & 1:9.65 \\ 
+			Airways subsampled & Gaussian & 5518.01 & \textbf{2608.45} & A & 1:2.12
 			
 		\end{tabular}
 	}
@@ -653,6 +705,18 @@ w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}\left(\sum_{\tilde{v}\in V}(\mathfrak{d
 		Karsten M. Borgwardt, Hans-Peter Kriegel.
 		\emph{Shortest-path kernels on graphs}.
 		In Proceedings of the International Conference on Data Mining, pages 74-81, 2005.
+		
+		\bibitem{svm-graph-kernels}
+		Rune Kok Nielsen, Andreas Holm.
+		\emph{Afløsningsopgave i fagområdet Modellering og Analyse af Data}.
+		University of Copenhagen, 2016\\
+		https://drive.google.com/file/d/0BxPtSV8mme0xWGV0ZlpKRlFUU0U/view
+		
+		\bibitem{alg-bible}
+		Thomas H. Cormen, Charles E. Lesierson, Ronald L. Rivest, Clifford Stein.
+		\emph{Introduction to Algorithms 3rd ed.}.
+		MIT Press, 2009.
+		
 \end{thebibliography}
 
 
