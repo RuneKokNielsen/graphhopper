@@ -441,7 +441,7 @@ end
 \subsection{Gaps}
 The following section is based on the description of GraphHopper with gaps from \cite{gappy}
 
-We use gaps to minimize errors that occur when translating pictures to graphs, the meaning of gaps is that we insert an edge that skips one or more nodes. In figure \ref{fig:simple_gaps} we take a simple graph and add gaps with size $1$.
+Some of the graphs we are using are extracted from images, and because they are extracted from images they can contains errors, in form of missing edges, this can occur because the process of extracting graphs from images is not perfect. To minimize the impact of these error we can choose to apply gaps in our paths, this will minimize the impact of the errors mentioned earlier, because the new paths will close some of the gaps, where there might be missing edges. In figure \ref{fig:simple_gaps} is it shown how we can apply these new paths to a simple graph.
 
 \begin{figure}[H]
 	\begin{minipage}[t]{0.7\linewidth}
@@ -459,7 +459,6 @@ We use gaps to minimize errors that occur when translating pictures to graphs, t
 		(a) edge [bend left] node {2}(b)
 		(b) edge node {3}(c)
 		(c) edge [bend left] node {1}(d)
-		(a) edge [bend left] node {3}(c)
 		;
 		\end{tikzpicture}
 	\end{minipage}
@@ -479,22 +478,25 @@ We use gaps to minimize errors that occur when translating pictures to graphs, t
 		(b) edge node {3}(c)
 		(c) edge [bend left] node {1}(d)
 		(a) edge [bend left] node {3}(c)
-		(a) edge node {4}(d)
 		(b) edge [bend right] node {4}(d)
 		;
 		\end{tikzpicture}
 	\end{minipage}
-	\caption{\textit{Left: Without gaps. Right: With gaps.}}
+	\caption{\textit{Left: Without gaps. Right: With gaps of size 1.}}
 	\label{fig:simple_gaps}
 \end{figure}
+In figure \ref{fig:simple_gaps} we apply new paths with a gap size of $1$, in figure X we show how we can increase the gap size, and insert paths that skip up to $s$ amount of nodes.
 
+
+When we apply gaps to our graphs, we do not need to change our graph kernel in anyway, we can simply use our already established $k_{graphhopper}$ graph kernel.
 
 
 \subsubsection{Implementation (Pseudo kode)}
 
 \section{Node kernels}
 \subsection{Dirac}
-Dirac in GraphHopper simply compare the 2 given nodes, to see if they are equal to each other, and if they are equal we return $1$, and if they are not equal we return $0$. This node kernels can only be used when we compare graphs with discrete nodes. The node kernel can be seen formally described in (\ref{eq:dirac}).
+Dirac in GraphHopper simply compare the 2 given nodes, to see if they are equal to each other, and if they are equal we return $1$, and if they are not equal we return $0$. This kernel is primarily used when we compare graphs that contain discrete node labels, and the node labels are discrete and does not represent a continuous value. 
+This node kernels can only be used when we compare graphs with discrete node labels. The node kernel can be seen formally described in (\ref{eq:dirac}), where $x$ and $x'$ are the given node labels.
 \begin{equation}
 \label{eq:dirac}
 k_{dirac}(x, x')=\begin{cases}
@@ -504,11 +506,13 @@ k_{dirac}(x, x')=\begin{cases}
 \end{equation}
 
 \subsection{Linear}
-The linear node kernel is very simple, and is almost the same as calculating the dot product of two vectors, but when calculating the dot product you have two vectors with the same length, and in our case the vectors can be uneven in the length. To overcome the problem of looking for numbers in a vector that does not exist, we find the vector with the minimum length, and takes the sum of the vectors until we reach the minimum length, we do not care for the extra numbers in the vector that is larger than the other, because they would just be multiplied with $0$. The linear kernel is formally expressed in (\ref{eq:linear}).
+The linear node kernel is the dot product of $x$ and $x'$, it can be seen formally described in (\ref{eq:linear}).
 \begin{equation}
 \label{eq:linear}
-k_{linear}(x, x') = \sum_{i = 1}^{\text{min}(|x|, |x'|)}{x(i) x'(i)}
+k_{linear}(x, x') = x(i) \cdot x'(i)
 \end{equation}
+
+In figure X it is show how our linear kernel behave when comparing discrete node values.
 
 \subsection{Gaussian}
 For our gaussian kernel we are using a simplified version of (\ref{eq:gaussian}), this will save  us time when we are calculating \textit{K}, our simplified version can be seen in (\ref{eq:gaussian_simple}) where $\mu = \frac{1}{2 \sigma^2}$, these two formulas will yield the same result, but when we use (\ref{eq:gaussian_simple}) we save time by eliminating some operations, because we are doing them beforehand, and this speeds up the process of calculating $K$.
@@ -520,6 +524,9 @@ k_{gaussian}(x, x') = exp(-\frac{||x - x'||^2}{2\sigma^2})
 \label{eq:gaussian_simple}
 k_{gaussian}(x, x') = exp(-\mu ||x - x'||^2)
 \end{equation}
+We are using our gaussian kernel when we are comparing graphs where the node label either consist of a vector or discrete values which represent a continuous value.
+
+To show how the gaussian kernel behave when comparing discrete node values, we have drawn a graph, which can be seen in figure X, it is easy to see that the graph is growing exponentially the less the difference between $x$ and $y$ is.
 
 \subsection{Bridge}
 Our bridge kernel is based on \cite{shortest-path} bridge formula, but because we are working with vectors, we subtract the vectors and then normalize them, instead of just subtracting them. The bridge formula can be seen in (\ref{eq:bridge}).
@@ -527,6 +534,8 @@ Our bridge kernel is based on \cite{shortest-path} bridge formula, but because w
 \label{eq:bridge}
 k_{bridge}(x, x') = \text{max}(0, c - |(||x - x'||)|)
 \end{equation}
+
+The bridge's behaviour can be compared to the gaussian's behaviour, but instead of growing exponentially it grows linearly, and declines linearly. 
 
 \subsection{Dirac times Gaussian}
 \begin{equation}
