@@ -126,38 +126,46 @@ void Graph::prepareNode(Node *src, int gaps){
     src->tmp_ordered[v->tmp_d].push_back(v);
     for(int j=0; j<v->tmp_parents.size(); j++){
       v->tmp_parents[j]->tmp_children.push_back(v);
+      /*
       if(gaps){
         //Add grand parents
+	     
         for(int k=0; k<v->tmp_parents[j]->tmp_parents.size(); k++){
           v->tmp_grandParents.push_back(v->tmp_parents[j]->tmp_parents[k]);
         }
+      }
+      */
+    }
+    if(gaps > 0) {
+      vector<Node*> tmpNodes;
+      vector<Node*> tmptmpNodes;
+      tmptmpNodes = v -> tmp_parents;
+      for (int p = 0; p < gaps; p++) {
+        tmpNodes = tmptmpNodes;
+	tmptmpNodes.clear();
+	for(int q = 0; q < tmpNodes.size(); q++) {
+          for(int r = 0; r < tmpNodes[q] -> tmp_parents.size(); r++) {
+            v -> tmp_grandParents.push_back(tmpNodes[q] -> tmp_parents[r]);
+	    tmptmpNodes.push_back(tmpNodes[q] -> tmp_parents[r]);
+	  }
+	}
       }
     }
   }
 
   if(gaps > 0){
-    //Add grand children
-    /*
     for(int i=0; i<V.size(); i++){
       Node *v = V[i];
-      for(int j=0; j<v->tmp_children.size(); j++){
-        for(int k=0; k<v->tmp_children[j]->tmp_children.size(); k++){
-          v->tmp_grandChildren.push_back(v->tmp_children[j]->tmp_children[k]);
-        }
-      }
-    }
-    */
-    //int s = gaps; //Temp -> Needs to be made as a param!
-    for(int i=0; i<V.size(); i++){
-      Node *v = V[i];
-      //v -> tmp_grandChildren = v -> tmp_children;
-      //vector<Node*> tmpNodes;
+      vector<Node*> tmpNodes;
+      vector<Node*> tmptmpNodes;
+      tmptmpNodes = v -> tmp_children;
       for(int k = 0; k < gaps; k++) {
-        //tmpNodes = v -> tmp_grandChildren;
-	//v -> tmp_grandChildren.clear();
-        for(int j=0; j< v -> tmp_children.size(); j++){
-	  for(int l = 0; l < v -> tmp_children[j] -> tmp_children.size(); l++) {
-            v -> tmp_grandChildren.push_back(v -> tmp_children[j] -> tmp_children[l]);
+        tmpNodes = tmptmpNodes;
+	tmptmpNodes.clear();
+        for(int j=0; j< tmpNodes.size(); j++){
+	  for(int l = 0; l < tmpNodes[j] -> tmp_children.size(); l++) {
+            v -> tmp_grandChildren.push_back(tmpNodes[j] -> tmp_children[l]);
+	    tmptmpNodes.push_back(tmpNodes[j] -> tmp_children[l]);
 	  }
 	}
       }
