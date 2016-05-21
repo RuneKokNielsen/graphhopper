@@ -164,7 +164,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     tStart = steady_clock::now();
     computeM(graphs, 0, graphs.size()-1, mxGetScalar(prhs[4]));
-
+    
     mexPrintf("M matrices computed in: %f ms\n", msPassed(tStart));
     mexPrintf("Allocate K (%dX%d)..\n", nGraphs, nGraphs);
     mexFlush();
@@ -181,7 +181,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     tStart = steady_clock::now();
     comp->computeK(K, &graphs, kernel);
-
+    for(int i = 0; i < nGraphs; i++) {
+      delete graphs[i];
+    }
+    graphs.clear();
+    
+    
     mexPrintf("K computed in: %f ms\n", msPassed(tStart));
     mexPrintf("Total time used: %f ms\n", msPassed(tStartTotal));
     mexFlush();

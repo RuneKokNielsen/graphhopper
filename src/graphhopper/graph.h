@@ -12,6 +12,7 @@ class Graph{
  public:
 
   Graph(int n);
+  ~Graph();
 
   vector<Node*> V;
 

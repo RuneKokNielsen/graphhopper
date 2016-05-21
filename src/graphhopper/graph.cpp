@@ -11,6 +11,16 @@ Graph::Graph(int n){
   }
 }
 
+Graph::~Graph() {
+  V.clear();
+  for(int i = 0; i < (sizeof(M)/sizeof(*M)); i++) {
+    for(int j = 0; j < (sizeof(M[j])/sizeof(*M[j])); j++) {
+      delete[] M[i][j];
+    }
+    delete[] M[i];
+  }
+  delete[] M;
+}
 
 void Graph::calculateM(){
   calculateM(false);
@@ -136,9 +146,14 @@ void Graph::prepareNode(Node *src, int gaps){
       }
       */
     }
-    if(gaps > 0) {
+  }
+
+  if(gaps > 0){
+    for(int i=0; i<V.size(); i++){
+      Node *v = V[i];
       vector<Node*> tmpNodes;
       vector<Node*> tmptmpNodes;
+      
       tmptmpNodes = v -> tmp_parents;
       for (int p = 0; p < gaps; p++) {
         tmpNodes = tmptmpNodes;
@@ -150,14 +165,7 @@ void Graph::prepareNode(Node *src, int gaps){
 	  }
 	}
       }
-    }
-  }
-
-  if(gaps > 0){
-    for(int i=0; i<V.size(); i++){
-      Node *v = V[i];
-      vector<Node*> tmpNodes;
-      vector<Node*> tmptmpNodes;
+      
       tmptmpNodes = v -> tmp_children;
       for(int k = 0; k < gaps; k++) {
         tmpNodes = tmptmpNodes;
@@ -169,8 +177,9 @@ void Graph::prepareNode(Node *src, int gaps){
 	  }
 	}
       }
+      tmpNodes.clear();
+      tmptmpNodes.clear();
     }
-    
     //Use grand parents as children
     for(int i=0; i<V.size(); i++){
       Node *v = V[i];
@@ -182,6 +191,8 @@ void Graph::prepareNode(Node *src, int gaps){
         v->tmp_children.push_back(v->tmp_grandChildren.back());
         v->tmp_grandChildren.pop_back();
       }
+      v -> tmp_grandParents.clear();
+      v -> tmp_grandChildren.clear();
     }
   }
 
