@@ -14,7 +14,7 @@ Graph::Graph(int n){
 Graph::~Graph() {
   V.clear();
   for(int i = 0; i < (sizeof(M)/sizeof(*M)); i++) {
-    for(int j = 0; j < (sizeof(M[j])/sizeof(*M[j])); j++) {
+    for(int j = 0; j < (sizeof(M[i])/sizeof(*M[i])); j++) {
       delete[] M[i][j];
     }
     delete[] M[i];
