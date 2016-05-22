@@ -187,6 +187,7 @@ Observe how we added $k_n(a,d)$ multiple times to the final sum. Naturally, the 
 
 Let $w(v, v')$ be the number of times we have to add $k_n(v, v')$ for some pair $v\in V,\ v'\in V'$ as described above. Instead of computing and adding $k_n(v, v')$ repeatedly we may instead add $w(v,v') k_n(v, v')$ once. We call $w(v, v')$ the $\textit{weight}$ between the two nodes and rewrite the kernel as a weighted sum between pairs of nodes:
 \begin{equation}
+\label{eq:k_graphhopper}
 k_{graphhopper}(G,G')=\sum_{v\in V}\sum_{v'\in V'}w(v,v')k_n(v,v')
 \end{equation}
 
@@ -488,75 +489,87 @@ end
 \end{lstlisting}
 
 \subsection{Gaps}
-The following section is based on the description of GraphHopper with gaps from \cite{gappy}
+The following section is based on the description of GraphHopper with gaps on trees from \cite{gappy}
 
-Some of the graphs we are using are extracted from images, and because they are extracted from images they can contains errors, in form of missing edges, this can occur because the process of extracting graphs from images is not perfect. To minimize the impact of these error we can choose to apply gaps in our paths, this will minimize the impact of the errors mentioned earlier, because the new paths will close some of the gaps, where there might be missing edges. In figure \ref{fig:simple_gaps} is it shown how we can apply these new paths to a simple graph.
-
+Some of the graphs we are using are extracted from images, and because they are extracted from images they can contain errors, in form of missing edges, this can occur because the process of extracting graphs from images is not perfect. To minimize the impact of these error we can choose to apply gaps in our paths, this will minimize the impact of the errors mentioned earlier. Gaps allows us to create new paths in our graph, where we are allowed to skip $s$ nodes in a row, this can close some of the gaps where edges were missing. In figure \ref{fig:simple_gaps} is it shown how we can apply gaps to a simple graph.
 \begin{figure}[H]
-	\begin{minipage}[t]{0.7\linewidth}
-		\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=4cm,
-		thick,main node/.style={circle,fill=blue!20,draw,font=\sffamily\Large\bfseries}]
-		
-		
-		\node[main node] (b) [label=b] {};
-		\node[main node] (a) [below of=b, label=a] {};
-		\node[main node] (c) [right of=b, label=c] {};
-		\node[main node] (d) [below of=c, label=d] {};
-		
-		
-		\path[every node/.style={font=\sffamily\small}]
-		(a) edge [bend left] node {2}(b)
-		(b) edge node {3}(c)
-		(c) edge [bend left] node {1}(d)
-		;
-		\end{tikzpicture}
-	\end{minipage}
-	\begin{minipage}[t]{0.2\linewidth}
-		\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=4cm,
-		thick,main node/.style={circle,fill=blue!20,draw,font=\sffamily\Large\bfseries}]
-		
-		
-		\node[main node] (b) [label=b] {};
-		\node[main node] (a) [below of=b, label=a] {};
-		\node[main node] (c) [right of=b, label=c] {};
-		\node[main node] (d) [below of=c, label=d] {};
-		
-		
-		\path[every node/.style={font=\sffamily\small}]
-		(a) edge [bend left] node {2}(b)
-		(b) edge node {3}(c)
-		(c) edge [bend left] node {1}(d)
-		(a) edge [bend left] node {3}(c)
-		(b) edge [bend right] node {4}(d)
-		;
-		\end{tikzpicture}
-	\end{minipage}
-	\caption{\textit{Left: Without gaps. Right: With gaps of size 1.}}
+	\centering
+	\includegraphics[width=12cm]{gaps}
+	\caption{\textit{Left: No gaps. Middle: Gap size 1. Right: Gaps size 2.}}
 	\label{fig:simple_gaps}
 \end{figure}
-In figure \ref{fig:simple_gaps} we apply new paths with a gap size of $1$, in figure X we show how we can increase the gap size, and insert paths that skip up to $s$ amount of nodes.
+(\ref{eq:gaps}) Needs to be changed, so it also works on graphs, and explained.
+\begin{equation}
+\label{eq:gaps}
+(p^{(2)}(v), v), (p^{(3)}(v), v)...(p^{(s + 1)}(v), v)
+\end{equation}
 
-
-When we apply gaps to our graphs, we do not need to change our graph kernel in anyway, we can simply use our already established $k_{graphhopper}$ graph kernel.
+When we apply gaps to our graphs, we do not need to change our graph kernel in anyway, because we do not want to change the way we calculate $K$ or $M$, we simply want to add more edges to our graph, and therefore we can use our already established $k_{graphhopper}$, which can be seen in (\ref{eq:k_graphhopper}).
 
 
 \subsubsection{Implementation}
 In this section we will show how simple it is to add gaps to our current graphhopper implementation.
-
 \begin{lstlisting}
 function prepareNode($graph$, $\tilde{v}$)
-# Before
 
+#Dijkstra completed
+
+  if $s > 0$
+    for $v \in graph.V$
+      #Find all the new parents, 
+      #with a gap of size $1$..$s$.
+      $current\_parents = []$
+      $tmp\_parents = v.parents$
+      for $i \in 1..s$
+        $current\_parents = tmp\_parents$
+        $tmp\_parents.clear()$
+        for $j \in 1..current\_parents.size()$
+          for $k \in 1..current\_parents[j].parents.size()$
+            $v.grandParents.append(current\_parents[j].parents[k])$
+            $tmp\_parents.append(current\_parents[j].parents[k])$
+          end
+        end
+      end
+
+      #Find all the new children, 
+      #with a gap of size $1$..$s$.
+      $current\_children = []$
+      $tmp\_children = v.parents$
+      for $i \in 1..s$
+        $current\_children = tmp\_children$
+        $tmp\_children.clear()$
+        for $j \in 1..current\_children.size()$
+          for $k \in 1..current\_children[j].children.size()$
+            $v.grandChildren.append(current\_children[j].children[k])$
+            $tmp\_children.append(current\_children[j].children[k])$
+          end
+        end
+      end
+    end
+  end
+
+  #Move grandparents/grandchildren
+  #to parents/children.
+  for $v \in graph.V$
+    while not $v.grandParents.empty()$
+      $v.parents.append(v.grandParents.pop())$
+    end
+    while not $v.grandChildren.empty()$
+      $v.children.append(v.grandChildren.pop())$
+    end
+  end
+
+  #After adding the new paths, we can call:
+  #computeO and computeD
 
 end
-
-
 \end{lstlisting}
 
 \section{Node kernels}
+Graphopper contains different kinds of node kernels, and in this section will we introduce each of the node kernels. Most of the node kernels can handle both discrete node labels and vector node labels, if the node kernel only can handle one of the mentioned node label types, it will be mentioned in the description of the node kernel. In our formulas we will be comparing given node labels from $k_{graphhopper}$ which are represented as $x$ and $x'$.
 \subsection{Dirac}
 Dirac in GraphHopper simply compare the 2 given nodes, to see if they are equal to each other, and if they are equal we return $1$, and if they are not equal we return $0$. This kernel is primarily used when we compare graphs that contain discrete node labels, and the node labels are discrete and does not represent a continuous value. 
-This node kernels can only be used when we compare graphs with discrete node labels. The node kernel can be seen formally described in (\ref{eq:dirac}), where $x$ and $x'$ are the given node labels.
+This node kernel can only be used when comparing graphs with discrete node labels. The node kernel can be seen formally described in (\ref{eq:dirac}).
 \begin{equation}
 \label{eq:dirac}
 k_{dirac}(x, x')=\begin{cases}
@@ -572,10 +585,8 @@ The linear node kernel is the dot product of $x$ and $x'$, it can be seen formal
 k_{linear}(x, x') = x(i) \cdot x'(i)
 \end{equation}
 
-In figure X it is show how our linear kernel behave when comparing discrete node values.
-
 \subsection{Gaussian}
-For our gaussian kernel we are using a simplified version of (\ref{eq:gaussian}), this will save  us time when we are calculating \textit{K}, our simplified version can be seen in (\ref{eq:gaussian_simple}) where $\mu = \frac{1}{2 \sigma^2}$, these two formulas will yield the same result, but when we use (\ref{eq:gaussian_simple}) we save time by eliminating some operations, because we are doing them beforehand, and this speeds up the process of calculating $K$.
+For our gaussian kernel we are using a simplified version of (\ref{eq:gaussian}), this will save  us time when we are calculating \textit{K}, our simplified version can be seen in (\ref{eq:gaussian_simple}) where $\mu = \frac{1}{2 \sigma^2}$, these two formulas will yield the same result, but when we use (\ref{eq:gaussian_simple}) we save time by eliminating some of the operations, because we are doing them beforehand, and this speeds up the process of calculating $K$.
 \begin{equation}
 \label{eq:gaussian}
 k_{gaussian}(x, x') = exp(-\frac{||x - x'||^2}{2\sigma^2})
@@ -584,18 +595,31 @@ k_{gaussian}(x, x') = exp(-\frac{||x - x'||^2}{2\sigma^2})
 \label{eq:gaussian_simple}
 k_{gaussian}(x, x') = exp(-\mu ||x - x'||^2)
 \end{equation}
-We are using our gaussian kernel when we are comparing graphs where the node label either consist of a vector or discrete values which represent a continuous value.
+We are using our gaussian kernel when we are comparing graphs where the node label either consist of a vector or a discrete value which represent a continuous value.
 
-To show how the gaussian kernel behave when comparing discrete node values, we have drawn a graph, which can be seen in figure X, it is easy to see that the graph is growing exponentially the less the difference between $x$ and $y$ is.
+To show how the gaussian kernel behave when comparing discrete node values which represent a continuous value, we have drawn a graph, which can be seen in figure \ref{fig:gaussian_graph}, it is easy to see that the graph is growing exponentially the less the difference is between $x$ and $y$ is.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=10cm]{gaussian}
+	\caption{\textit{How our gaussian node kernel behave when comparing the given discrete node labels $x$ and $y$.}}
+	\label{fig:gaussian_graph}
+\end{figure}
+
 
 \subsection{Bridge}
-Our bridge kernel is based on \cite{shortest-path} bridge formula, but because we are working with vectors, we subtract the vectors and then normalize them, instead of just subtracting them. The bridge formula can be seen in (\ref{eq:bridge}).
+Our bridge kernel is based on \cite{shortest-path} bridge formula, but because we are working with vectors, we subtract the vectors and then normalize them, instead of just subtracting them. The bridge formula can be seen in (\ref{eq:bridge}), where $c$ is a variable we set by using cross validation.
 \begin{equation}
 \label{eq:bridge}
 k_{bridge}(x, x') = \text{max}(0, c - |(||x - x'||)|)
 \end{equation}
 
-The bridge's behaviour can be compared to the gaussian's behaviour, but instead of growing exponentially it grows linearly, and declines linearly. 
+The bridge's behaviour can be compared to the gaussian's behaviour, but instead of growing exponentially it grows linearly.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=10cm]{bridge}
+	\caption{\textit{How our bridge node kernel behave when comparing the given discrete node labels $x$ and $y$.}}
+	\label{fig:bridge_graph}
+\end{figure}
 
 \subsection{Dirac times Gaussian}
 \begin{equation}
@@ -639,8 +663,9 @@ Runtime in seconds for calculating $K$ (without gaps).
 			Mutag & Dirac & 31.6 & \textbf{0.731} & A & 1:43.23\\
 			Enzymes & Dirac & 722.99 & \textbf{16.9} & A & 1:42.78\\
 			Enzymes (Symmetrized) & Gaussian & 256.14 & \textbf{26.55} & A & 1:9.65 \\ 
-			Airways subsampled & Gaussian & 5518.01 & \textbf{2608.45} & A & 1:2.12
-			
+			Airways subsampled & Gaussian & 5518.01 & \textbf{2608.45} & A & 1:2.12 \\
+			NCI1 & Dirac & 62617.89 & \textbf{1695.35} & B & 1:36.94\\
+			NCI109 & Dirac & & \textbf{1831.39} & B & 
 		\end{tabular}
 	}
 	\caption{\textit{Runtime results}}
@@ -655,20 +680,35 @@ Runtime in seconds for calculating $K$ (without gaps).
 \begin{table}[H]
 	\centering
 	\hspace*{-0.7in}
-	\scalebox{0.7} {
-		\begin{tabular}{c|c|c|c}
-		Data set & Node kernel & Without gaps & With gaps (size 1)\\
+	\scalebox{0.6} {
+		\begin{tabular}{c|c|c|c|c|c|c|c}
+		Data set & Node kernel & Without gaps & With gaps (size 1) & Gap size 2 & Gap size 3 & Gap size 4 & Gap size 5\\
 		\hline
-		Mutag & Dirac & $\mathbf{83.111 (std. 1.9633)}$ & $79.000 (std. 2.2801)$\\
-		Enzymes & Dirac & $\mathbf{35.133 (std. 2.050)}$ & $\mathbf{36.350 (std. 1.3888)}$\\
-		Enzymes (symmetrized) & Gaussian & $\mathbf{67.850 (std. 1.3482)}$ & $\mathbf{67.250 (std. 1.5138)}$\\
-		Airways subsampled & Gaussian & $\mathbf{63.180 (std. 1.7900)}$ & $\mathbf{62.600 (std. 1.3233)}$
+		Mutag & Dirac & $\mathbf{83.111 (std. 1.9633)}$ & $79.000 (std. 2.2801)$ & 79.3889 (std. 2.0861) & 77.3333 (std. 1.2776) & & \\
+		Enzymes & Dirac & $\mathbf{35.133 (std. 2.050)}$ & $\mathbf{36.350 (std. 1.3888)}$ & 34.8333 (std. 1.3170) & 33.5667 (std. 1.4911) & & \\
+		Enzymes (symmetrized) & Gaussian & $\mathbf{68.5833 (std. 1.6125)}$ & $\mathbf{68.5333 (std. 1.3352)}$ & 68.9500 (std. 0.9783) & 68.8333 (std. 1.3744) & 69.7500 (std. 1.3591) & 68.8667 (std. 1.4673) \\
+		Airways subsampled & Gaussian & $\mathbf{63.180 (std. 1.7900)}$ & $\mathbf{62.600 (std. 1.3233)}$ & & & & \\
+		NCI1 & Dirac & 72.7908 (std. 0.2457) & 67.8589 (std. 0.2417) & 64.4161 (std. 0.6426) & 64.9903 (std. 0.5475) & 64.3698 (std. 0.4042) & 64.4988 (std. 0.4535) \\
+		NCI109 & Dirac & 71.0874 (std. 0.3168) & 66.5413 (std. 0.2810) & 64.3689 (std. 0.5451) & 63.9951 (std. 0.5259) & & 
 		\end{tabular}
 	}
 	\caption{\textit{Accuracy results}}
 	\label{table:raccuracy_results}
 \end{table}
-
+Enzymes (Symmetrized) \\
+\iffalse
+Gap size 10: 70.5833 (std. 2.2515) \\
+Gap size 13: 69.9500 (std. 1.2274) \\
+Gap size 15: 70.8167 (std. 1.1479) \\
+\fi
+Gap size 20: 70.4333 (std. 0.9336) \\
+\iffalse
+Gap size 21: 69.4167 (std. 1.5321) \\
+Gap size 25: 69.7833 (std. 1.4825) \\
+Gap size 30: 70.6333 (std. 1.4694) \\
+Gap size 40: 69.4333 (std. 1.5480) \\
+Gap size 50: 69.7833 (std. 1.4825)
+\fi
 \subsubsection{Discussion}
 
 \section{Conclusion}
