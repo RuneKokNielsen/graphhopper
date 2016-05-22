@@ -12,17 +12,19 @@ Graph::Graph(int n){
 }
 
 Graph::~Graph() {
-  for(std::vector< Node* >::iterator it = V.begin() ; it != V.end(); ++it){
-    delete (*it);
-  }
-  V.clear();
-  for(int i = 0; i < (sizeof(M)/sizeof(*M)); i++) {
-    for(int j = 0; j < (sizeof(M[i])/sizeof(*M[i])); j++) {
+
+  for(int i = 0; i < V.size(); i++) {
+    for(int j = 0; j < width; j++) {
       delete[] M[i][j];
     }
     delete[] M[i];
   }
   delete[] M;
+
+  for(std::vector< Node* >::iterator it = V.begin() ; it != V.end(); ++it){
+    delete (*it);
+  }
+  V.clear();
 }
 
 void Graph::calculateM(){
@@ -30,6 +32,7 @@ void Graph::calculateM(){
 }
 
 void Graph::calculateM(int gaps){
+
   for(int i=0; i<V.size(); i++){
     prepareNode(V[i], gaps);
   }
@@ -44,6 +47,7 @@ void Graph::calculateM(int gaps){
       }
     }
   }
+
   for(int vi=0; vi<V.size(); vi++){
     Node *v = V[vi];
     for(int ri=0; ri<V.size(); ri++){
