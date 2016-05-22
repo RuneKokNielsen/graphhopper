@@ -208,6 +208,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     mxFree(outputMalloc);
 
+    for(int i=0; i<nGraphs; i++){
+      delete[] K[i];
+    }
+    delete[] K;
   }catch(std::exception& e){
     mexPrintf("%f\n", e.what());
   }
