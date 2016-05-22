@@ -12,6 +12,9 @@ Graph::Graph(int n){
 }
 
 Graph::~Graph() {
+  for(std::vector< Node* >::iterator it = V.begin() ; it != V.end(); ++it){
+    delete (*it);
+  }
   V.clear();
   for(int i = 0; i < (sizeof(M)/sizeof(*M)); i++) {
     for(int j = 0; j < (sizeof(M[i])/sizeof(*M[i])); j++) {
