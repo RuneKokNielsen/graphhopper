@@ -50,7 +50,8 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
 
   const mxArray *am;
   const mxArray *nlc;
-  const mxArray *nl;
+  const mxArray *nld;
+  const mxArray *nlv;
   const double *m;
   mxArray *row;
   mwIndex *ir, *jc;
@@ -66,16 +67,17 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
     nlc = mxGetField(data, i, "nl");
 
     switch(labelType){
+    case LabelType::Both:
     case LabelType::Discrete:
-      nl = mxGetField(nlc, 0, "values");
-      if(nl == NULL){
+      nld = mxGetField(nlc, 0, "values");
+      if(nld == NULL){
         mexPrintf("No labels found in \"values\"!");
         throw std::runtime_error("No labels found in \"values\"");
       }
-      break;
+      if (labelType == LabelType::Discrete) break;
     case LabelType::Vector:
-      nl = mxGetField(nlc, 0, "vecvalues");
-      if(nl == NULL){
+      nlv = mxGetField(nlc, 0, "vecvalues");
+      if(nlv == NULL){
         mexPrintf("No labels found in \"vecvalues\"!");
         throw std::runtime_error("No labels found in \"vecvalues\"");
       }
@@ -86,15 +88,17 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
     g = new Graph(nNodes);
     g -> index = i;
 
-    m = mxGetPr(nl);
     switch(labelType) {
+    case LabelType::Both:
     case LabelType::Discrete:
+      m = mxGetPr(nld);
       for(int j = 0; j < nNodes; j++) {
         g -> V[j] -> dLabel = m[j];
       }
-      break;
-      case LabelType::Vector:
-        mwSize vLength = (mwSize) mxGetN(nl);
+      if(labelType == LabelType::Discrete) break;
+    case LabelType::Vector:
+        m = mxGetPr(nlv);
+        mwSize vLength = (mwSize) mxGetN(nlv);
         for(int j = 0; j < nNodes; j++) {
           Node *v = g->V[j];
           for(int k=0; k<vLength; k++){
@@ -147,6 +151,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
                 labelType,
 		mxGetScalar(prhs[3]));
 
+
     steady_clock::time_point tStart;
     steady_clock::time_point tStartTotal = steady_clock::now();
 
@@ -164,7 +169,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     tStart = steady_clock::now();
     computeM(graphs, 0, graphs.size()-1, mxGetScalar(prhs[4]));
-    
+
     mexPrintf("M matrices computed in: %f ms\n", msPassed(tStart));
     mexPrintf("Allocate K (%dX%d)..\n", nGraphs, nGraphs);
     mexFlush();
@@ -181,12 +186,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     tStart = steady_clock::now();
     comp->computeK(K, &graphs, kernel);
-    for(int i = 0; i < nGraphs; i++) {
-      delete graphs[i];
-    }
-    graphs.clear();
-    
-    
+
+
     mexPrintf("K computed in: %f ms\n", msPassed(tStart));
     mexPrintf("Total time used: %f ms\n", msPassed(tStartTotal));
     mexFlush();
@@ -207,6 +208,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       }
     }
     mxFree(outputMalloc);
+
+    for(int i = 0; i < nGraphs; i++) {
+      delete graphs[i];
+    }
+    graphs.clear();
 
     for(int i=0; i<nGraphs; i++){
       delete[] K[i];

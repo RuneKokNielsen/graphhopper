@@ -3,12 +3,18 @@
 #include "linear.cpp"
 #include "gaussian.cpp"
 #include "bridge.cpp"
+#include "diractimesgaussian.cpp"
+
+#ifdef MEX
+#include "mex.h"
+#endif
 
 NodeKernel *KernelFactory::getKernel(string name, LabelType type, double kernelParameter){
   if(name == "dirac"){
     if(type == Discrete){
       return new Dirac();
     }else{
+      mexPrintf("dirac can only be used with discrete labels.\n");
       throw std::invalid_argument("dirac can only be used with discrete labels.");
     }
   }
@@ -21,6 +27,16 @@ NodeKernel *KernelFactory::getKernel(string name, LabelType type, double kernelP
   if(name == "bridge") {
     return new Bridge(type, kernelParameter);
   }
+
+  if(name == "diracxgaussian"){
+    if(type == Both){
+      return new DiracTimesGaussian(kernelParameter);
+    }else{
+      mexPrintf("diracxgaussian can only be used with both discrete and vector labels (use command 'both')\n");
+      throw std::invalid_argument("diracxgaussian must be used with both discrete and vector labels.");
+    }
+  }
+
   throw std::invalid_argument("Unknown kernel specified: " + name);
 }
 
@@ -34,5 +50,9 @@ LabelType KernelFactory::getLabelType(string type){
   if(type == "vector"){
     return LabelType::Vector;
   }
+  if(type == "both"){
+    return LabelType::Both;
+  }
+  mexPrintf("Unknown label type: %s\n", type);
   throw std::invalid_argument(type + " does not name a proper label type. Options are discrete and vector");
 }
