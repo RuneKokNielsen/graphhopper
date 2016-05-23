@@ -489,7 +489,7 @@ end
 \end{lstlisting}
 
 \subsection{Gaps}
-The following section is based on the description of GraphHopper with gaps on trees from \cite{gappy}
+The following section is based on the description of GraphHopper with gaps on trees from \cite{gappy}, but this paper only work on trees, and therefore are we expanding some of the definitions such they also work on graphs.
 
 Some of the graphs we are using are extracted from images, and because they are extracted from images they can contain errors, in form of missing edges, this can occur because the process of extracting graphs from images is not perfect. To minimize the impact of these error we can choose to apply gaps in our paths, this will minimize the impact of the errors mentioned earlier. Gaps allows us to create new paths in our graph, where we are allowed to skip $s$ nodes in a row, this can close some of the gaps where edges were missing. In figure \ref{fig:simple_gaps} is it shown how we can apply gaps to a simple graph.
 \begin{figure}[H]
@@ -498,10 +498,10 @@ Some of the graphs we are using are extracted from images, and because they are 
 	\caption{\textit{Left: No gaps. Middle: Gap size 1. Right: Gaps size 2.}}
 	\label{fig:simple_gaps}
 \end{figure}
-(\ref{eq:gaps}) Needs to be changed, so it also works on graphs, and explained.
+By adding gaps we are creating alot of new edges, all these new edges must be added to $E_{\tilde{v}}$, we must therefore add all the edges we get from (\ref{eq:gaps}) to a new set of edges $E'_{\tilde{v}}$ that will replace the old set $E_{\tilde{v}}$. The formula in (\ref{eq:gaps}) will look at all pairs of nodes, and see if they meet the requirements to make a new edge between them. We can split up (\ref{eq:gaps}) into three conditions, where the first condition is that the pair of nodes we are looking at must a path $p$ which are in the set of edges $E_{\tilde{v}}$, where $E_{\tilde{v}}$ consist of shortest paths in the graph, and this path must start in the node $v$ and end in $v'$, and the last requirement is that the path must be less er equal to $s + 2$, where $s$ is the gap size, if all these are met we add the edge to our new set edges $E'_{\tilde{v}}$.
 \begin{equation}
 \label{eq:gaps}
-(p^{(2)}(v), v), (p^{(3)}(v), v)...(p^{(s + 1)}(v), v)
+E'_{\tilde{v}} = E_{\tilde{v}} \cup \{ \forall(v, v')|p \in E_{\tilde{v}} \wedge p = [v,...,v'] \wedge |p| \leq s + 2 \}
 \end{equation}
 
 When we apply gaps to our graphs, we do not need to change our graph kernel in anyway, because we do not want to change the way we calculate $K$ or $M$, we simply want to add more edges to our graph, and therefore we can use our already established $k_{graphhopper}$, which can be seen in (\ref{eq:k_graphhopper}).
@@ -568,7 +568,7 @@ end
 \section{Node kernels}
 Graphopper contains different kinds of node kernels, and in this section will we introduce each of the node kernels. Most of the node kernels can handle both discrete node labels and vector node labels, if the node kernel only can handle one of the mentioned node label types, it will be mentioned in the description of the node kernel. In our formulas we will be comparing given node labels from $k_{graphhopper}$ which are represented as $x$ and $x'$.
 \subsection{Dirac}
-Dirac in GraphHopper simply compare the 2 given nodes, to see if they are equal to each other, and if they are equal we return $1$, and if they are not equal we return $0$. This kernel is primarily used when we compare graphs that contain discrete node labels, and the node labels are discrete and does not represent a continuous value. 
+Dirac in GraphHopper simply compare the two given nodes, to see if they are equal to each other, and if they are equal we return $1$, and if they are not equal we return $0$. This kernel is primarily used when we compare graphs that contain discrete node labels, and the node labels are discrete and does not represent a continuous value. 
 This node kernel can only be used when comparing graphs with discrete node labels. The node kernel can be seen formally described in (\ref{eq:dirac}).
 \begin{equation}
 \label{eq:dirac}
@@ -760,7 +760,7 @@ w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}\left(\sum_{\tilde{v}\in V}(\mathfrak{d
 		\bibitem{gappy}
 		Aasa Feragen, Karsten Borgwardt.
 		\emph{Efficient tree-path kernels for attributde trees}.
-		2013.
+		Not published yet.
 
 		\bibitem{shortest-path}
 		Karsten M. Borgwardt, Hans-Peter Kriegel.
