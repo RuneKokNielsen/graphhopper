@@ -18,13 +18,13 @@ double Bridge::compute(Node *v1, Node *v2) {
 }
 
 double Bridge::computeVector(Node *v1, Node *v2) {
-  int maxLength = std::max(v1 -> vLabel.size(), v2 -> vLabel.size());
+  int maxLength = std::max((int) v1 -> vLabel.size(), (int) v2 -> vLabel.size());
   if (v1 -> vLabel.size() < v2 -> vLabel.size()) {
-    for(int i = v1 -> vLabel.size() - 1; i < v2 -> vLabel.size(); i++) {
+    for(int i = (int) v1 -> vLabel.size() - 1; i < (int) v2 -> vLabel.size(); i++) {
       v1 -> vLabel.push_back(0);
     }
   } else if(v1 -> vLabel.size() > v2 -> vLabel.size()) {
-    for(int i = v2 -> vLabel.size() - 1; i < v1 -> vLabel.size(); i++) {
+    for(int i = (int) v2 -> vLabel.size() - 1; i < (int) v1 -> vLabel.size(); i++) {
       v2 -> vLabel.push_back(0);
     }
   }

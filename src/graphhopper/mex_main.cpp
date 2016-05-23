@@ -31,7 +31,7 @@ void mexFlush(){
 
 
 void computeM(vector<Graph*> graphs, int from, int to, int gaps){
-  int nGraphs = graphs.size();
+  int nGraphs = (int) graphs.size();
   int reportEveryN = max(nGraphs / 30, 1);
   int mCompleted = 0;
   for(int i=from; i<=to; i++){
@@ -53,7 +53,6 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
   const mxArray *nld;
   const mxArray *nlv;
   const double *m;
-  mxArray *row;
   mwIndex *ir, *jc;
   mwIndex starting_row_index, stopping_row_index, current_row_index;
 
@@ -84,7 +83,7 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
       break;
       }
 
-    mwSize nNodes = (mwSize) mxGetM(am);
+    int nNodes = (int) mxGetM(am);
     g = new Graph(nNodes);
     g -> index = i;
 
@@ -93,7 +92,7 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
     case LabelType::Discrete:
       m = mxGetPr(nld);
       for(int j = 0; j < nNodes; j++) {
-        g -> V[j] -> dLabel = m[j];
+        g -> V[j] -> dLabel = (int) m[j];
       }
       if(labelType == LabelType::Discrete) break;
     case LabelType::Vector:
@@ -160,7 +159,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     tStart = steady_clock::now();
     vector<Graph*> graphs = matlabRead(prhs[0], labelType);
-    int nGraphs = graphs.size();
+    int nGraphs = (int) graphs.size();
 
     mexPrintf("Data loaded in: %f ms\n", msPassed(tStart));
     mexPrintf("Number of graphs: %d\n", graphs.size());
@@ -168,7 +167,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     mexFlush();
 
     tStart = steady_clock::now();
-    computeM(graphs, 0, graphs.size()-1, mxGetScalar(prhs[4]));
+    computeM(graphs, 0, ((int) graphs.size()) -1, (int) mxGetScalar(prhs[4]));
 
     mexPrintf("M matrices computed in: %f ms\n", msPassed(tStart));
     mexPrintf("Allocate K (%dX%d)..\n", nGraphs, nGraphs);

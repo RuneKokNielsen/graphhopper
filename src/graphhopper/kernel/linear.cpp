@@ -17,7 +17,7 @@ double Linear::compute(Node *v1, Node *v2){
 
 double Linear::computeVector(Node *v1, Node *v2){
   double sum = 0;
-  int sMin = min(v1->vLabel.size(), v2->vLabel.size());
+  int sMin = min((int) v1->vLabel.size(), (int) v2->vLabel.size());
   for(int i=0; i<sMin; i++){
     sum += v1->vLabel[i] * v2->vLabel[i];
   }

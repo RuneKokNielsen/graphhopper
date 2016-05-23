@@ -91,8 +91,8 @@ void writeKToFile(double **K, int size){
   outputFile.close();
 }
 
-float msPassed(steady_clock::time_point tStart){
-return duration_cast<duration<double>>(steady_clock::now() - tStart).count() * 1000;
+double msPassed(steady_clock::time_point tStart){
+  return duration_cast<duration<double>>(steady_clock::now() - tStart).count() * 1000;
 }
 
 

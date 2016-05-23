@@ -62,12 +62,12 @@ void ThreadedLoops::computeInterval(double **K, vector<Graph*> *pGraphs,
 
 void ThreadedLoops::computeK(double **K, vector<Graph*> *pGraphs,
                              NodeKernel *kernel){
-  _nGraphs = pGraphs->size();
+  _nGraphs = (int) pGraphs->size();
   _kSize = (_nGraphs * _nGraphs) / 2;
   _reportEveryN = max(_kSize / 100, 1);
 
 
-  int chunkSize = _nGraphs / pow(2, _nThreads - 1);
+  int chunkSize = _nGraphs / (int) (pow(2, _nThreads - 1));
   int from = 0;
   vector<thread*> threads;
   for(int i=0; i<_nThreads; i++){
