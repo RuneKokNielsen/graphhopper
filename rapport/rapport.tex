@@ -687,6 +687,7 @@ Runtime in seconds for calculating $K$ (without gaps).
 		Mutag & Dirac & $\mathbf{83.111 (std. 1.9633)}$ & $79.000 (std. 2.2801)$ & 79.3889 (std. 2.0861) & 77.3333 (std. 1.2776) & & \\
 		Enzymes & Dirac & $\mathbf{35.133 (std. 2.050)}$ & $\mathbf{36.350 (std. 1.3888)}$ & 34.8333 (std. 1.3170) & 33.5667 (std. 1.4911) & & \\
 		Enzymes (symmetrized) & Gaussian & $\mathbf{68.5833 (std. 1.6125)}$ & $\mathbf{68.5333 (std. 1.3352)}$ & 68.9500 (std. 0.9783) & 68.8333 (std. 1.3744) & 69.7500 (std. 1.3591) & 68.8667 (std. 1.4673) \\
+		Enzymes (symmetrized) & Dirac $\times$ Gaussian & 70.033 (std. 1.2977) & 69.3167 (std. 1.1506) & 70.5833 (std. 1.3293) & 70.7000 (std. 0.9356) & 70.5167 (std. 1.2582) & 70.7167 (std. 0.9164)\\
 		Airways subsampled & Gaussian & $\mathbf{63.180 (std. 1.7900)}$ & $\mathbf{62.600 (std. 1.3233)}$ & & & & \\
 		NCI1 & Dirac & 72.7908 (std. 0.2457) & 67.8589 (std. 0.2417) & 64.4161 (std. 0.6426) & 64.9903 (std. 0.5475) & 64.3698 (std. 0.4042) & 64.4988 (std. 0.4535) \\
 		NCI109 & Dirac & 71.0874 (std. 0.3168) & 66.5413 (std. 0.2810) & 64.3689 (std. 0.5451) & 63.9951 (std. 0.5259) & & 
@@ -810,6 +811,64 @@ Reading left to right, top to bottom, the steps are as follows:
 	\item The result from $c$ is added to $d$: $[1] \oplus [0,1] = [1,1]$ and $d$ returns $[0,1,1]$.
 	\item The result from $d$ is added to $a$: $[1,2]\oplus[0,1,1]=[1,3,1]$. The root node has now collected the values of all its children so the algorithm ends.
 \end{enumerate}
+
+\newpage
+\section{GraphHopper Manual}
+\subsection{Preface}
+This manual guides the reader through installation and use of the software product created in the \textit{GraphHopper kernel in C++} project by Rune Kok Nielsen and Andreas Holm at the University of Copenhagen.
+\subsection{Software purpose}
+The product consists of an optimized implementation of the GraphHopper kernel written in C++ which can be run from the MATLAB environment by using a MEX C++ compiler. The software may effectively be used together with libSVM\footnote{https://www.csie.ntu.edu.tw/$\sim$cjlin/libsvm/} and the supplied MATLAB script for cross-validating kernel parameters.
+
+\subsection{Installation}
+\subsubsection{Prerequisites}
+Interfacing with MATLAB requires a working MATLAB-installation, a C++ compiler supported by said installation and a functioning MEX-compilation environment. Read more about supported compilers at
+
+\textit{http://mathworks.com/support/compilers/}
+\subsubsection{Getting the project}
+The project is hosted at
+
+\textit{https://github.com/RuneKokNielsen/graphhopper}
+
+You may either clone the project using a Git client or download the project as a compressed archive.
+
+\subsubsection{Compiling the source code}
+The compilation depends on the system itself but could be as simple as running the MEX-compiler on the \textit{mex\_main.cpp}. Let \verb|ROOT| be the root of the project. Then the file could be compiled as follows:
+\begin{verbatim}
+cd ROOT/src/graphhopper
+mex -output graphhopper mex_main.cpp
+\end{verbatim}
+The \verb|-output| parameter is not necessary but saves you the trouble of renaming the resulting MEX-file. \textbf{IMPORTANT:} On 64-bit systems you must supply the \verb|-largeArrayDims| parameter to the compilation. Failing to do so will result in fatal runtime crashes. E.g.:
+\begin{verbatim}
+mex -output graphhopper -largeArrayDims mex_main.cpp
+\end{verbatim}
+If you are compiling on Win64 you may find inspiration in the makefile located in \verb|ROOT/src/win/makefile|. The resulting MEX-file can be run directly from MATLAB.
+
+\subsubsection{Calling the software from MATLAB}
+Assuming that the MEX-file is now accessible from MATLAB you may execute GraphHopper as a function named like the MEX-file. If you used the \verb|-output graphhopper| parameter during compilation the file should be named \verb|graphopper.[mex-extension]| and be callable as a function named \verb|graphhopper| in MATLAB. The function takes the following 5 parameters:
+\begin{enumerate}
+	\item \textbf{Graphs}: A variable containing the graphs to be compared. The variable must be formated as described in \ref{appendix:graphs-format}.
+	\item \textbf{Node kernel}: A string describing which node kernel to use. The options are:
+	\begin{itemize}
+		\item \textbf{dirac}: Dirac node kernel. Only discrete node labels.
+		\item \textbf{linear}: Linear node kernel. Works on discrete or vector node labels.
+		\item \textbf{gaussian}: Gaussian node kernel. Works on discrete or vector node labels.
+		\item \textbf{bridge}: Bride node kernel. Works on discrete or vector node labels.
+		\item \textbf{diracxgaussian}: Dirac times Gaussian node kernel. Works on both discrete \textbf{and} vector node labels at the same time.
+	\end{itemize}
+	\item \textbf{Node labels}: A string describing which node labels to use. The options are:
+	\begin{itemize}
+		\item \textbf{discrete}: Loads the discrete labels in \verb|nl.values|.
+		\item \textbf{vector}: Loads the vector labels in \verb|nl.vecvalues|.
+		\item \textbf{both}: Loads both the discrete labels in \verb|nl.values| and the vector labels in \verb|nl.vecvalues|.
+	\end{itemize}
+	\item \textbf{Node kernel parameter}: A double value used in some node kernels (e.g. $\mu$ in Gaussian).
+	\item \textbf{Gap size}: A double value describing the max gap size. Use \textit{0} to run without gaps.
+\end{enumerate}
+
+\subsubsection{Graphs format}
+\label{appendix:graphs-format}
+The graphs variable must be a $1\times N$ struct (where $N$ is the number of graphs) containing a column labeled \verb|am| and a column labeled \verb|nl|. A row in the \verb|am| column should be a (full or sparse) adjacency matrix. A row in the \verb|nl| column should be a struct containing either a field named \verb|values| with discrete values if using discrete node labels and/or a field named \verb|vecvalues| if using vector node labels or both if using both node labels.
+
 \end{appendices}
 
 \end{document}
