@@ -50,8 +50,9 @@ escapeinside={\%*}{*)},          % if you want to add a comment within your code
 mathescape
 }
 
+\def\multiset#1#2{\ensuremath{\left(\kern-.3em\left(\genfrac{}{}{0pt}{}{#1}{#2}\right)\kern-.3em\right)}}
+
 \usepackage{caption}
-\captionsetup[table]{name=Tabel}
 
 \usepackage{mathtools}
 \DeclarePairedDelimiter\ceil{\lceil}{\rceil}
@@ -95,7 +96,7 @@ mathescape
 \DeclareMathOperator{\Ran}{Ran}
 \DeclareMathOperator{\Dom}{Dom}
 
-\renewcommand*\contentsname{Indholdsfortegnelse}
+\renewcommand*\contentsname{Contents}
 \begin{document}
 	
 \maketitle
@@ -104,6 +105,7 @@ mathescape
 \newpage
 
 \section{Introduction}
+This report presents our work and the theory used developing and testing an efficient implementation of the GraphHopper kernel in C++ for our Bachelor thesis. While we do introduce the basics behind SVM and kernels based on our earlier work in \cite{svm-graph-kernels} the focus will primarily lie on the algorithm behind the kernel itself as well as the introduction of \textit{Gaps}. After presenting the theory we will provide the results of our experiments analysing the time efficiency of our implementation compared to an existing MATLAB-implementation as well as the effect on classification accuracy in different datasets when adding \textit{Gaps} to the kernel. 
 
 \section{SVM (Short summary)}
 \subsection{Kernels}
@@ -111,7 +113,7 @@ mathescape
 \section{GraphHopper}
 The following description of the GraphHopper kernel is based on the presentation in \cite{graphhopper}.
 
-GraphHopper is a graph kernel, i.e. a kernel for comparing graph data. The kernel effectively analyses the structure of the graphs by comparing subtrees similarly to the \textit{shortest path kernel}\footnote{We introduce the shortest path kernel in our earlier work \cite{svm-graph-kernels}.} (SPK). An advantage of these kernels is that they may analyse not only the structure of the graphs but also the attributes of their nodes.
+GraphHopper is a graph kernel, i.e. a kernel for comparing graph data. The kernel effectively analyses the structure of the graphs by comparing shortest paths similarly to \textit{shortest path kernel}\footnote{We introduce the shortest path kernel in our earlier work \cite{svm-graph-kernels}.} (SPK). An advantage of these kernels is that they may analyse the structure of the graphs along with the properties of their nodes.
 While SPK compares all shortest paths with a complexity of $\mathcal{O}(n^4)$, where $n$ is the number of nodes, GraphHopper only compares shortest paths of equal length with complexity $\mathcal{O}(n^2(m+\log n+\delta^2 + d))$ where $m$ is the number of edges, $\delta$ is the diameter of the graph and $d$ is the dimension of the node attributes. The complexity will be explained along with the algorithm itself.
 
 Let $G=(V,E)$ and $G'=(V',E')$ be graphs such that $V,V'$ are nodes and $E,E'$ are edges and let $P,P'$ be the sets of all shortest paths in $G$ and $G'$ respectively. The kernel is then a sum of path kernel $k_p$ over each pair of shortest paths $\pi\in P,\ \pi'\in P'$:
@@ -215,6 +217,7 @@ w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}|\{(\pi, \pi')\ |\ \pi(i)=v,\ \pi'(i)=v
 Let $\delta=width(G)$ and let $M$ be a $|V|\times\delta\times\delta$ matrix such that $M(v)_{ij}$ is the number of shortest paths $\pi\in P$ such that $|\pi|=j$ and $\pi(i)=v$. We then have
 \begin{equation}
 w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}M(v)_{ij}*M'(v')_{ij}
+\label{eq:wmm}
 \end{equation}
 allowing us to easily find the weight between pairs of nodes by first computing $M$ and $M'$. Furthermore, when computing $K$ for multiple graphs we may compute all M matrices beforehand and use them in the pairwise computations instead of computing them for each pair of graphs.
 
@@ -367,11 +370,12 @@ Being able to efficiently count the number of times $v$ appears as the $i$'th no
 
 \begin{equation}
 M(v)_{ij} = \sum_{\tilde{v}\in V}\mathfrak{o}_{\tilde{v}}^v(i)\mathfrak{d}_{\tilde{v}}^v(j-i+1)
+\label{eq:runtime_comp_m}
 \end{equation}
 
-Computing $M$ may be achieved using the algorithm shown in figure \ref{alg:compute_M}. First we compute $G_{\tilde{v}},\mathfrak{O}_{\tilde{v}},\mathfrak{D}_{\tilde{v}}$ for all $\tilde{v}\in V$. Using a Dijkstra implementation with complexity $\mathcal{O}(m\log n)$\footnote{Using a binary-heap implementation as described in \cite{alg-bible} and assuming that all nodes are reachable.} to compute $G_{\tilde{v}}$ this gives a complexity of $\mathcal{O}(n((m\log n) + m\delta + m\delta)) = \mathcal{O}(n((m\log n + m\delta))$. We then iterate over each pair of $v,\tilde{v}$ and $j=1..\delta,i=1..j$ giving a complexity of $\mathcal{O}(n^2\delta^2)$. Adding this together we get a total complexity of
+Computing $M$ may be achieved using the algorithm shown in figure \ref{alg:compute_M}. First we compute $G_{\tilde{v}},\mathfrak{O}_{\tilde{v}},\mathfrak{D}_{\tilde{v}}$ for all $\tilde{v}\in V$. Using a Dijkstra implementation\footnote{Using a binary-heap implementation as described in \cite{alg-bible} and assuming that all nodes are reachable.} with complexity $\mathcal{O}(m\log n)$ to compute $G_{\tilde{v}}$ this gives a complexity of $\mathcal{O}(n((m\log n) + m\delta + m\delta)) = \mathcal{O}(n((m\log n + m\delta))$. We then iterate over each pair of $v,\tilde{v}$ and $j=1..\delta,i=1..j$ giving a complexity of $\mathcal{O}(n^2\delta^2)$. Adding this together we get a total complexity of
 \begin{align}
-\mathcal{O}(n(m\log n + m\delta) + n^2\delta^2)&=\mathcal{O}(n(m\log n + m\delta + n\delta^2))\\
+\mathcal{O}(n(m\log n + m\delta) + n^2\delta^2)&=\mathcal{O}(n(m\log n + m\delta + n\delta^2))
 \end{align}
 
 \begin{figure}[H]
@@ -397,11 +401,25 @@ end
 \end{figure}
 
 \subsection{Computational analysis}
-To compute $k_{graphopper}$ we sum over each pair of nodes which, given precomputed $w(v,v')$ and $k_n(v,v')$, gives a complexity of $\mathcal{O}(n^2)$. Assuming that the complexity of computing $k_n(v,v')$ grows linearly relative to the dimension $d$ of the node attributes the complexity of computing all $k_n(v,v')$ has a complexity of $\mathcal{O}(n^2d)$. Computing $w(v,v')$ consists of summing for $j\leq \delta,i\leq j$ giving $\mathcal{O}(\delta^2)$ and doing this for each pair gives a complexity of $\mathcal{O}(n^2\delta^2)$. Together this gives a complexity of $\mathcal{O}(n^2(d + \delta^2))$. Before doing these computations, however, we must compute the $M$ matrices as described earlier adding up to a total runtime of
+To compute $k_{graphopper}$ we sum over each pair of nodes which, given precomputed $w(v,v')$ and $k_n(v,v')$, gives a complexity of $\mathcal{O}(n^2)$. Assuming that the complexity of computing $k_n(v,v')$ grows linearly relative to the dimension $d$ of the node attributes the complexity of computing all $k_n(v,v')$ has a complexity of $\mathcal{O}(n^2d)$. Computing the weight $w(v,v')$ between two nodes $v,v'$ (equation (\ref{eq:wmm})) consists of summing for $j\leq \delta,i\leq j$ giving $\mathcal{O}(\delta^2)$ and doing this for each pair gives a complexity of $\mathcal{O}(n^2\delta^2)$. Together this gives a complexity of $\mathcal{O}(n^2(d + \delta^2))$. Before doing these computations, however, we must first compute the $M$ matrices as described earlier (equation (\ref{eq:runtime_comp_m})) adding up to a total complexity of
 \begin{align}
-&\mathcal{O}(n^2(d + \delta^2) + n(m\log n + m\delta + n\delta^2))\\
-=\ &\mathcal{O}(n^2(d+\delta^2)+nm(\log n + \delta))
+&\mathcal{O}\left(n^2\left(d + \delta^2\right) + n\left(m\log n + m\delta + n\delta^2\right)\right)\\
+=\ &\mathcal{O}\left(n^2\left(d+\delta^2\right)+nm\left(\log n + \delta\right)\right)
+\label{eq:k_one_pair}
 \end{align}
+for comparing two graphs where $n$ is the greatest number of nodes in a single graph, $m$ is the greatest number of edges in a single graph and $\delta$ is the greatest width of any graph. Typically we will not just be comparing two graphs. On the contrary, we will want to compute the inner product between all pairs of a large number of graphs. When doing so we can run the pairwise comparison more efficiently than described in (\ref{eq:k_one_pair}) as we may precompute all $M$ matrices before running the pairwise computations. Let $N$ be the number of graphs to compare. Then we must compute $N$ individual $M$ matrices. Using the complexity described in (\ref{eq:runtime_comp_m}) this gives a complexity of
+\begin{equation}
+\mathcal{O}\left(N\left(n\left(m\log n + m\delta + n\delta^2\right)\right)\right)
+\end{equation}
+
+We now have to compute $k_{graphhopper}$ on each unique pair of graphs. In practice, since a kernel is by definition symmetric, we do not consider all $N^2$ sequences. Instead, we count the number of multisets of cardinality 2 in the set of $N$ graphs, i.e. $\multiset{N}{2}$. This gives a complexity of
+\begin{equation}
+\mathcal{O}\left(\multiset{N}{2}\left(n^2\left(d+\delta^2\right)\right)\right)
+\end{equation}
+Adding the complexity of precomputing the $M$ matrices we land at a total complexity of
+\begin{equation}
+\mathcal{O}\left(\multiset{N}{2}\left(n^2\left(d+\delta^2\right)\right) + N\left(n\left(m\log n + m\delta + n\delta^2\right)\right)\right)
+\end{equation}
 
 
 \subsection{Implementation}
@@ -628,12 +646,21 @@ k_{diractimesgaussian}(x, x') = k_{dirac}(x, x') k_{gaussian}(x, x')
 \end{equation}
 
 \section{Product}
+The product consists of a C++ application which may be compiled using a MEX-compiler and run directly in MATLAB. A manual for installation and use is provided in appendix \ref{appendix:manual}. We have chosen to leave out technical details of the implementation in this report but the source code is available online as described in the manual. The solution has been tested in great part by comparing our results to the results generated by an existing implementation in MATLAB available at
+
+\textit{https://sites.google.com/site/aasaferagen/home/software} 
 
 \section{Experiments}
-\subsection{Runtime experiments (C++ vs MATLAB)}
-\subsubsection{Results}
+In this section we provide and discuss results based on computations made using our product. First we analyse the running time of our implementation compared to an implementation scripted in MATLAB. Later, we examine the effect on accuracy when adding gaps of different lengths.
 
-System specs
+\subsection{Data sets}
+[PRESENT DATA SETS]
+
+\subsection{Runtime experiments (C++ vs MATLAB)}
+In this section we wish to see whether we succeeded in creating a faster implementation using C++ compared to the existing implementation. The results show the running time in seconds when computing the $K$ matrix for a specified dataset with both implementations using the same node kernel as specified.
+
+\subsubsection{System specifications}
+The computations have been done in various environments as specified in table \ref{table:specs}.
 \begin{table}[H]
 	\centering
 	\hspace*{-0.7in}
@@ -647,12 +674,11 @@ System specs
 			
 		\end{tabular}
 	}
-	\caption{\textit{System specs}}
+	\caption{\textit{System specifications}}
 	\label{table:specs}
 \end{table}
-
-
-Runtime in seconds for calculating $K$ (without gaps).
+\subsubsection{Results}
+The results are presented in table \ref{table:runtime_results}. The \textit{system spec} column refers to the specifications presented in table \ref{table:specs}.
 \begin{table}[H]
 	\centering
 	\hspace*{-0.7in}
@@ -813,7 +839,8 @@ Reading left to right, top to bottom, the steps are as follows:
 \end{enumerate}
 
 \newpage
-\section{GraphHopper Manual}
+\section{GraphHopper Software Manual}
+\label{appendix:manual}
 \subsection{Preface}
 This manual guides the reader through installation and use of the software product created in the \textit{GraphHopper kernel in C++} project by Rune Kok Nielsen and Andreas Holm at the University of Copenhagen.
 \subsection{Software purpose}
