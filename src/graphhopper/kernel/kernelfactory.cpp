@@ -19,12 +19,24 @@ NodeKernel *KernelFactory::getKernel(string name, LabelType type, double kernelP
     }
   }
   if(name == "linear"){
+    if(type == Both){
+      mexPrintf("linear can not be used with both node labels\n");
+      throw std::invalid_argument("linear can not be used with both node labels\n");
+    }
     return new Linear(type);
   }
   if(name == "gaussian") {
+    if(type == Both){
+      mexPrintf("gaussian can not be used with both node labels\n");
+      throw std::invalid_argument("gaussian can not be used with both node labels\n");
+    }
     return new Gaussian(type, kernelParameter);
   }
   if(name == "bridge") {
+    if(type == Both){
+      mexPrintf("bridge can not be used with both node labels\n");
+      throw std::invalid_argument("bridge can not be used with both node labels\n");
+    }
     return new Bridge(type, kernelParameter);
   }
 
