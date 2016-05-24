@@ -111,6 +111,7 @@ This report presents our work and the theory used developing and testing an effi
 \subsection{Kernels}
 
 \section{GraphHopper}
+\label{section:graphhopper}
 The following description of the GraphHopper kernel is based on the presentation in \cite{graphhopper}.
 
 GraphHopper is a graph kernel, i.e. a kernel for comparing graph data. The kernel effectively analyses the structure of the graphs by comparing shortest paths similarly to \textit{shortest path kernel}\footnote{We introduce the shortest path kernel in our earlier work \cite{svm-graph-kernels}.} (SPK). An advantage of these kernels is that they may analyse the structure of the graphs along with the properties of their nodes.
@@ -507,22 +508,25 @@ end
 \end{lstlisting}
 
 \subsection{Gaps}
-The following section is based on the description of GraphHopper with gaps on trees from \cite{gappy}, but this paper only work on trees, and therefore are we expanding some of the definitions such they also work on graphs.
+The following section is based on the description of GraphHopper with gaps on trees from \cite{gappy}. While this paper only describes the use of gaps on trees we will be expanding the definitions to also work on graphs in general.
 
-Some of the graphs we are using are extracted from images, and because they are extracted from images they can contain errors, in form of missing edges, this can occur because the process of extracting graphs from images is not perfect. To minimize the impact of these error we can choose to apply gaps in our paths, this will minimize the impact of the errors mentioned earlier. Gaps allows us to create new paths in our graph, where we are allowed to skip $s$ nodes in a row, this can close some of the gaps where edges were missing. In figure \ref{fig:simple_gaps} is it shown how we can apply gaps to a simple graph.
+Some of the graphs we wish to classify are extracted from images. Since the process of extraction is not perfect the resulting graphs may contain errors namely in form of missing edges. To minimize the impact of these error we can choose to allow gaps when comparing shortest paths. Allowing gaps allows us to create new paths called \textit{gappy paths} in the graphs which may skip up to $s$ nodes at a time (i.e. gaps of size $\leq s$). This may close some of the gaps where edges were missing. In figure \ref{fig:simple_gaps} is it shown how we can apply gaps to a simple graph.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=12cm]{gaps}
 	\caption{\textit{Left: No gaps. Middle: Gap size 1. Right: Gaps size 2.}}
 	\label{fig:simple_gaps}
 \end{figure}
-By adding gaps we are creating alot of new edges, all these new edges must be added to $E_{\tilde{v}}$, we must therefore add all the edges we get from (\ref{eq:gaps}) to a new set of edges $E'_{\tilde{v}}$ that will replace the old set $E_{\tilde{v}}$. The formula in (\ref{eq:gaps}) will look at all pairs of nodes, and see if they meet the requirements to make a new edge between them. We can split up (\ref{eq:gaps}) into three conditions, where the first condition is that the pair of nodes we are looking at must a path $p$ which are in the set of edges $E_{\tilde{v}}$, where $E_{\tilde{v}}$ consist of shortest paths in the graph, and this path must start in the node $v$ and end in $v'$, and the last requirement is that the path must be less er equal to $s + 2$, where $s$ is the gap size, if all these are met we add the edge to our new set edges $E'_{\tilde{v}}$.
+
+Gappy paths are added to the shortest path DAG $G_{\tilde{v}}$ before computing $\mathfrak{O}_{\tilde{v}}$ and $\mathfrak{D}_{\tilde{v}}$. To add gappy paths we look at each pair of nodes $v,v'\in E_{\tilde{v}}$. We then add an edge $(v,v')$ to an updated set of edges $E'_{\tilde{v}}$ iff there exists a path in $G_{\tilde{v}}$ from $v$ to $v'$ of discrete length $\leq s + 2$. E.g. if there exists a path $\pi=[v_1,v_2,v_3]$ in $G_{\tilde{v}}$ and we allow gaps of size $s=1$ then the discrete length $|\pi| = 3 \leq s + 2 = 3$ so we add the edge $(v_1,v_2)$ to $E'_{\tilde{v}}$. This can be formalized as
 \begin{equation}
 \label{eq:gaps}
-E'_{\tilde{v}} = E_{\tilde{v}} \cup \{ \forall(v, v')|p \in E_{\tilde{v}} \wedge p = [v,...,v'] \wedge |p| \leq s + 2 \}
+E'_{\tilde{v}} = E_{\tilde{v}} \cup \{ \forall(v, v')|\pi \in P_{G_{\tilde{v}}} \land \pi = [v,...,v'] \land |\pi| \leq s + 2 \}
 \end{equation}
 
-When we apply gaps to our graphs, we do not need to change our graph kernel in anyway, because we do not want to change the way we calculate $K$ or $M$, we simply want to add more edges to our graph, and therefore we can use our already established $k_{graphhopper}$, which can be seen in (\ref{eq:k_graphhopper}).
+where $P_{G_{\tilde{v}}}$ is the set of all paths in $G_{\tilde{v}}$.
+
+Adding gappy paths simply consists of adding new edges to the shortet path DAG. Afterwards we compute $M$ and eventually $K$ in the same way as we normally would as discussed in section \ref{section:graphhopper}.
 
 
 \subsubsection{Implementation}
@@ -584,10 +588,10 @@ end
 \end{lstlisting}
 
 \section{Node kernels}
-Graphopper contains different kinds of node kernels, and in this section will we introduce each of the node kernels. Most of the node kernels can handle both discrete node labels and vector node labels, if the node kernel only can handle one of the mentioned node label types, it will be mentioned in the description of the node kernel. In our formulas we will be comparing given node labels from $k_{graphhopper}$ which are represented as $x$ and $x'$.
+As mentioned in section $\ref{section:graphhopper}$ one of the advantages of GraphHopper is that we apply any node kernel to compare the nodes. In this section we introduce the node kernels that we have chosen to include in our implementation. The following equations will be comparing two values $x,x'$ which when used as node kernel represent the labels of two nodes $v,v'$.
+
 \subsection{Dirac}
-Dirac in GraphHopper simply compare the two given nodes, to see if they are equal to each other, and if they are equal we return $1$, and if they are not equal we return $0$. This kernel is primarily used when we compare graphs that contain discrete node labels, and the node labels are discrete and does not represent a continuous value. 
-This node kernel can only be used when comparing graphs with discrete node labels. The node kernel can be seen formally described in (\ref{eq:dirac}).
+Dirac is a simple kernel best suited for comparing discrete values representing non-continuous data, e.g. class labels. The kernel returns 1 if the two values are equal and 0 otherwise. The kernel is formally described in (\ref{eq:dirac}).
 \begin{equation}
 \label{eq:dirac}
 k_{dirac}(x, x')=\begin{cases}
@@ -597,53 +601,61 @@ k_{dirac}(x, x')=\begin{cases}
 \end{equation}
 
 \subsection{Linear}
-The linear node kernel is the dot product of $x$ and $x'$, it can be seen formally described in (\ref{eq:linear}).
+The linear node kernel is the dot product of $x$ and $x'$ as formally described in (\ref{eq:linear}).
 \begin{equation}
 \label{eq:linear}
 k_{linear}(x, x') = x(i) \cdot x'(i)
 \end{equation}
 
 \subsection{Gaussian}
-For our gaussian kernel we are using a simplified version of (\ref{eq:gaussian}), this will save  us time when we are calculating \textit{K}, our simplified version can be seen in (\ref{eq:gaussian_simple}) where $\mu = \frac{1}{2 \sigma^2}$, these two formulas will yield the same result, but when we use (\ref{eq:gaussian_simple}) we save time by eliminating some of the operations, because we are doing them beforehand, and this speeds up the process of calculating $K$.
+The Gaussian kernel is a popular choice for comparing continuous data. The kernel is formally defined in equation (\ref{eq:gaussian}). When two values are equal to each other the kernel returns 1 and the more they differ the closer the result gets to 0. By fine tuning the $\sigma$ parameter (e.g. by cross-validation) you may achieve a smooth curve that manages to describe the similarity of two values in a non-binary way by assigning a value between 0 and 1.
+
 \begin{equation}
 \label{eq:gaussian}
 k_{gaussian}(x, x') = exp(-\frac{||x - x'||^2}{2\sigma^2})
 \end{equation}
+
+Our implementation is based on an optimized equation as defined in (\ref{eq:gaussian_simple}) where $\mu=\frac{1}{2\sigma^2}$. The two equations yield the same result but using $\mu$ as a parameter instead of $\sigma$ we save time by eliminating some calculations.
+
 \begin{equation}
 \label{eq:gaussian_simple}
 k_{gaussian}(x, x') = exp(-\mu ||x - x'||^2)
 \end{equation}
-We are using our gaussian kernel when we are comparing graphs where the node label either consist of a vector or a discrete value which represent a continuous value.
 
-To show how the gaussian kernel behave when comparing discrete node values which represent a continuous value, we have drawn a graph, which can be seen in figure \ref{fig:gaussian_graph}, it is easy to see that the graph is growing exponentially the less the difference is between $x$ and $y$ is.
+The curve of the Gaussian kernel is illustrated in figure \ref{fig:gaussian_graph} where the $x$ axis represents the difference between two values and the $y$ axis represents the result yielded by this Gaussian funciton. The width of the curve is controlled by the $\sigma$ parameter. When $\sigma$ grows the curve gets wider and as such the function allows for more dissimilarity.
+
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=10cm]{gaussian}
-	\caption{\textit{How our gaussian node kernel behave when comparing the given discrete node labels $x$ and $y$.}}
+	\caption{\textit{Illustration of the Gaussian kernel}}
 	\label{fig:gaussian_graph}
 \end{figure}
 
 
 \subsection{Bridge}
-Our bridge kernel is based on \cite{shortest-path} bridge formula, but because we are working with vectors, we subtract the vectors and then normalize them, instead of just subtracting them. The bridge formula can be seen in (\ref{eq:bridge}), where $c$ is a variable we set by using cross validation.
+The Bridge kernel\footnote{As defined in \cite{shortest-path}} as formalized in equation (\ref{eq:bridge}) is similar to the Gaussian kernel in that it yields a result between 0 (for very dissimilar values) and some constant $c>0$ for equal values. Instead of a smooth curve, however, this kernel returns $c$ minus the linear distance between the values although not less than 0. The $c$ constant is a parameter determining the maximum distance between a pair of values before they are regarded as non-similar and may be selected by cross-validation.
+
 \begin{equation}
 \label{eq:bridge}
 k_{bridge}(x, x') = \text{max}(0, c - |(||x - x'||)|)
 \end{equation}
 
-The bridge's behaviour can be compared to the gaussian's behaviour, but instead of growing exponentially it grows linearly.
+The kernel is illustrated in figure \ref{fig:bridge_graph} .
+
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=10cm]{bridge}
-	\caption{\textit{How our bridge node kernel behave when comparing the given discrete node labels $x$ and $y$.}}
+	\caption{\textit{Illustration of the Bridge kernel for $c=1$}}
 	\label{fig:bridge_graph}
 \end{figure}
 
-\subsection{Dirac times Gaussian}
+\subsection{Dirac $\times$ Gaussian}
+Dirac $\times$ Gaussian is used to combine discrete non-continuous values with continuous values. Given tuples a pair of $(x,y),(x',y')$ where $x,x'$ are discrete non-continuous values and $y,y'$ are continuous values the kernel returns $k_{gaussian}(y,y')$ if $x=x'$ and 0 otherwise. This may be formalized as a product between the Dirac kernel and the Gaussian kernel as seen in equation (\ref{eq:diractimesgaussian}).
 \begin{equation}
 \label{eq:diractimesgaussian}
-k_{diractimesgaussian}(x, x') = k_{dirac}(x, x') k_{gaussian}(x, x')
+k_{diractimesgaussian}((x,y), (x',y')) = k_{dirac}(x, x') k_{gaussian}(y, y')
 \end{equation}
+Apart from possibly getting a higher accuracy than when using Gaussian alone this kernel may also be faster since we can skip computing the possibly heavy Gaussian product (depending on data dimensionality) when the discrete values are not equal and the extra task of determining equality of discrete values is very light in comparisson.
 
 \section{Product}
 The product consists of a C++ application which may be compiled using a MEX-compiler and run directly in MATLAB. A manual for installation and use is provided in appendix \ref{appendix:manual}. We have chosen to leave out technical details of the implementation in this report but the source code is available online as described in the manual. The solution has been tested in great part by comparing our results to the results generated by an existing implementation in MATLAB available at
