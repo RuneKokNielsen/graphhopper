@@ -61,6 +61,9 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
 
   vector<Graph*> graphs(nGraphs);
   Graph *g;
+  double totalNodes = 0;
+  int  maxNodes = 0;
+  int dimensions = 0;
   for(int i = 0; i < nGraphs; i++) {
     am = mxGetField(data, i, "am");
     nlc = mxGetField(data, i, "nl");
@@ -87,12 +90,15 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
       }
 
     int nNodes = (int) mxGetM(am);
+    totalNodes += nNodes;
+    maxNodes = max(nNodes, maxNodes);
     g = new Graph(nNodes);
     g -> index = i;
 
     switch(labelType) {
     case LabelType::Both:
     case LabelType::Discrete:
+      dimensions = 1;
       m = mxGetPr(nld);
       for(int j = 0; j < nNodes; j++) {
         g -> V[j] -> dLabel = (int) m[j];
@@ -101,6 +107,7 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
     case LabelType::Vector:
         m = mxGetPr(nlv);
         mwSize vLength = (mwSize) mxGetN(nlv);
+        dimensions = (int) vLength;
         for(int j = 0; j < nNodes; j++) {
           Node *v = g->V[j];
           for(int k=0; k<vLength; k++){
@@ -136,6 +143,9 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
     }
     graphs[i] = g;
   }
+  mexPrintf("Avg. number of nodes: %f\n", totalNodes / nGraphs);
+  mexPrintf("Max number of nodes: %i\n", maxNodes);
+  mexPrintf("Node label dimensions: %i\n", dimensions);
   return graphs;
 }
 
@@ -159,7 +169,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     mexPrintf("Loading data..\n");
     mexFlush();
-
     tStart = steady_clock::now();
     vector<Graph*> graphs = matlabRead(prhs[0], labelType);
     int nGraphs = (int) graphs.size();
