@@ -178,10 +178,10 @@ We can now compute $k_{graphhopper}$ by summing over all paths $\pi\in P$ and $\
 \begin{equation}
 \label{eq:example_sum}
 \begin{split}
-k_{graphhopper}(G,G')	&=  k_n(a,d) + k_n(a, e) + (k_n(a, d) + k_n(b, e)) + (k_n(a, e) + k_n(b, d)) \\ 
-				&+ (k_n(a, d) + k_n(c, e)) + (k_n(a, e) + k_n(c, d)) + k_n(b, d) + k_n(b, e) \\
-				&+ (k_n(b, d) + k_n(a, e)) + (k_n(b, e) + k_n(a, d)) + k_n(c, d) + k_n(c, e) \\
-				&+ (k_n(c, d) + k_n(c, e)) + (k_n(c, e) + k_n(a, d))
+k_{graphhopper}(G,G')	&=  \underbrace{k_n(a,d)}_{k_p([a],[d])} + \underbrace{k_n(a, e)}_{k_p([a],[e])} + \underbrace{k_n(a, d) + k_n(b, e)}_{k_p([a,b],[d,e])} + \underbrace{k_n(a, e) + k_n(b, d)}_{k_p([a,b],[e,d])} \\ 
+				&+ \underbrace{k_n(a, d) + k_n(c, e)}_{k_p([a,c],[d,e])} + \underbrace{k_n(a, e) + k_n(c, d)}_{k_p([a,c],[e,d])} + \underbrace{k_n(b, d)}_{k_p([b],[d])} + \underbrace{k_n(b, e)}_{k_p([b],[e])} \\
+				&+ \underbrace{k_n(b, d) + k_n(a, e)}_{k_p([b,a],[d,e])} + \underbrace{k_n(b, e) + k_n(a, d)}_{k_p([b,a],[e,d])} + \underbrace{k_n(c, d)}_{k_p([c],[d])} + \underbrace{k_n(c, e)}_{k_p([c],[e])} \\
+				&+ \underbrace{k_n(c, e) + k_n(a, d)}_{k_p([c,a],[d,e])}+ \underbrace{k_n(c, d) + k_n(a, e)}_{k_p([c,a],[e,d])}
 \end{split}
 \end{equation}
 
@@ -515,6 +515,44 @@ Some of the graphs we are using are extracted from images, and because they are 
 	\includegraphics[width=12cm]{gaps}
 	\caption{\textit{Left: No gaps. Middle: Gap size 1. Right: Gaps size 2.}}
 	\label{fig:simple_gaps}
+\end{figure}
+\begin{figure}[H]
+	\begin{minipage}[t]{0.7\linewidth}
+		\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=4cm,
+		thick,main node/.style={circle,fill=blue!20,draw,font=\sffamily\Large\bfseries}]
+		
+		
+		\node[main node] (b) [label=b] {};
+		\node[main node] (a) [below of=b, label=a, fill=red] {$\tilde{v}$};
+		\node[main node] (c) [right of=b, label=c] {};
+		\node[main node] (d) [below of=c, label=d] {};
+		
+		
+		\path[every node/.style={font=\sffamily\small}]
+		(a) edge [bend left] node {2}(b)
+		(b) edge node {3}(c)
+		(c) edge [bend left] node {1}(d)
+		;
+		\end{tikzpicture}
+	\end{minipage}
+	\begin{minipage}[t]{0.2\linewidth}
+		\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=4cm,
+		thick,main node/.style={circle,fill=blue!20,draw,font=\sffamily\Large\bfseries}]
+		
+		
+		\node[main node] (b) [label=b] {};
+		\node[main node] (a) [below of=b, label=a, fill=red] {$\tilde{v}$};
+		\node[main node] (c) [right of=b, label=c] {};
+		\node[main node] (d) [below of=c, label=d] {};
+		
+		
+		\path[every node/.style={font=\sffamily\small}]
+		(a) edge [bend left] node {2}(b)
+		(b) edge node {3}(c)
+		(c) edge [bend left] node {1}(d)
+		;
+		\end{tikzpicture}
+	\end{minipage}
 \end{figure}
 By adding gaps we are creating alot of new edges, all these new edges must be added to $E_{\tilde{v}}$, we must therefore add all the edges we get from (\ref{eq:gaps}) to a new set of edges $E'_{\tilde{v}}$ that will replace the old set $E_{\tilde{v}}$. The formula in (\ref{eq:gaps}) will look at all pairs of nodes, and see if they meet the requirements to make a new edge between them. We can split up (\ref{eq:gaps}) into three conditions, where the first condition is that the pair of nodes we are looking at must a path $p$ which are in the set of edges $E_{\tilde{v}}$, where $E_{\tilde{v}}$ consist of shortest paths in the graph, and this path must start in the node $v$ and end in $v'$, and the last requirement is that the path must be less er equal to $s + 2$, where $s$ is the gap size, if all these are met we add the edge to our new set edges $E'_{\tilde{v}}$.
 \begin{equation}
