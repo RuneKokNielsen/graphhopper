@@ -110,7 +110,19 @@ mathescape
 This report presents our work and the theory used developing and testing an efficient implementation of the GraphHopper kernel in C++ for our Bachelor thesis. While we do introduce the basics behind SVM and kernels based on our earlier work in \cite{svm-graph-kernels} the focus will primarily lie on the algorithm behind the kernel itself as well as the introduction of \textit{Gaps}. After presenting the theory we will provide the results of our experiments analysing the time efficiency of our implementation compared to an existing MATLAB-implementation as well as the effect on classification accuracy in different datasets when adding \textit{Gaps} to the kernel. 
 
 \section{SVM (Short summary)}
-\subsection{Kernels}
+Before we start introducing graphhopper we want give a short summary of some of the key concepts in the topic support vector machines (svm), in this summary we will primarily focus on the basic concepts of classification, svm, graph kernels and cross validation. This summary is based on our former report \cite{svm-graph-kernels}, which introduces these topics.
+
+\subsection{Classification}
+
+
+\subsection{SVM}
+Support vector machines (svm) is a binary classification technique which is often used do predict classification of data which consist of multiple dimensions. In figure X it is show how the svm will predict with a hyperplane which classification each of the nodes belong to, this example is based on linear svm, but we can also make a non-linear svm, when we are doing a non-linear svm it start to get complexed, because we still want to draw a linear hyperplane, and to do this we need to transform the data to a new dimension where these points can be split with a linear hyperplane. These transformations are unknown and can be hard to find, but with mercer's theorem it is show how we can use graph kernels to instead of transforming, see \cite{svm-graph-kernels} for a better description of mercer's theorem.
+
+\subsection{Graph kernel}
+
+
+\subsection{Cross validation}
+Cross validation is a concept we use when test our graph kernels, the basic concepts of cross validation is that we train our svm on a certain amount of the data, and then use the last amount of data, that the svm has not seen yet, to test how well it performs.
 
 \section{GraphHopper}
 \label{section:graphhopper}
