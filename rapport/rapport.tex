@@ -731,7 +731,11 @@ Basic specifications of the data sets used throughout our experiments are suppli
 \end{table}
 
 \subsubsection{Details}
-\textbf{Reddit binary} contains data from the social media website reddit.com. Each graph is a discussion thread belongning to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users iff one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node.
+\textbf{Mutag, Enzymes, NCI1, NCI109, DD} are all standard benchmark datasets based on chemoinformatics.
+
+\textbf{Airways subsampled} consists of graph data converted from images of lung blood vessels. The task is to determine whether a given lung belongs to a smoker or a healthy person.
+
+\textbf{Reddit binary} contains data from the social media website reddit.com. Each graph is a discussion thread belongning to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users iff one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node. The task is to determine whether a given thread belongs to a question/answer-based or discussion-based subreddit.
 
 
 \subsection{Runtime experiments (C++ vs MATLAB)}
