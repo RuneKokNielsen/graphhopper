@@ -539,7 +539,7 @@ end
 \subsection{Gaps}
 The following section is based on the description of GraphHopper with gaps on trees from \cite{gappy}. While this paper only describes the use of gaps on trees we will be expanding the definitions to also work on graphs in general.
 
-Some of the graphs we wish to classify are extracted from images. Since the process of extraction is not perfect the resulting graphs may contain errors namely in form of missing edges. To minimize the impact of these error we can choose to allow gaps when comparing shortest paths. Allowing gaps allows us to create new paths called \textit{gappy paths} in the graphs which may skip up to $s$ nodes at a time (i.e. gaps of size $\leq s$). This may close some of the gaps where edges were missing. In figure \ref{fig:simple_gaps} is it shown how we can apply gaps to a simple graph.
+When working on graph data we may wish to identify paths that are very similar although they may contain small differences. These dissimilarities could be a result of many things depending on the given data e.g. mutations in DNA, missing data from image conversion etc. In the implementation detailed until now we have only been able to identify identical paths but this can be changed by allowing gaps. Introducing gaps allows us to create new paths called \textit{gappy paths} in the graphs which may skip up to $s$ nodes at a time (i.e. gaps of size $\leq s$). In figure \ref{fig:simple_gaps} is it shown how we can apply gaps to a simple graph.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=12cm]{gaps}
