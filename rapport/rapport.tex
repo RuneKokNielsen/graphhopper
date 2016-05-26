@@ -110,16 +110,28 @@ mathescape
 This report presents our work and the theory used developing and testing an efficient implementation of the GraphHopper kernel in C++ for our Bachelor thesis. While we do introduce the basics behind SVM and kernels based on our earlier work in \cite{svm-graph-kernels} the focus will primarily lie on the algorithm behind the kernel itself as well as the introduction of \textit{Gaps}. After presenting the theory we will provide the results of our experiments analysing the time efficiency of our implementation compared to an existing MATLAB-implementation as well as the effect on classification accuracy in different datasets when adding \textit{Gaps} to the kernel. 
 
 \section{SVM (Short summary)}
-Before we start introducing graphhopper we want give a short summary of some of the key concepts in the topic support vector machines (svm), in this summary we will primarily focus on the basic concepts of classification, svm, graph kernels and cross validation. This summary is based on our former report \cite{svm-graph-kernels}, which introduces these topics.
+Before we start introducing graphhopper we want to give a short summary of some of the key concepts in the topic support vector machines (svm), in this summary we will primarily focus on the basic concepts of classification, svm, graph kernels and cross validation. This summary is based on our former report \cite{svm-graph-kernels}, which does a more thoroughly introduction to the topics.
 
 \subsection{Classification}
-
+The root problem and what we are trying to achieve with svm's is we want to try to solve the classification problem, the classification problem is that you are given an amount of records, where each record needs to be classified. To solve this problem we use a classification technique which is known as support vector machines.
 
 \subsection{SVM}
-Support vector machines (svm) is a binary classification technique which is often used do predict classification of data which consist of multiple dimensions. In figure X it is show how the svm will predict with a hyperplane which classification each of the nodes belong to, this example is based on linear svm, but we can also make a non-linear svm, when we are doing a non-linear svm it start to get complexed, because we still want to draw a linear hyperplane, and to do this we need to transform the data to a new dimension where these points can be split with a linear hyperplane. These transformations are unknown and can be hard to find, but with mercer's theorem it is show how we can use graph kernels to instead of transforming, see \cite{svm-graph-kernels} for a better description of mercer's theorem.
+Support vector machines (svm) is a binary classification technique which is used to predict classification of records in data, which consist of multiple dimensions. In figure \ref{fig:hyperplane} it is show how the svm will predict with a hyperplane which classification each of the nodes belong to, this example is based on linear svm, but we can also make a non-linear svm, when we are doing a non-linear svm it start to get complexed, because we still want to draw a linear hyperplane, and to do this we need to transform the data to a new dimension where these points can be split with a linear hyperplane. These transformations are unknown and can be hard to find, but with mercer's theorem it is show how we can use graph kernels to instead of transforming, see \cite{svm-graph-kernels} for a better description of mercer's theorem.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=10cm]{svm_plot}
+	\caption{\textit{aoeu}}
+	\label{fig:hyperplane}
+\end{figure}
 
 \subsection{Graph kernel}
+Mercer's theorem says that if we have a symmetrical and positive semi-definite function, then there exist a transformation.
 
+In (\ref{eq:kernel_function}) is it shown how the kernel function is connected to the svm, as seen in the formula it is attached to the optimization problem know as the dual lagrange problem.
+\begin{equation}
+\label{eq:kernel_function}
+L_D = \sum_{i=1}^{n}\lambda_i-\frac{1}{2}\sum_{i,j}\lambda_i\lambda_j y_iy_jk(x_i,x_j)
+\end{equation}
 
 \subsection{Cross validation}
 Cross validation is a concept we use when test our graph kernels, the basic concepts of cross validation is that we train our svm on a certain amount of the data, and then use the last amount of data, that the svm has not seen yet, to test how well it performs.
@@ -193,10 +205,10 @@ We can now compute $k_{graphhopper}$ by summing over all paths $\pi\in P$ and $\
 \begin{equation}
 \label{eq:example_sum}
 \begin{split}
-k_{graphhopper}(G,G')	&=  k_n(a,d) + k_n(a, e) + (k_n(a, d) + k_n(b, e)) + (k_n(a, e) + k_n(b, d)) \\ 
-				&+ (k_n(a, d) + k_n(c, e)) + (k_n(a, e) + k_n(c, d)) + k_n(b, d) + k_n(b, e) \\
-				&+ (k_n(b, d) + k_n(a, e)) + (k_n(b, e) + k_n(a, d)) + k_n(c, d) + k_n(c, e) \\
-				&+ (k_n(c, d) + k_n(c, e)) + (k_n(c, e) + k_n(a, d))
+k_{graphhopper}(G,G')	&=  \underbrace{k_n(a,d)}_{k_p([a],[d])} + \underbrace{k_n(a, e)}_{k_p([a],[e])} + \underbrace{k_n(a, d) + k_n(b, e)}_{k_p([a,b],[d,e])} + \underbrace{k_n(a, e) + k_n(b, d)}_{k_p([a,b],[e,d])} \\ 
+				&+ \underbrace{k_n(a, d) + k_n(c, e)}_{k_p([a,c],[d,e])} + \underbrace{k_n(a, e) + k_n(c, d)}_{k_p([a,c],[e,d])} + \underbrace{k_n(b, d)}_{k_p([b],[d])} + \underbrace{k_n(b, e)}_{k_p([b],[e])} \\
+				&+ \underbrace{k_n(b, d) + k_n(a, e)}_{k_p([b,a],[d,e])} + \underbrace{k_n(b, e) + k_n(a, d)}_{k_p([b,a],[e,d])} + \underbrace{k_n(c, d)}_{k_p([c],[d])} + \underbrace{k_n(c, e)}_{k_p([c],[e])} \\
+				&+ \underbrace{k_n(c, e) + k_n(a, d)}_{k_p([c,a],[d,e])}+ \underbrace{k_n(c, d) + k_n(a, e)}_{k_p([c,a],[e,d])}
 \end{split}
 \end{equation}
 
@@ -641,7 +653,7 @@ The curve of the Gaussian kernel is illustrated in figure \ref{fig:gaussian_grap
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=10cm]{gaussian}
-	\caption{\textit{Illustration of the Gaussian kernel}}
+	\caption{\textit{Illustration of the Gaussian kernel for $\sigma = 0.3$}}
 	\label{fig:gaussian_graph}
 \end{figure}
 
