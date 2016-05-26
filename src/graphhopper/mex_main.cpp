@@ -70,8 +70,11 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
     case LabelType::Discrete:
       nld = mxGetField(nlc, 0, "values");
       if(nld == NULL){
-        mexPrintf("No labels found in \"values\"!");
-        throw std::runtime_error("No labels found in \"values\"");
+        nld = nlc;
+        if(nld == NULL){
+           mexPrintf("No labels found in \"values\"!");
+           throw std::runtime_error("No labels found in \"values\"");
+        }
       }
       if (labelType == LabelType::Discrete) break;
     case LabelType::Vector:
