@@ -109,14 +109,15 @@ mathescape
 \section{Introduction}
 This report presents our work and the theory used developing and testing an efficient implementation of the GraphHopper kernel in C++ for our Bachelor thesis. While we do introduce the basics behind SVM and kernels based on our earlier work in \cite{svm-graph-kernels} the focus will primarily lie on the algorithm behind the kernel itself as well as the introduction of \textit{Gaps}. After presenting the theory we will provide the results of our experiments analysing the time efficiency of our implementation compared to an existing MATLAB-implementation as well as the effect on classification accuracy in different datasets when adding \textit{Gaps} to the kernel. 
 
-\section{SVM (Short summary)}
-Before we start introducing graphhopper we want to give a short summary of some of the key concepts in the topic support vector machines (svm), in this summary we will primarily focus on the basic concepts of classification, svm, graph kernels and cross validation. This summary is based on our former report \cite{svm-graph-kernels}, which does a more thoroughly introduction to these topics.
+\section{SVM}
+Before introducing the graphhopper kernel we need to establish some essential underlying theory. In this section we will focus on the basic theory of classification, SVM, kernels and cross-validation. This is a condensed summary of the most relevant parts of our former work \cite{svm-graph-kernels} where we discuss the topics thoroughly.
 
 \subsection{Classification}
-The root problem and what we are trying to achieve with svm's is we want to try to solve the classification problem, the classification problem is that you are given an amount of records, where each record needs to be classified. To solve this problem we use a classification technique which is known as support vector machines.
+The core problem is data classification, i.e. determining the class of some data point from a limited number of predefined classes. In the context of this report we will be working with binary classification of graphs using SVM.
 
 \subsection{SVM}
-Support vector machines (svm) is a binary classification technique which is used to predict classification of records in data, which consist of multiple dimensions. In figure \ref{fig:hyperplane} is it  shown how the svm will predict with a hyperplane which classification each of the records belong to, this example is based on linear svm, but we can also make a non-linear svm, when we are doing a non-linear svm it start to get complexed, because we still want to draw a linear hyperplane, and to do this we need to transform the data to a new dimension where these records can be split with a linear hyperplane. These transformations are unknown and can be hard to find, but with mercer's theorem it is show how we can use graph kernels instead of transforming, see \cite{svm-graph-kernels} for a better description of mercer's theorem.
+SVM is a binary classification technique used to create classification models. The technique works by placing a hyperplane between two optimal data points in the training set (\textit{the support vectors}) such that the hyperplane successfully separates the data points by their classes as far possible. Such a hyperplane in a 2-dimensional, linear seperable case is illustrated in figure \ref{fig:hyperplane}. The accuracy of the model is then measured by how successfully the hyperplane classifies new data points with known classes.
+
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=10cm]{svm_plot}
@@ -124,20 +125,36 @@ Support vector machines (svm) is a binary classification technique which is used
 	\label{fig:hyperplane}
 \end{figure}
 
-\subsection{Graph kernel}
-Mercer's theorem says that if we have a symmetrical and positive semi-definite function, then we can show $k(x_i,x_j) = \langle\Phi(x_i),\Phi(x_j)\rangle$, this allows us to use a kernel function instead of the transformation. In (\ref{eq:kernel_function_phi}) is it shown how the transformation is connected to the svm, as seen in the formula it is attached to the optimization problem know as the dual lagrange problem.
+The challenge of finding the optimal hyperplane is solved by maximizing the dual Lagrange optimization problem
+\begin{equation}
+\label{eq:dual_lagrange_problem}
+L_D = \sum_{i=1}^{n}\lambda_i-\frac{1}{2}\sum_{i,j}\lambda_i\lambda_j y_iy_j x_ix_j
+\end{equation}
+where $x_i$ is a data point, $y_i\in \{-1, 1\}$ is its class and $\lambda_i$ is its Lagrange multiplier.
+
+\subsection{Kernels}
+The data illustrated in figure \ref{fig:hyperplane} is linearly separable, i.e. may be separated by a hyperplane. However, this is not at all the case for all data. When working with linearly inseparable data we may, however, transform the data points into some $x\leq\infty$-dimensional space such that the transformed data points become linearly separable. The optimization problem is then simply changed to
 \begin{equation}
 \label{eq:kernel_function_phi}
 L_D = \sum_{i=1}^{n}\lambda_i-\frac{1}{2}\sum_{i,j}\lambda_i\lambda_j y_iy_j\Phi(x_i)\cdot\Phi(x_j)
 \end{equation}
-And because we know that we can substitute the transformation with the kernel function, then we can rewrite the dual lagrange problem to use the kernel function instead, in (\ref{eq:kernel_function}) is it show how we can substitute the transformation with the kernel function.
+where $\Phi:\chi_1\rightarrow\chi_2$ is some transformation that (hopefully) makes the data somewhat more separable.
+
+Finding this transformation $\Phi$ is, however, a daunting task (let alone transforming all the data). Luckily, as proved by Mercer's theorem (see \cite{svm-graph-kernels}), for any symmetrical and positive semi-definite function $k(x_i,x_j)$ there will exist some transformation $\Phi$ such that $k(x_i,x_j)=\langle\Phi(x_i),\Phi(x_j)\rangle$. As a consequence, if we can define some function $k(x_i,x_j)$ with these properties then we can substitute this function (called a kernel function, or just kernel) into the optimization problem:
+
 \begin{equation}
 \label{eq:kernel_function}
 L_D = \sum_{i=1}^{n}\lambda_i-\frac{1}{2}\sum_{i,j}\lambda_i\lambda_j y_iy_jk(x_i,x_j)
 \end{equation}
 
-\subsection{Cross validation}
-Cross validation is a concept we use when testing our graph kernels, the basic concepts of cross validation is that we train our svm on a certain amount of the data, and then use the last amount of data to test on. We do this because if we would train our svm on the entire data, then it would know all the correct answers, and this would give an inflated accuracy result. But because we want the most accurate result, we do this multiple times, where we each time leave out a different amount of the data, often the data is split up in 10 sets, where we train on 9 of the sets and then test on the last set, we then change the test set each time, and when this is done 10 times, we would have tested across the entire data set, we then take the mean of all our results to get a estimate of our accuracy.
+The task is then to find a kernel that manages to compare the features of the data in a meaningful way making them separable in the transformed space. The GraphHopper kernel attempts to do just that by analysing a combination of structure and node labels in graphs.
+
+Assuming a kernel function $k(x_i,x_j)$ we define the matrix $K$ to be an $N\times N$ matrix (where $N$ is the number of data points) such that $K_{ij}=k(x_i,x_j)$. Using SVM in practice then consists of computing $K$ and creating a model through SVM based on the result.
+
+\subsection{Cross-validation}
+There may be several parameters involved when using SVM to create a classification model. To properly select these parameters and realistically predict the resulting model's accuracy we take advantage of cross-validation.
+
+To cross-validate parameters and accuracy we split the data set $M$ into $p$ parts. We then iterate $p$ times each time selecting different combinations of a test, validation and training set $Test_i, Val_i, Train_i\subset M$ such that $|Test_i|=|Val_i|=\frac{|M|}{p}$,  $|Train_i| = \frac{|M| * (p-2)}{p}$ and such that there is no overlap between any of the sets. In each iteration $i$ we train a model for all combinations of parameters using the training set $Train_i$ and estimate their accuracy by predicting on the validation set $Val_i$. We then select the combination of parameters that gave the highest accuracy and train a new model using $Train_i\cup Val_i$ with these parameters and finally estimate its accuracy by predicting on the test set $Test_i$ saving the resulting accuracy as $acc_i$. After $i$ iterations we estimate the expected accuracy to be the average accuracy achieved, i.e. $\frac{acc_1 + acc_2 + ... + acc_i}{i}$.
 
 \section{GraphHopper}
 \label{section:graphhopper}
@@ -731,7 +748,11 @@ Basic specifications of the data sets used throughout our experiments are suppli
 \end{table}
 
 \subsubsection{Details}
-\textbf{Reddit binary} contains data from the social media website reddit.com. Each graph is a discussion thread belongning to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users iff one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node.
+\textbf{Mutag, Enzymes, NCI1, NCI109, DD} are all standard benchmark datasets based on chemoinformatics.
+
+\textbf{Airways subsampled} consists of graph data converted from images of lung blood vessels. The task is to determine whether a given lung belongs to a smoker or a healthy person.
+
+\textbf{Reddit binary} contains data from the social media website reddit.com. Each graph is a discussion thread belongning to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users iff one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node. The task is to determine whether a given thread belongs to a question/answer-based or discussion-based subreddit.
 
 
 \subsection{Runtime experiments (C++ vs MATLAB)}
