@@ -614,6 +614,7 @@ end
 \end{lstlisting}
 
 \section{Node kernels}
+\label{section:node-kernels}
 As mentioned in section $\ref{section:graphhopper}$ one of the advantages of GraphHopper is that we apply any node kernel to compare the nodes. In this section we introduce the node kernels that we have chosen to include in our implementation. The following equations will be comparing two values $x,x'$ which when used as node kernel represent the labels of two nodes $v,v'$.
 
 \subsection{Dirac}
@@ -688,32 +689,47 @@ The product consists of a C++ application which may be compiled using a MEX-comp
 
 \textit{https://sites.google.com/site/aasaferagen/home/software} 
 
+\subsection{Implemented functionality}
+The application computes the GraphHopper kernel matrix on a set of graphs using a (possibly parameterized) node kernel and allowing gaps of size $s\geq 0$ as specified by the user. The implemented node kernels are detailed in section \ref{section:node-kernels}. It is mainly supposed to be compiled using a MEX-compiler and executed directly in MATLAB but may also be compiled as a standalone application using file-based in- and output.
+
+The project also contains a MATLAB script for cross-validating node kernel parameters and a C++ application for translating .mat files into the file format accepted by the standalone GraphHopper application.
+
+\subsection{Possible extensions}
+Given more time, one could consider implementing multiple extensions to the current application.
+
+As mentioned earlier we have supplied a simple MATLAB script for cross-validating node kernel parameters. This script works by running the GraphHopper application repeatedly each time recomputing $M$ before computing $K$ using the new node kernel parameter. By implementing this functionality inside the application itself we could compute multiple $K$ matrices reusing the same $M$ matrix. On the same note we could consider cross-validating the choice of node kernel and the maximum gap size in the GraphHopper application.
+
+Since the current application returns the $K$ matrix the natural extension of cross-validation would be to return a list of $K$ matrices each paired with the parameters they were computed with (which may then be classified and cross-validated). As this would potentially require a massive amount of memory it should be considered to implement the classification process in the application as well.
+
 \section{Experiments}
 In this section we provide and discuss results based on computations made using our product. First we analyse the running time of our implementation compared to an implementation scripted in MATLAB. Later, we examine the effect on accuracy when adding gaps of different lengths.
 
 \subsection{Data sets}
-The data sets used throughout our experiments are described in table \ref{table:data-sets}.
+Basic specifications of the data sets used throughout our experiments are supplied in table \ref{table:data-sets}.
 
 \begin{table}[H]
 		\centering
 		\hspace*{-0.7in}
 		\scalebox{0.6}{
-\begin{tabular}{c|c|c|c|c|c}
-	Data set & Description & Number of graphs & Avg. nodes & Max nodes & Attr. dimensionality\\
+\begin{tabular}{c|c|c|c|c}
+	Data set & Number of graphs & Avg. nodes & Max nodes & Attr. dimensionality\\
 	\hline
-	Mutag &  & 188 & 17.93 & 28 & 1\\
-	Enzymes & & 600 & 32.63 & 126 & 1\\
-	Enzymes (Symmetrized) & & 600 & 32.63 & 126 & 1 + 18\\
-	Airways subsampled & & 500 & 221.31 & 651 & 1 \\
-	NCI1 & & 4110 & 29.87 & 111 & 1\\
-	NCI109 & & 4127 & 29.68 & 111 & 1 \\
-	\pbox{20cm}{reddit\_iama\_askreddit\_\\
-		atheism\_trollx (300-700)} & & 401 & 662.77 & 3782 & 1 \\
-	DD & & 1178 & 284.32 & 5748 & 1
+	Mutag  & 188 & 17.93 & 28 & 1\\
+	Enzymes  & 600 & 32.63 & 126 & 1\\
+	Enzymes (Symmetrized) & 600 & 32.63 & 126 & 1 + 18\\
+	Airways subsampled & 500 & 221.31 & 651 & 1 \\
+	NCI1 & 4110 & 29.87 & 111 & 1\\
+	NCI109 & 4127 & 29.68 & 111 & 1 \\
+	Reddit binary (300-700) & 401 & 662.77 & 3782 & 1 \\
+	DD & 1178 & 284.32 & 5748 & 1
 \end{tabular}}
-	\caption{\textit{Data sets}}
+	\caption{\textit{Data set specifications}}
 	\label{table:data-sets}
 \end{table}
+
+\subsubsection{Details}
+\textbf{Reddit binary} contains data from the social media website reddit.com. Each graph is a discussion thread belongning to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users iff one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node.
+
 
 \subsection{Runtime experiments (C++ vs MATLAB)}
 In this section we wish to see whether we succeeded in creating a faster implementation using C++ compared to the existing implementation. The results show the running time in seconds when computing the $K$ matrix for a specified dataset with both implementations using the same node kernel as specified.
@@ -778,7 +794,7 @@ The results are presented in table \ref{table:runtime_results}. The \textit{syst
 		Airways subsampled & Gaussian & $\mathbf{63.180 (std. 1.7900)}$ & $\mathbf{62.600 (std. 1.3233)}$ & 61.6800 (std. 2.0422) & & & 61.9800 (std. 1.8961) \\
 		NCI1 & Dirac & 72.7908 (std. 0.2457) & 67.8589 (std. 0.2417) & 64.4161 (std. 0.6426) & 64.9903 (std. 0.5475) & 64.3698 (std. 0.4042) & 64.4988 (std. 0.4535) \\
 		NCI109 & Dirac & 71.0874 (std. 0.3168) & 66.5413 (std. 0.2810) & 64.3689 (std. 0.5451) & 63.9951 (std. 0.5259) & & \\
-		\pbox{20cm}{reddit\_iama\_askreddit\\\_atheism\_trollx (300-700)} & Dirac & 83.6000 (std. 1.1255) & & & & &  
+		Reddit binary (300-700) & Dirac & 83.6000 (std. 1.1255) & & & & &  
 		\end{tabular}
 	}
 	\caption{\textit{Accuracy results}}
