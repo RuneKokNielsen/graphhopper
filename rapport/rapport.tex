@@ -539,7 +539,7 @@ end
 \subsection{Gaps}
 The following section is based on the description of GraphHopper with gaps on trees from \cite{gappy}. While this paper only describes the use of gaps on trees we will be expanding the definitions to also work on graphs in general.
 
-When working on graph data we may wish to identify paths that are very similar although they may contain small differences. These dissimilarities could be a result of many things depending on the given data e.g. mutations in DNA, missing data from image conversion etc. In the implementation detailed until now we have only been able to identify identical paths but this can be changed by allowing gaps. Introducing gaps allows us to create new paths called \textit{gappy paths} in the graphs which may skip up to $s$ nodes at a time (i.e. gaps of size $\leq s$). In figure \ref{fig:simple_gaps} is it shown how we can apply gaps to a simple graph.
+When working on graph data (or string sequences, see \cite{string-kernels}) we may wish to identify paths that are very similar although they may contain small differences. These dissimilarities could be a result of many things depending on the given data e.g. mutations in DNA, missing data from image conversion etc. In the implementation detailed until now we have only been able to identify identical paths but this can be changed by allowing gaps. Introducing gaps allows us to create new paths called \textit{gappy paths} in the graphs which may skip up to $s$ nodes at a time (i.e. gaps of size $\leq s$). In figure \ref{fig:simple_gaps} is it shown how we can apply gaps to a simple graph.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=12cm]{gaps}
@@ -823,38 +823,6 @@ Gap size 50: 69.7833 (std. 1.4825)
 
 
 
-
-
-\iffalse
-\section{The GraphHopper kernel}
-Description of kernel as 
-
-
-\section{Restructuring the kernel}
-In order to take advantage of the strengths of C++ we first have to restructure the kernel to achieve a new calculation based on sums as opposed to matrix operations.
-
-In \cite{graphhopper} the weight between two nodes $v$ and $v'$ are given by
-\begin{equation}
-w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{\delta}\sharp\{(\pi, \pi')|\pi(i)=v,\pi'(i)=v',|\pi|=|\pi'|=j\}=\langle M(v),M(v')\rangle
-\end{equation}
-where $(M(v))_{ij}$ is the number of times that $v$ appears as the $i^{th}$ node in a shortest path in $G$ of discrete length $j$. As described in the last section (CITATION) this amounts to $\sum_{\tilde{v}\in V}\mathfrak{D}_{\tilde{v}}(v,j-i+1)\mathfrak{O}_{\tilde{v}}(v,i) = \sum_{\tilde{v}\in V}(\mathfrak{d}_{\tilde{v}}^v)_{j-i+1}(\mathfrak{o}_{\tilde{v}}^v)_i$.
-
-Using these definitions of $(M(v))_{ij}$ we see that
-\begin{align}
-w(v,v')&=\sum_{j=1}^{\delta}\sum_{i=1}^{\delta}\sharp\{(\pi, \pi')|\pi(i)=v,\pi'(i)=v',|\pi|=|\pi'|=j\}\\
-&=\sum_{j=1}^{\delta}\sum_{i=1}^{\delta}(M(v))_{ij}(M(v'))_{ij}\\
-&=\sum_{j=1}^{\delta}\sum_{i=1}^{\delta}\left(\sum_{\tilde{v}\in V}(\mathfrak{d}_{\tilde{v}}^v)_{j-i+1}(\mathfrak{o}_{\tilde{v}}^v)_i\right)\left(\sum_{\tilde{v'}\in V'}(\mathfrak{d}_{\tilde{v'}}^{v'})_{j-i+1}(\mathfrak{o}_{\tilde{v'}}^{v'})_i\right)
-\end{align}
-showing that we can calculate the weights using only the row vectors of $\mathfrak{D}$ and $\mathfrak{O}$ which can be computed using message passing as described in algorithms 1 and 3 in \cite{graphhopper} given the shortest path DAG's for $G$ and $G'$.
-
-Further, since we do not need to eqaute the left hand equation to the product of two matrices and since $i\leq j$ for any $\pi$ such that $|\pi|=j$ and $\pi(i)$ exists we only need to sum for $i\leq j$:
-
-\begin{equation}
-w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}\left(\sum_{\tilde{v}\in V}(\mathfrak{d}_{\tilde{v}}^v)_{j-i+1}(\mathfrak{o}_{\tilde{v}}^v)_i\right)\left(\sum_{\tilde{v'}\in V'}(\mathfrak{d}_{\tilde{v'}}^{v'})_{j-i+1}(\mathfrak{o}_{\tilde{v'}}^{v'})_i\right)
-\end{equation}
-\fi
-
-
 \newpage
 
 \renewcommand\refname{References}
@@ -884,6 +852,11 @@ w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}\left(\sum_{\tilde{v}\in V}(\mathfrak{d
 		Thomas H. Cormen, Charles E. Lesierson, Ronald L. Rivest, Clifford Stein.
 		\emph{Introduction to Algorithms 3rd ed.}.
 		MIT Press, 2009.
+		
+		\bibitem{string-kernels}
+		Christina Leslie, Rui Kuang.
+		\emph{Fast String Kernels using Inexact Matching for Protein Sequences}.
+		Columbia University, 2004
 		
 \end{thebibliography}
 
