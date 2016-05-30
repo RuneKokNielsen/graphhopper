@@ -598,7 +598,9 @@ where $P_{G_{\tilde{v}}}$ is the set of all paths in $G_{\tilde{v}}$.
 Adding gappy paths simply consists of adding new edges to the shortet path DAG. Afterwards we compute $M$ and eventually $K$ in the same way as we normally would as discussed in section \ref{section:graphhopper}.
 
 \subsubsection{Computational analysis (continued)}
-Adding gaps..
+In this section we 
+
+
 \subsubsection{Implementation}
 In this section we will show how simple it is to add gaps to our current graphhopper implementation.
 \begin{lstlisting}
@@ -736,7 +738,7 @@ The product consists of a C++ application which may be compiled using a MEX-comp
 \subsection{Implemented functionality}
 The application computes the GraphHopper kernel matrix on a set of graphs using a (possibly parameterized) node kernel and allowing gaps of size $s\geq 0$ as specified by the user. The implemented node kernels are detailed in section \ref{section:node-kernels}. It is mainly supposed to be compiled using a MEX-compiler and executed directly in MATLAB but may also be compiled as a standalone application using file-based in- and output.
 
-The project also contains a MATLAB script for cross-validating node kernel parameters (extending the functionality of scripts by CITATION NEEDED) and a C++ application for translating .mat files into the file format accepted by the standalone GraphHopper application.
+The project also contains a MATLAB script for cross-validating node kernel parameters (extending the functionality of scripts supplied with \cite{graphhopper}\footnote{https://www.bsse.ethz.ch/mlcb/research/machine-learning/graph-kernels/scalable-kernels-for-graphs-with-continuos-attributes.html}) and a C++ application for translating .mat files into the file format accepted by the standalone GraphHopper application.
 
 \subsection{Possible extensions}
 Given more time, one could consider implementing multiple extensions to the current application.
@@ -774,7 +776,7 @@ Basic specifications of the data sets used throughout our experiments are suppli
 \subsubsection{Details}
 \textbf{Mutag, Enzymes, NCI1, NCI109, DD} are all standard benchmark datasets based on chemoinformatics downloaded from ETH Zürich Department of Biosystems Science and Engineering\footnote{https://www.bsse.ethz.ch/mlcb}.
 
-\textbf{Airways subsampled} consists of graph data converted from images of lung blood vessels. The task is to determine whether a given lung belongs to a smoker or a healthy person.
+\textbf{Airways subsampled} consists of graph data converted from images of lung blood vessels. The task is to determine whether a given lung belongs to a healthy individual or one suffering from Chronic Obstructive Pulmonary Disease (COPD) \cite{graphhopper}.
 
 \textbf{Reddit binary} contains data from the social media website reddit.com. Each graph is a discussion thread belongning to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users iff one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node. The task is to determine whether a given thread belongs to a question/answer-based or discussion-based subreddit. The data is supplied in Pinar Yanardag's work\footnote{http://web.ics.purdue.edu/$\sim$ypinar/kdd/} with Deep Graph Kernels.
 
