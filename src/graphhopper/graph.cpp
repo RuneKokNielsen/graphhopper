@@ -160,29 +160,18 @@ void Graph::prepareNode(Node *src, int gaps){
       Node *v = V[i];
       vector<Node*> tmpNodes;
       vector<Node*> tmptmpNodes;
-      
+
       tmptmpNodes = v -> tmp_parents;
       for (int p = 0; p < gaps; p++) {
         tmpNodes = tmptmpNodes;
-	tmptmpNodes.clear();
-	for(int q = 0; q < tmpNodes.size(); q++) {
+        tmptmpNodes.clear();
+        for(int q = 0; q < tmpNodes.size(); q++) {
           for(int r = 0; r < tmpNodes[q] -> tmp_parents.size(); r++) {
             v -> tmp_grandParents.push_back(tmpNodes[q] -> tmp_parents[r]);
-	    tmptmpNodes.push_back(tmpNodes[q] -> tmp_parents[r]);
-	  }
-	}
-      }
-      
-      tmptmpNodes = v -> tmp_children;
-      for(int k = 0; k < gaps; k++) {
-        tmpNodes = tmptmpNodes;
-	tmptmpNodes.clear();
-        for(int j=0; j< tmpNodes.size(); j++){
-	  for(int l = 0; l < tmpNodes[j] -> tmp_children.size(); l++) {
-            v -> tmp_grandChildren.push_back(tmpNodes[j] -> tmp_children[l]);
-	    tmptmpNodes.push_back(tmpNodes[j] -> tmp_children[l]);
-	  }
-	}
+            tmptmpNodes.push_back(tmpNodes[q] -> tmp_parents[r]);
+            tmpNodes[q]->tmp_parents[r]->tmp_grandChildren.push_back(v);
+          }
+        }
       }
       tmpNodes.clear();
       tmptmpNodes.clear();
