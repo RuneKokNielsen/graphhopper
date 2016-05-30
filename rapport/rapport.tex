@@ -55,6 +55,7 @@ mathescape
 \def\multiset#1#2{\ensuremath{\left(\kern-.3em\left(\genfrac{}{}{0pt}{}{#1}{#2}\right)\kern-.3em\right)}}
 
 \usepackage{caption}
+\captionsetup{font=small}
 
 \usepackage{mathtools}
 \DeclarePairedDelimiter\ceil{\lceil}{\rceil}
@@ -107,13 +108,13 @@ mathescape
 \newpage
 
 \section{Introduction}
-This report presents our work and the theory used developing and testing an efficient implementation of the GraphHopper kernel in C++ for our Bachelor thesis. While we do introduce the basics behind SVM and kernels based on our earlier work in \cite{svm-graph-kernels} the focus will primarily lie on the algorithm behind the kernel itself as well as the introduction of \textit{Gaps}. After presenting the theory we will provide the results of our experiments analysing the time efficiency of our implementation compared to an existing MATLAB-implementation as well as the effect on classification accuracy in different datasets when adding \textit{Gaps} to the kernel. 
+This report presents our work and the theory used developing and testing an efficient implementation of the GraphHopper kernel with \textit{Gappy paths} in C++ for our Bachelor thesis. While we do introduce the basics behind SVM and kernels based on our earlier work in \cite{svm-graph-kernels} the focus will primarily lie on the algorithm behind the kernel itself as well as the introduction of \textit{Gaps}. Gaps have been proved useful in string kernels but have to our knowledge never before been implemented in a graph kernel. After presenting the theory we will provide the results of our experiments analysing the time efficiency of our implementation compared to an existing MATLAB-implementation as well as the effect on classification accuracy in different datasets when adding \textit{Gaps} to the kernel.
 
 \section{SVM}
-Before introducing the graphhopper kernel we need to establish some essential underlying theory. In this section we will focus on the basic theory of classification, SVM, kernels and cross-validation. This is a condensed summary of the most relevant parts of our former work \cite{svm-graph-kernels} where we discuss the topics thoroughly.
+Before introducing the GraphHopper kernel we need to establish some essential underlying theory. In this section we will focus on the basic theory of classification, SVM, kernels and cross-validation. This is a condensed summary of the most relevant parts of our former work \cite{svm-graph-kernels} where we discuss the topics thoroughly.
 
 \subsection{Classification}
-The core problem is data classification, i.e. determining the class of some data point from a limited number of predefined classes. In the context of this report we will be working with binary classification of graphs using SVM.
+The core problem is data classification, i.e.\ determining the class of some data point from a limited number of predefined classes. In the context of this report we will be working with binary classification of graphs using SVM.
 
 \subsection{SVM}
 SVM is a binary classification technique used to create classification models. The technique works by placing a hyperplane between two optimal data points in the training set (\textit{the support vectors}) such that the hyperplane successfully separates the data points by their classes as far possible. Such a hyperplane in a 2-dimensional, linear seperable case is illustrated in figure \ref{fig:hyperplane}. The accuracy of the model is then measured by how successfully the hyperplane classifies new data points with known classes.
@@ -121,7 +122,7 @@ SVM is a binary classification technique used to create classification models. T
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=10cm]{svm_plot}
-	\caption{\textit{B1 is the hyperplane, which split the records into a classification.}}
+	\caption{\textit{B1 is the hyperplane which splits the data points by their classes. The planes b11 and b12 represent the margins of B1 and intersects their respective support vectors.}}
 	\label{fig:hyperplane}
 \end{figure}
 
@@ -133,34 +134,56 @@ L_D = \sum_{i=1}^{n}\lambda_i-\frac{1}{2}\sum_{i,j}\lambda_i\lambda_j y_iy_j x_i
 where $x_i$ is a data point, $y_i\in \{-1, 1\}$ is its class and $\lambda_i$ is its Lagrange multiplier.
 
 \subsection{Kernels}
-The data illustrated in figure \ref{fig:hyperplane} is linearly separable, i.e. may be separated by a hyperplane. However, this is not at all the case for all data. When working with linearly inseparable data we may, however, transform the data points into some $x\leq\infty$-dimensional space such that the transformed data points become linearly separable. The optimization problem is then simply changed to
+The data illustrated in figure \ref{fig:hyperplane} is linearly separable, i.e.\ may be separated by a hyperplane. However, this is not at all the case for all data. When working with linearly inseparable data we may, however, transform the data points into some $x\leq\infty$-dimensional space such that the transformed data points become linearly separable. The optimization problem is then simply changed to
 \begin{equation}
 \label{eq:kernel_function_phi}
 L_D = \sum_{i=1}^{n}\lambda_i-\frac{1}{2}\sum_{i,j}\lambda_i\lambda_j y_iy_j\Phi(x_i)\cdot\Phi(x_j)
 \end{equation}
 where $\Phi:\chi_1\rightarrow\chi_2$ is some transformation that (hopefully) makes the data somewhat more separable.
 
-Finding this transformation $\Phi$ is, however, a daunting task (let alone transforming all the data). Luckily, as proved by Mercer's theorem (see \cite{svm-graph-kernels}), for any symmetrical and positive semi-definite function $k(x_i,x_j)$ there will exist some transformation $\Phi$ such that $k(x_i,x_j)=\langle\Phi(x_i),\Phi(x_j)\rangle$. As a consequence, if we can define some function $k(x_i,x_j)$ with these properties then we can substitute this function (called a kernel function, or just kernel) into the optimization problem:
+Finding this transformation $\Phi$ is, however, a daunting task (let alone transforming all the data). We work around this issue by using the \textit{kernel trick} based on Mercer's theorem.
+
+\textbf{Mercer's theorem}\\
+\textit{Let $k:\chi_1\times\chi_1\rightarrow\mathbb{R}$ be a symmetric, positive semidefinite function. Then there exists some transformation $\Phi:\chi_1\rightarrow\chi_2$ such that}
+\begin{equation}
+\langle\Phi(x_i),\Phi(x_j)\rangle=k(x_i,x_j)
+\end{equation}
+
+We supply a proof for this theorem in \cite{svm-graph-kernels}.
+
+Using this knowledge we may now define a function $k(x_i,x_j)$ with the given properties and substitute this function (called a kernel function, or just kernel) into the optimization problem as seen in (\ref{eq:kernel_function}). This substitution is known as the kernel trick.
 
 \begin{equation}
 \label{eq:kernel_function}
 L_D = \sum_{i=1}^{n}\lambda_i-\frac{1}{2}\sum_{i,j}\lambda_i\lambda_j y_iy_jk(x_i,x_j)
 \end{equation}
 
-The task is then to find a kernel that manages to compare the features of the data in a meaningful way making them separable in the transformed space. The GraphHopper kernel attempts to do just that by analysing a combination of structure and node labels in graphs.
+The task is then to find a kernel that manages to compare the features of the data in a meaningful way making them separable in the transformed space. The GraphHopper kernel attempts to do just that by analysing a combination of structure and node labels in graphs. As it is defined exclusively for graphs it belongs to a subgroup of kernels aptly named graph kernels.
 
 Assuming a kernel function $k(x_i,x_j)$ we define the matrix $K$ to be an $N\times N$ matrix (where $N$ is the number of data points) such that $K_{ij}=k(x_i,x_j)$. Using SVM in practice then consists of computing $K$ and creating a model through SVM based on the result.
 
 \subsection{Cross-validation}
 There may be several parameters involved when using SVM to create a classification model. To properly select these parameters and realistically predict the resulting model's accuracy we take advantage of cross-validation.
 
-To cross-validate parameters and accuracy we split the data set $M$ into $p$ parts. We then iterate $p$ times each time selecting different combinations of a test, validation and training set $Test_i, Val_i, Train_i\subset M$ such that $|Test_i|=|Val_i|=\frac{|M|}{p}$,  $|Train_i| = \frac{|M| * (p-2)}{p}$ and such that there is no overlap between any of the sets. In each iteration $i$ we train a model for all combinations of parameters using the training set $Train_i$ and estimate their accuracy by predicting on the validation set $Val_i$. We then select the combination of parameters that gave the highest accuracy and train a new model using $Train_i\cup Val_i$ with these parameters and finally estimate its accuracy by predicting on the test set $Test_i$ saving the resulting accuracy as $acc_i$. After $i$ iterations we estimate the expected accuracy to be the average accuracy achieved, i.e. $\frac{acc_1 + acc_2 + ... + acc_i}{i}$.
+To cross-validate parameters and accuracy we split the data set $M$ into $p$ parts. We then iterate $p$ times each time selecting different combinations of a test, validation and training set $Test_i, Val_i, Train_i\subset M$ such that $|Test_i|=|Val_i|=\frac{|M|}{p}$,  $|Train_i| = \frac{|M| * (p-2)}{p}$ and such that there is no overlap between any of the sets (see figure). In each iteration $i$ we train a model for all combinations of parameters using the training set $Train_i$ and estimate their accuracy by predicting on the validation set $Val_i$. We then select the combination of parameters that gave the highest accuracy and train a new model using $Train_i\cup Val_i$ with these parameters and finally estimate its accuracy by predicting on the test set $Test_i$ saving the resulting accuracy as $acc_i$. After $i$ iterations we estimate the expected accuracy to be the average accuracy achieved, i.e. $\frac{acc_1 + acc_2 + ... + acc_i}{i}$.
+
+
+\begin{minipage}{0.7\linewidth}
+	To cross-validate parameters and accuracy we split the data set $M$ into $p$ parts. We then iterate $p$ times each time selecting different combinations of a test, validation and training set $Test_i, Val_i, Train_i\subset M$ such that $|Test_i|=|Val_i|=\frac{|M|}{p}$,  $|Train_i| = \frac{|M| * (p-2)}{p}$ and such that there is no overlap between any of the sets (figure \ref{fig:cross_validation}). In each iteration $i$ we train a model for all combinations of parameters using the training set $Train_i$ and estimate their accuracy by predicting on the validation set $Val_i$. We then select the combination of parameters that gave the highest accuracy and train a new model using $Train_i\cup Val_i$ with these parameters and finally estimate its accuracy by predicting on the test set $Test_i$ saving the resulting accuracy as $acc_i$. After $i$ iterations we estimate the expected accuracy to be the average accuracy achieved, i.e. $\frac{acc_1 + acc_2 + ... + acc_i}{i}$.
+\end{minipage}
+\hspace{0.5cm}
+\begin{minipage}[c]{0.3\linewidth}
+	\centering
+		\includegraphics[width=3cm]{10-fold-cross-validation_3}
+		\captionof{figure}{Each iteration selects a new combination of subsets.}
+		\label{fig:cross_validation}
+\end{minipage}
 
 \section{GraphHopper}
 \label{section:graphhopper}
 The following description of the GraphHopper kernel is based on the presentation in \cite{graphhopper}.
 
-GraphHopper is a graph kernel, i.e. a kernel for comparing graph data. The kernel effectively analyses the structure of the graphs by comparing shortest paths similarly to \textit{shortest path kernel}\footnote{We introduce the shortest path kernel in our earlier work \cite{svm-graph-kernels}.} (SPK). An advantage of these kernels is that they may analyse the structure of the graphs along with the properties of their nodes.
+GraphHopper is a graph kernel, i.e.\ a kernel for comparing graph data. The kernel effectively analyses the structure of the graphs by comparing shortest paths similarly to \textit{shortest path kernel}\footnote{We give a detailed description of the shortest path kernel in \cite{svm-graph-kernels}.} (SPK)\cite{shortest-path}. An advantage of these kernels is that they may analyse the structure of the graphs along with the properties of their nodes.
 While SPK compares all shortest paths with a complexity of $\mathcal{O}(n^4)$, where $n$ is the number of nodes, GraphHopper only compares shortest paths of equal length with complexity $\mathcal{O}(n^2(m+\log n+\delta^2 + d))$ where $m$ is the number of edges, $\delta$ is the diameter of the graph and $d$ is the dimension of the node attributes. The complexity will be explained along with the algorithm itself.
 
 Let $G=(V,E)$ and $G'=(V',E')$ be graphs such that $V,V'$ are nodes and $E,E'$ are edges and let $P,P'$ be the sets of all shortest paths in $G$ and $G'$ respectively. The kernel is then a sum of path kernel $k_p$ over each pair of shortest paths $\pi\in P,\ \pi'\in P'$:
@@ -360,7 +383,7 @@ end
 \label{algorithm:o}
 \end{figure}
 
-When computing $\mathfrak{O}_{\tilde{v}}$ each node sends exactly one message of size $\leq \delta$ to all of its children which are then updated. I.e. $|E_{\tilde{v}}|$ messages of size $\leq \delta$ giving a complexity of $\mathcal{O}(|E_{\tilde{v}}|\delta) \leq \mathcal{O}(|E|\delta)$.
+When computing $\mathfrak{O}_{\tilde{v}}$ each node sends exactly one message of size $\leq \delta$ to all of its children which are then updated. I.e.\ $|E_{\tilde{v}}|$ messages of size $\leq \delta$ giving a complexity of $\mathcal{O}(|E_{\tilde{v}}|\delta) \leq \mathcal{O}(|E|\delta)$.
 
 \subsubsection{Computing $\mathfrak{D}_{\tilde{v}}$}
 
@@ -402,7 +425,7 @@ When computing $\mathfrak{D}_{\tilde{v}}$ with the algorithm detailed in figure 
 
 
 \subsubsection{Putting things together}
-Having computed $\mathfrak{O}_{\tilde{v}}$ and $\mathfrak{D}_{\tilde{v}}$ we now observe that the number of times that $v$ appears as the $i$'th node in a path of discrete length $j$ in $G_{\tilde{v}}$ must be the number of paths from $\tilde{v}$ to $v$ in $G_{\tilde{v}}$ of length $i$ times the number of paths of length $j-i+1$ in $G_{\tilde{v}}$ starting in $v$; i.e. $\mathfrak{O}_{\tilde{v}}^v(v,i)\mathfrak{D}_{\tilde{v}}(v,j - i + 1)$.
+Having computed $\mathfrak{O}_{\tilde{v}}$ and $\mathfrak{D}_{\tilde{v}}$ we now observe that the number of times that $v$ appears as the $i$'th node in a path of discrete length $j$ in $G_{\tilde{v}}$ must be the number of paths from $\tilde{v}$ to $v$ in $G_{\tilde{v}}$ of length $i$ times the number of paths of length $j-i+1$ in $G_{\tilde{v}}$ starting in $v$; i.e.\ $\mathfrak{O}_{\tilde{v}}^v(v,i)\mathfrak{D}_{\tilde{v}}(v,j - i + 1)$.
 
 \textbf{Example}\\
 Consider the node $d$ in figure \ref{fig:shortest-path-dag}. Trying to find the number of paths in $G_{a}$ such that $d$ is the 2nd node in a path of length 3 we can intuitively see that there is one such path: $[a,d,c]$. This equivalent to the number of paths of length 2 from $a$ to $d$ times the number of paths of length $3-2+1=2$ starting in $d$.
@@ -459,7 +482,7 @@ for comparing two graphs where $n$ is the greatest number of nodes in a single g
 \mathcal{O}\left(N\left(n\left(m\log n + m\delta + n\delta^2\right)\right)\right)
 \end{equation}
 
-We now have to compute $k_{graphhopper}$ on each unique pair of graphs. In practice, since a kernel is by definition symmetric, we do not consider all $N^2$ sequences. Instead, we count the number of multisets of cardinality 2 in the set of $N$ graphs, i.e. $\multiset{N}{2}$. This gives a complexity of
+We now have to compute $k_{graphhopper}$ on each unique pair of graphs. In practice, since a kernel is by definition symmetric, we do not consider all $N^2$ sequences. Instead, we count the number of multisets of cardinality 2 in the set of $N$ graphs, i.e.\ $\multiset{N}{2}$. This gives a complexity of
 \begin{equation}
 \mathcal{O}\left(\multiset{N}{2}\left(n^2\left(d+\delta^2\right)\right)\right)
 \end{equation}
@@ -556,7 +579,7 @@ end
 \subsection{Gaps}
 The following section is based on the description of GraphHopper with gaps on trees from \cite{gappy}. While this paper only describes the use of gaps on trees we will be expanding the definitions to also work on graphs in general.
 
-When working on graph data (or string sequences, see \cite{string-kernels}) we may wish to identify paths that are very similar although they may contain small differences. These dissimilarities could be a result of many things depending on the given data e.g. mutations in DNA, missing data from image conversion etc. In the implementation detailed until now we have only been able to identify identical paths but this can be changed by allowing gaps. Introducing gaps allows us to create new paths called \textit{gappy paths} in the graphs which may skip up to $s$ nodes at a time (i.e. gaps of size $\leq s$). In figure \ref{fig:simple_gaps} is it shown how we can apply gaps to a simple graph.
+When working on graph data (or string sequences, see \cite{string-kernels}) we may wish to identify paths that are very similar although they may contain small differences. These dissimilarities could be a result of many things depending on the given data e.g. mutations in DNA, missing data from image conversion etc. In the implementation detailed until now we have only been able to identify identical paths but this can be changed by allowing gaps. Introducing gaps allows us to create new paths called \textit{gappy paths} in the graphs which may skip up to $s$ nodes at a time (i.e.\ gaps of size $\leq s$). In figure \ref{fig:simple_gaps} is it shown how we can apply gaps to a simple graph.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=12cm]{gaps}
@@ -574,7 +597,8 @@ where $P_{G_{\tilde{v}}}$ is the set of all paths in $G_{\tilde{v}}$.
 
 Adding gappy paths simply consists of adding new edges to the shortet path DAG. Afterwards we compute $M$ and eventually $K$ in the same way as we normally would as discussed in section \ref{section:graphhopper}.
 
-
+\subsubsection{Computational analysis (continued)}
+Adding gaps..
 \subsubsection{Implementation}
 In this section we will show how simple it is to add gaps to our current graphhopper implementation.
 \begin{lstlisting}
@@ -638,7 +662,7 @@ end
 As mentioned in section $\ref{section:graphhopper}$ one of the advantages of GraphHopper is that we apply any node kernel to compare the nodes. In this section we introduce the node kernels that we have chosen to include in our implementation. The following equations will be comparing two values $x,x'$ which when used as node kernel represent the labels of two nodes $v,v'$.
 
 \subsection{Dirac}
-Dirac is a simple kernel best suited for comparing discrete values representing non-continuous data, e.g. class labels. The kernel returns 1 if the two values are equal and 0 otherwise. The kernel is formally described in (\ref{eq:dirac}).
+Dirac is a simple kernel best suited for comparing discrete values representing non-continuous data, e.g. categorized nodes. The kernel returns 1 if the two values are equal and 0 otherwise. The kernel is formally described in (\ref{eq:dirac}).
 \begin{equation}
 \label{eq:dirac}
 k_{dirac}(x, x')=\begin{cases}
@@ -648,10 +672,10 @@ k_{dirac}(x, x')=\begin{cases}
 \end{equation}
 
 \subsection{Linear}
-The linear node kernel is the dot product of $x$ and $x'$ as formally described in (\ref{eq:linear}).
+The linear node kernel is the dot product of $x$ and $x'$ as formally described in (\ref{eq:linear}). It is applicable to both discrete and continuous data.
 \begin{equation}
 \label{eq:linear}
-k_{linear}(x, x') = x(i) \cdot x'(i)
+k_{linear}(x, x') = x \cdot x'
 \end{equation}
 
 \subsection{Gaussian}
@@ -662,14 +686,14 @@ The Gaussian kernel is a popular choice for comparing continuous data. The kerne
 k_{gaussian}(x, x') = exp(-\frac{||x - x'||^2}{2\sigma^2})
 \end{equation}
 
-Our implementation is based on an optimized equation as defined in (\ref{eq:gaussian_simple}) where $\mu=\frac{1}{2\sigma^2}$. The two equations yield the same result but using $\mu$ as a parameter instead of $\sigma$ we save time by eliminating some calculations.
+Our implementation is based on a compressed equation as defined in (\ref{eq:gaussian_simple}) where $\mu=\frac{1}{2\sigma^2}$. The two equations yield the same result but using $\mu$ as a parameter instead of $\sigma$ we save time by eliminating some calculations.
 
 \begin{equation}
 \label{eq:gaussian_simple}
 k_{gaussian}(x, x') = exp(-\mu ||x - x'||^2)
 \end{equation}
 
-The curve of the Gaussian kernel is illustrated in figure \ref{fig:gaussian_graph} where the $x$ axis represents the difference between two values and the $y$ axis represents the result yielded by this Gaussian funciton. The width of the curve is controlled by the $\sigma$ parameter. When $\sigma$ grows the curve gets wider and as such the function allows for more dissimilarity.
+The curve of the Gaussian kernel is illustrated in figure \ref{fig:gaussian_graph} where the $x$ axis represents the difference between two values and the $y$ axis represents the result yielded by this Gaussian funciton. The width of the curve is controlled by the $\sigma$ parameter. When $\sigma$ grows the curve gets wider and as such the function becomes less sensitive to dissimilarity.
 
 \begin{figure}[H]
 	\centering
@@ -680,7 +704,7 @@ The curve of the Gaussian kernel is illustrated in figure \ref{fig:gaussian_grap
 
 
 \subsection{Bridge}
-The Bridge kernel\footnote{As defined in \cite{shortest-path}} as formalized in equation (\ref{eq:bridge}) is similar to the Gaussian kernel in that it yields a result between 0 (for very dissimilar values) and some constant $c>0$ for equal values. Instead of a smooth curve, however, this kernel returns $c$ minus the linear distance between the values although not less than 0. The $c$ constant is a parameter determining the maximum distance between a pair of values before they are regarded as non-similar and may be selected by cross-validation.
+The Bridge kernel\footnote{As defined in \cite{shortest-path}} as formalized in equation (\ref{eq:bridge}) is similar to the Gaussian kernel in that it yields a result between 0 (for very dissimilar values) and some constant $c>0$ for equal values. Instead of a smooth curve, however, this kernel returns $c$ minus the linear distance between the values although not less than 0. The $c$ constant is a parameter determining the maximum distance between a pair of values before they are regarded as non-similar and may be selected by cross-validation. Note that the Bridge kernel is only positive semidefinite for one-dimensional node data.
 
 \begin{equation}
 \label{eq:bridge}
@@ -697,12 +721,12 @@ The kernel is illustrated in figure \ref{fig:bridge_graph} .
 \end{figure}
 
 \subsection{Dirac $\times$ Gaussian}
-Dirac $\times$ Gaussian is used to combine discrete non-continuous values with continuous values. Given tuples a pair of $(x,y),(x',y')$ where $x,x'$ are discrete non-continuous values and $y,y'$ are continuous values the kernel returns $k_{gaussian}(y,y')$ if $x=x'$ and 0 otherwise. This may be formalized as a product between the Dirac kernel and the Gaussian kernel as seen in equation (\ref{eq:diractimesgaussian}).
+Dirac $\times$ Gaussian is used to combine discrete non-continuous values with continuous values. Given a pair of tuples $(x,y),(x',y')$ where $x,x'$ are discrete categorized values and $y,y'$ are continuous values the kernel returns $k_{gaussian}(y,y')$ if $x=x'$ and 0 otherwise. This may be formalized as a product between the Dirac kernel and the Gaussian kernel as seen in equation (\ref{eq:diractimesgaussian}).
 \begin{equation}
 \label{eq:diractimesgaussian}
 k_{diractimesgaussian}((x,y), (x',y')) = k_{dirac}(x, x') k_{gaussian}(y, y')
 \end{equation}
-Apart from possibly getting a higher accuracy than when using Gaussian alone this kernel may also be faster since we can skip computing the possibly heavy Gaussian product (depending on data dimensionality) when the discrete values are not equal and the extra task of determining equality of discrete values is very light in comparisson.
+Apart from possibly getting a higher accuracy than when using Gaussian alone this kernel may also be faster since we can skip computing the possibly heavy Gaussian product (depending on data dimensionality) when the discrete values are not equal and the extra task of determining equality of discrete values is very light in comparison.
 
 \section{Product}
 The product consists of a C++ application which may be compiled using a MEX-compiler and run directly in MATLAB. A manual for installation and use is provided in appendix \ref{appendix:manual}. We have chosen to leave out technical details of the implementation in this report but the source code is available online as described in the manual. The solution has been tested in great part by comparing our results to the results generated by an existing implementation in MATLAB available at
@@ -712,14 +736,14 @@ The product consists of a C++ application which may be compiled using a MEX-comp
 \subsection{Implemented functionality}
 The application computes the GraphHopper kernel matrix on a set of graphs using a (possibly parameterized) node kernel and allowing gaps of size $s\geq 0$ as specified by the user. The implemented node kernels are detailed in section \ref{section:node-kernels}. It is mainly supposed to be compiled using a MEX-compiler and executed directly in MATLAB but may also be compiled as a standalone application using file-based in- and output.
 
-The project also contains a MATLAB script for cross-validating node kernel parameters and a C++ application for translating .mat files into the file format accepted by the standalone GraphHopper application.
+The project also contains a MATLAB script for cross-validating node kernel parameters (extending the functionality of scripts by CITATION NEEDED) and a C++ application for translating .mat files into the file format accepted by the standalone GraphHopper application.
 
 \subsection{Possible extensions}
 Given more time, one could consider implementing multiple extensions to the current application.
 
-As mentioned earlier we have supplied a simple MATLAB script for cross-validating node kernel parameters. This script works by running the GraphHopper application repeatedly each time recomputing $M$ before computing $K$ using the new node kernel parameter. By implementing this functionality inside the application itself we could compute multiple $K$ matrices reusing the same $M$ matrix. On the same note we could consider cross-validating the choice of node kernel and the maximum gap size in the GraphHopper application.
+As mentioned earlier we have supplied a simple MATLAB script for cross-validating node kernel parameters. This script works by running the GraphHopper application repeatedly each time recomputing $M$ before computing $K$ using the new node kernel parameter. By implementing this functionality inside the application itself we could compute multiple $K$ matrices reusing the same $M$ matrix. On the same note we could consider cross-validating the maximum gap size in the GraphHopper application.
 
-Since the current application returns the $K$ matrix the natural extension of cross-validation would be to return a list of $K$ matrices each paired with the parameters they were computed with (which may then be classified and cross-validated). As this would potentially require a massive amount of memory it should be considered to implement the classification process in the application as well.
+Since the current application returns the $K$ matrix, the natural extension of cross-validation would be to return a list of $K$ matrices each paired with the parameters they were computed with (which may then be classified and cross-validated). As this would potentially require a massive amount of memory it should be considered starting the classification process from within the application itself.
 
 \section{Experiments}
 In this section we provide and discuss results based on computations made using our product. First we analyse the running time of our implementation compared to an implementation scripted in MATLAB. Later, we examine the effect on accuracy when adding gaps of different lengths.
@@ -748,11 +772,11 @@ Basic specifications of the data sets used throughout our experiments are suppli
 \end{table}
 
 \subsubsection{Details}
-\textbf{Mutag, Enzymes, NCI1, NCI109, DD} are all standard benchmark datasets based on chemoinformatics.
+\textbf{Mutag, Enzymes, NCI1, NCI109, DD} are all standard benchmark datasets based on chemoinformatics downloaded from ETH Zürich Department of Biosystems Science and Engineering\footnote{https://www.bsse.ethz.ch/mlcb}.
 
 \textbf{Airways subsampled} consists of graph data converted from images of lung blood vessels. The task is to determine whether a given lung belongs to a smoker or a healthy person.
 
-\textbf{Reddit binary} contains data from the social media website reddit.com. Each graph is a discussion thread belongning to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users iff one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node. The task is to determine whether a given thread belongs to a question/answer-based or discussion-based subreddit.
+\textbf{Reddit binary} contains data from the social media website reddit.com. Each graph is a discussion thread belongning to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users iff one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node. The task is to determine whether a given thread belongs to a question/answer-based or discussion-based subreddit. The data is supplied in Pinar Yanardag's work\footnote{http://web.ics.purdue.edu/$\sim$ypinar/kdd/} with Deep Graph Kernels.
 
 
 \subsection{Runtime experiments (C++ vs MATLAB)}
@@ -855,7 +879,7 @@ Gap size 50: 69.7833 (std. 1.4825)
 
 		\bibitem{gappy}
 		Aasa Feragen, Karsten Borgwardt.
-		\emph{Efficient tree-path kernels for attributde trees}.
+		\emph{Efficient tree-path kernels for attributed trees}.
 		Not published yet.
 
 		\bibitem{shortest-path}

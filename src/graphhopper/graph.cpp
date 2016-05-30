@@ -235,8 +235,8 @@ vector<int> *Graph::compDRec(Node *src, Node *v){
   for(int i=0; i<v->tmp_children.size(); i++){
     Node *c = v->tmp_children[i];
     vector<int> b = *compDRec(src, c);
-    int sizea = src->D[v->index].size();
-    int sizeb = b.size();
+    int sizea = (int) src->D[v->index].size();
+    int sizeb = (int) b.size();
     for(int i=0; i<sizeb; i++){
       int ia = i + 1; 
       if(ia < sizea){
