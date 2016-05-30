@@ -620,27 +620,11 @@ function prepareNode($graph$, $\tilde{v}$)
         for $j \in 1..current\_parents.size()$
           for $k \in 1..current\_parents[j].parents.size()$
             $v.grandParents.append(current\_parents[j].parents[k])$
+            $current\_parents[j].parents[k].grandChildren.append(v)$
             $tmp\_parents.append(current\_parents[j].parents[k])$
           end
         end
       end
-
-      #Find all the new children, 
-      #with a gap of size $1$..$s$.
-      $current\_children = []$
-      $tmp\_children = v.parents$
-      for $i \in 1..s$
-        $current\_children = tmp\_children$
-        $tmp\_children.clear()$
-        for $j \in 1..current\_children.size()$
-          for $k \in 1..current\_children[j].children.size()$
-            $v.grandChildren.append(current\_children[j].children[k])$
-            $tmp\_children.append(current\_children[j].children[k])$
-          end
-        end
-      end
-    end
-  end
 
   #Move grandparents/grandchildren
   #to parents/children.
@@ -844,7 +828,9 @@ The results are presented in table \ref{table:runtime_results}. The \textit{syst
 		Airways subsampled & Gaussian & $\mathbf{63.180 (std. 1.7900)}$ & $\mathbf{62.600 (std. 1.3233)}$ & 61.6800 (std. 2.0422) & & & 61.9800 (std. 1.8961) \\
 		NCI1 & Dirac & 72.7908 (std. 0.2457) & 67.8589 (std. 0.2417) & 64.4161 (std. 0.6426) & 64.9903 (std. 0.5475) & 64.3698 (std. 0.4042) & 64.4988 (std. 0.4535) \\
 		NCI109 & Dirac & 71.0874 (std. 0.3168) & 66.5413 (std. 0.2810) & 64.3689 (std. 0.5451) & 63.9951 (std. 0.5259) & & \\
-		Reddit binary (300-700) & Dirac & 83.6000 (std. 1.1255) & & & & &  
+		Reddit binary (unlabelled) & Dirac & 100.000 (std. 0.0000) & 99.9500 (std. $<$ 0.001) & & & &  \\
+Collab & Dirac & 78.6580 (std. 0.2647) & & & & & \\
+Collab (unlabelled) & Dirac & 63.3100 (std. 0.0750) & & & & &  
 		\end{tabular}
 	}
 	\caption{\textit{Accuracy results}}
