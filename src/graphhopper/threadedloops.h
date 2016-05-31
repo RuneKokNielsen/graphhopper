@@ -16,9 +16,12 @@ class ThreadedLoops: public KernelComputer{
   int _reportEveryN;
   int _nGraphs;
   int _kSize;
+  bool _complete;
 
   void computeInterval(double **K, vector<Graph*> *graphs, NodeKernel *kernel,
                        int from, int to);
+
+  void printComputed();
 };
 
 
