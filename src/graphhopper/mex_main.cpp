@@ -1,5 +1,6 @@
 
 #define MEX
+#define _GLIBCXX_USE_NANOSLEEP //this_thread::sleep on old gcc
 
 #include <sstream>
 #include <fstream>
