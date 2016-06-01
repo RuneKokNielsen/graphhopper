@@ -734,7 +734,7 @@ The product consists of a C++ application which may be compiled using a MEX-comp
 \subsection{Implemented functionality}
 The application computes the GraphHopper kernel matrix on a set of graphs using a (possibly parameterized) node kernel and allowing gaps of size $s\geq 0$ as specified by the user. The implemented node kernels are detailed in section \ref{section:node-kernels}. It is mainly supposed to be compiled using a MEX-compiler and executed directly in MATLAB but may also be compiled as a standalone application using file-based in- and output.
 
-The project also contains a MATLAB script for cross-validating node kernel parameters (extending the functionality of scripts by CITATION NEEDED) and a C++ application for translating .mat files into the file format accepted by the standalone GraphHopper application.
+The project also contains a MATLAB script for cross-validating node kernel parameters (extending the functionality of scripts supplied with \cite{graphhopper}\footnote{https://www.bsse.ethz.ch/mlcb/research/machine-learning/graph-kernels/scalable-kernels-for-graphs-with-continuos-attributes.html}) and a C++ application for translating .mat files into the file format accepted by the standalone GraphHopper application.
 
 \subsection{Possible extensions}
 Given more time, one could consider implementing multiple extensions to the current application.
@@ -742,6 +742,8 @@ Given more time, one could consider implementing multiple extensions to the curr
 As mentioned earlier we have supplied a simple MATLAB script for cross-validating node kernel parameters. This script works by running the GraphHopper application repeatedly each time recomputing $M$ before computing $K$ using the new node kernel parameter. By implementing this functionality inside the application itself we could compute multiple $K$ matrices reusing the same $M$ matrix. On the same note we could consider cross-validating the maximum gap size in the GraphHopper application.
 
 Since the current application returns the $K$ matrix, the natural extension of cross-validation would be to return a list of $K$ matrices each paired with the parameters they were computed with (which may then be classified and cross-validated). As this would potentially require a massive amount of memory it should be considered starting the classification process from within the application itself.
+
+The processes of computing the $M$ matrices and the $K$ matrix are ideal for parallelization. We have ultimately chosen to leave out this feature in the current release for the sake of simplicity but 
 
 \section{Experiments}
 In this section we provide and discuss results based on computations made using our product. First we analyse the running time of our implementation compared to an implementation scripted in MATLAB. Later, we examine the effect on accuracy when adding gaps of different lengths.
@@ -762,7 +764,7 @@ Basic specifications of the data sets used throughout our experiments are suppli
 	Airways subsampled & 500 & 221.31 & 651 & 1 \\
 	NCI1 & 4110 & 29.87 & 111 & 1\\
 	NCI109 & 4127 & 29.68 & 111 & 1 \\
-	Reddit binary (300-700) & 401 & 662.77 & 3782 & 1 \\
+	Reddit binary & 2000 & 429.63 & 3782 & 1 \\
 	DD & 1178 & 284.32 & 5748 & 1
 \end{tabular}}
 	\caption{\textit{Data set specifications}}
@@ -772,13 +774,13 @@ Basic specifications of the data sets used throughout our experiments are suppli
 \subsubsection{Details}
 \textbf{Mutag, Enzymes, NCI1, NCI109, DD} are all standard benchmark datasets based on chemoinformatics downloaded from ETH Zürich Department of Biosystems Science and Engineering\footnote{https://www.bsse.ethz.ch/mlcb}.
 
-\textbf{Airways subsampled} consists of graph data converted from images of lung blood vessels. The task is to determine whether a given lung belongs to a smoker or a healthy person.
+\textbf{Airways subsampled} consists of graph data converted from images of lung blood vessels. The task is to determine whether a given lung belongs to a healthy individual or one suffering from Chronic Obstructive Pulmonary Disease (COPD) \cite{graphhopper}.
 
 \textbf{Reddit binary} contains data from the social media website reddit.com. Each graph is a discussion thread belongning to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users iff one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node. The task is to determine whether a given thread belongs to a question/answer-based or discussion-based subreddit. The data is supplied in Pinar Yanardag's work\footnote{http://web.ics.purdue.edu/$\sim$ypinar/kdd/} with Deep Graph Kernels.
 
 
 \subsection{Runtime experiments (C++ vs MATLAB)}
-In this section we wish to see whether we succeeded in creating a faster implementation using C++ compared to the existing implementation. The results show the running time in seconds when computing the $K$ matrix for a specified dataset with both implementations using the same node kernel as specified.
+In this section we wish to see whether we succeeded in creating a faster implementation using C++ compared to the existing implementation. The results show the running time in seconds when computing the $K$ matrix for a specified data set with both implementations using the same node kernel as specified. All tests are run without parallelization.
 
 \subsubsection{System specifications}
 The computations have been done in various environments as specified in table \ref{table:specs}.
@@ -812,6 +814,7 @@ The results are presented in table \ref{table:runtime_results}. The \textit{syst
 			Mutag & Dirac & 31.6 & \textbf{0.731} & A & 1:43.23\\
 			Enzymes & Dirac & 722.99 & \textbf{16.9} & A & 1:42.78\\
 			Enzymes (Symmetrized) & Gaussian & 256.14 & \textbf{26.55} & A & 1:9.65 \\ 
+			Enzymes (Symmetrized) & Dirac $\times$ Gaussian & 304.37  & \textbf{13.33} & A & 1:22.83\\
 			Airways subsampled & Gaussian & 5518.01 & \textbf{2608.45} & A & 1:2.12 \\
 			NCI1 & Dirac & 62617.89 & \textbf{1695.35} & B & 1:36.94\\
 			NCI109 & Dirac & & \textbf{1831.39} & B & 
@@ -822,6 +825,8 @@ The results are presented in table \ref{table:runtime_results}. The \textit{syst
 \end{table}
 
 \subsubsection{Discussion}
+We have achieved superior running times in all of our tests seemingly varying mainly on the choice of node kernel but also the size of the data sets. The greatest difference is achieved when using \textbf{Dirac} where our implementation runs about 40 times faster reaching a 1:43.23 ratio on a very small data set and 1:36.94 on a larger data set. When using \textbf{Gaussian} the gain is significantly smaller as we only reach from 1:2.12 on a large data set up to 1:9.65 on a small data set. Comparing the tests on Enzymes (Symmetrized) with Gaussian vs. with \textbf{Dirac $\times$ Gaussian} we notice that while our implementation manages to \textbf{half} the running time by using Dirac $\times$ Gaussian the MATLAB implementation requires even more computations than when running Gaussian alone.
+
 \subsection{Accuracy experiments (Gaps vs. no Gaps)}
 
 \subsubsection{Results}

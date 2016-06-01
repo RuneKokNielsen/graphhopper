@@ -1,5 +1,6 @@
 
 #define MEX
+#define _GLIBCXX_USE_NANOSLEEP //this_thread::sleep on old gcc
 
 #include <sstream>
 #include <fstream>
@@ -30,18 +31,25 @@ void mexFlush(){
 }
 
 
-void computeM(vector<Graph*> graphs, int from, int to, int gaps){
-  int nGraphs = (int) graphs.size();
-  int reportEveryN = max(nGraphs / 30, 1);
-  int mCompleted = 0;
+void computeM(vector<Graph*> graphs, int from, int to, int gaps, int *completed){
   for(int i=from; i<=to; i++){
     graphs[i]->calculateM(gaps);
-    mCompleted++;
-    if(mCompleted % reportEveryN == 0 || mCompleted == nGraphs){
-      mexPrintf("M computed: %i / %i\n", mCompleted, nGraphs);
-      mexFlush();
-    }
+    *completed += 1;
   }
+}
+
+void printCompleted(int nGraphs, int *completed, bool *complete){
+  int i = 0;
+  while(!*complete){
+    int c = *completed;
+    if(i < c){
+      mexPrintf("M computed: %i / %i\n", c, nGraphs);
+      mexFlush();
+      i = c;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+  mexPrintf("M computed: %i / %i (Completed) \n", nGraphs, nGraphs);
 }
 
 
@@ -150,7 +158,6 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
 }
 
 
-
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
   try{
@@ -175,11 +182,44 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
     mexPrintf("Data loaded in: %f ms\n", msPassed(tStart));
     mexPrintf("Number of graphs: %d\n", graphs.size());
+    int nThreads = max((int) mxGetScalar(prhs[5]), 1);
+    mexPrintf("Running on %d threads.\n", nThreads);
     mexPrintf("Computing M matrices..\n");
     mexFlush();
 
+    int gaps = (int) mxGetScalar(prhs[4]);
+
     tStart = steady_clock::now();
-    computeM(graphs, 0, ((int) graphs.size()) -1, (int) mxGetScalar(prhs[4]));
+
+
+    int *completed = new int();
+    *completed = 0;
+    //Print M computation status on syncronized thread
+    bool *complete = new bool();
+    *complete = false;
+    thread syncPrint = thread(printCompleted, nGraphs, completed, complete);
+
+    vector<thread*> threads;
+    int chunkSize = (int) ceil(nGraphs / nThreads);
+    int lastEnd = -1;
+    //Start M computation threads
+    for(int i=0; i<nThreads; i++){
+      int end = i == nThreads - 1 ? nGraphs - 1 : lastEnd + chunkSize;
+      thread *t = new thread(computeM, graphs, lastEnd + 1, end, gaps, completed);
+      threads.push_back(t);
+      lastEnd = end;
+    }
+    //Wait for threads to complete
+    while(!threads.empty()){
+      thread *t = threads.back();
+      t->join();
+      threads.pop_back();
+      delete t;
+    }
+    *complete = true;
+    syncPrint.join();
+
+    //computeM(graphs, 0, ((int) graphs.size()) -1, (int) mxGetScalar(prhs[4]));
 
     mexPrintf("M matrices computed in: %f ms\n", msPassed(tStart));
     mexPrintf("Allocate K (%dX%d)..\n", nGraphs, nGraphs);
@@ -193,7 +233,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     mexPrintf("K allocted in: %f ms\n", msPassed(tStart));
     mexPrintf("Compute K..\n");
     mexFlush();
-    KernelComputer *comp = new ThreadedLoops(1);
+    KernelComputer *comp = new ThreadedLoops(nThreads);
 
     tStart = steady_clock::now();
     comp->computeK(K, &graphs, kernel);

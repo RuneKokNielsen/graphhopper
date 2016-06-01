@@ -4,6 +4,7 @@
 #include "gaussian.cpp"
 #include "bridge.cpp"
 #include "diractimesgaussian.cpp"
+#include <stdexcept>
 
 #ifdef MEX
 #include "mex.h"
@@ -65,6 +66,6 @@ LabelType KernelFactory::getLabelType(string type){
   if(type == "both"){
     return LabelType::Both;
   }
-  mexPrintf("Unknown label type: %s\n", type);
+  mexPrintf("Unknown label type: %s\n", type.c_str());
   throw std::invalid_argument(type + " does not name a proper label type. Options are discrete and vector");
 }

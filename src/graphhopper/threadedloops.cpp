@@ -45,12 +45,12 @@ void ThreadedLoops::computeInterval(double **K, vector<Graph*> *pGraphs,
         }
       }
       K[gii][gji] = sum;
-      _calculated ++;
+      _calculated += 1;
       K[gji][gii] = sum;
       if(_calculated % _reportEveryN == 0 || _calculated == _kSize){
         #ifdef MEX
-        mexPrintf("K computed: %i / %i\n", _calculated, _kSize);
-        mexEvalString("pause(.001);");
+        //mexPrintf("K computed: %i / %i\n", _calculated, _kSize);
+        //mexEvalString("pause(.001);");
         #else
         cout << "K computed: " << _calculated << "/" << _kSize << "\n";
         #endif
@@ -59,6 +59,19 @@ void ThreadedLoops::computeInterval(double **K, vector<Graph*> *pGraphs,
   }
 }
 
+void ThreadedLoops::printComputed(){
+  int i = 0;
+  while(!_complete){
+    int c = _calculated;
+    if(i < c){
+      mexPrintf("K computed: %i / %i\n", c, _kSize);
+      mexEvalString("pause(.001);");
+      i = c;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+  mexPrintf("K computed: %i / %i (Completed) \n", _kSize, _kSize);
+}
 
 void ThreadedLoops::computeK(double **K, vector<Graph*> *pGraphs,
                              NodeKernel *kernel){
@@ -66,20 +79,24 @@ void ThreadedLoops::computeK(double **K, vector<Graph*> *pGraphs,
   _kSize = (_nGraphs * _nGraphs) / 2;
   _reportEveryN = max(_kSize / 100, 1);
 
+  _complete = false;
+  thread syncPrint = thread(&ThreadedLoops::printComputed, this);
 
-  int chunkSize = _nGraphs / (int) (pow(2, _nThreads - 1));
+  int chunkSize = (int) ceil(_nGraphs / _nThreads);
   int from = 0;
   vector<thread*> threads;
   for(int i=0; i<_nThreads; i++){
-    int to = to + 1 == _nThreads ? _nGraphs : from + chunkSize;
+    int to = to + 1 == _nThreads ? _nGraphs -1 : from + chunkSize;
     thread *t = new thread(&ThreadedLoops::computeInterval, this,
                            K, pGraphs, kernel, from, to);
-    if(i>0) chunkSize = chunkSize * 2;
-    from = to;
+    from = to + 1;
     threads.push_back(t);
   }
 
   for(int i=0; i<_nThreads; i++){
     threads[i]->join();
   }
+
+  _complete = true;
+  syncPrint.join();
 }
