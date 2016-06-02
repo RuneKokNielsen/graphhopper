@@ -595,11 +595,23 @@ E'_{\tilde{v}} = E_{\tilde{v}} \cup \{ \forall(v, v')|\pi \in P_{G_{\tilde{v}}} 
 
 where $P_{G_{\tilde{v}}}$ is the set of all paths in $G_{\tilde{v}}$.
 
-Adding gappy paths simply consists of adding new edges to the shortet path DAG. Afterwards we compute $M$ and eventually $K$ in the same way as we normally would as discussed in section \ref{section:graphhopper}.
+Adding gappy paths simply consists of adding new edges to the shortest path DAG. Afterwards we compute $M$ and eventually $K$ in the same way as we normally would as discussed in section \ref{section:graphhopper}.
 
 \subsubsection{Computational analysis (continued)}
-In this section we 
-
+When we add gaps, we look at a node and adds all of the parents up to $s$ gaps away from the given node itself, we can do this in a time complexity of $\mathcal{O}(s m)$, where $m$ is the number of edges in the graph. Because we do this for each node in the graph we add $n$ to the time complexity and get $\mathcal{O}(s m n)$. When we add all of our new parents to the current node's list of parents, can we analyse us to that the time complexity of this is equal to the time complexity of finding the new parents, we know this because we are going to iterate through the same amount of parents  and children as in our earlier step, and therefore we can eliminate this this part. We end up with the time complexity as seen in (\ref{eq:gaps_only_complexity}) for only calculating gaps.
+\begin{equation}
+\label{eq:gaps_only_complexity}
+\mathcal{O}(N(s m n))
+\end{equation}
+In (\ref{eq:gaps_complexity}) can the new time complexity be seen, where we added the time complexity for gaps.
+\begin{equation}
+\label{eq:gaps_complexity}
+\mathcal{O}\left(\multiset{N}{2}\left(n^2\left(d+\delta^2\right)\right) + N\left(n\left(m\log n + m\delta + n\delta^2 + sm\right)\right)\right)
+\end{equation}
+But because $sm \leq m \delta$ we can eliminate $sm$, this is true because $s$ cannot be larger than $\delta$, even if $s$ is set to be $s > \delta$, $s$ will stop when $s = \delta$. Therefore we end up with the same time complexity as without gaps. 
+\begin{equation}
+\mathcal{O}\left(\multiset{N}{2}\left(n^2\left(d+\delta^2\right)\right) + N\left(n\left(m\log n + m\delta + n\delta^2\right)\right)\right)
+\end{equation}
 
 \subsubsection{Implementation}
 In this section we will show how simple it is to add gaps to our current graphhopper implementation.
@@ -610,7 +622,7 @@ function prepareNode($graph$, $\tilde{v}$)
 
   if $s > 0$
     for $v \in graph.V$
-      #Find all the new parents, 
+      #Find all the new parents and children, 
       #with a gap of size $1$..$s$.
       $current\_parents = []$
       $tmp\_parents = v.parents$
