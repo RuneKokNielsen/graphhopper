@@ -144,7 +144,7 @@ where $\Phi:\chi_1\rightarrow\chi_2$ is some transformation that (hopefully) mak
 Finding this transformation $\Phi$ is, however, a daunting task (let alone transforming all the data). We work around this issue by using the \textit{kernel trick} based on Mercer's theorem.
 
 \textbf{Mercer's theorem}\\
-\textit{Let $k:\chi_1\times\chi_1\rightarrow\mathbb{R}$ be a symmetric, positive semidefinite function. Then there exists some transformation $\Phi:\chi_1\rightarrow\chi_2$ such that}
+\textit{Let $k:\chi_1\times\chi_1\rightarrow\mathbb{R}$ be a symmetric, positive semidefinite\cite{svn-introduction} function. Then there exists some transformation $\Phi:\chi_1\rightarrow\chi_2$ such that}
 \begin{equation}
 \langle\Phi(x_i),\Phi(x_j)\rangle=k(x_i,x_j)
 \end{equation}
@@ -165,11 +165,11 @@ Assuming a kernel function $k(x_i,x_j)$ we define the matrix $K$ to be an $N\tim
 \subsection{Cross-validation}
 There may be several parameters involved when using SVM to create a classification model. To properly select these parameters and realistically predict the resulting model's accuracy we take advantage of cross-validation.
 
-To cross-validate parameters and accuracy we split the data set $M$ into $p$ parts. We then iterate $p$ times each time selecting different combinations of a test, validation and training set $Test_i, Val_i, Train_i\subset M$ such that $|Test_i|=|Val_i|=\frac{|M|}{p}$,  $|Train_i| = \frac{|M| * (p-2)}{p}$ and such that there is no overlap between any of the sets (see figure). In each iteration $i$ we train a model for all combinations of parameters using the training set $Train_i$ and estimate their accuracy by predicting on the validation set $Val_i$. We then select the combination of parameters that gave the highest accuracy and train a new model using $Train_i\cup Val_i$ with these parameters and finally estimate its accuracy by predicting on the test set $Test_i$ saving the resulting accuracy as $acc_i$. After $i$ iterations we estimate the expected accuracy to be the average accuracy achieved, i.e. $\frac{acc_1 + acc_2 + ... + acc_i}{i}$.
+To cross-validate parameters and accuracy we split the dataset $M$ into $p$ parts. We then iterate $p$ times each time selecting different combinations of a test, validation and training set $Test_i, Val_i, Train_i\subset M$ such that $|Test_i|=|Val_i|=\frac{|M|}{p}$,  $|Train_i| = \frac{|M| * (p-2)}{p}$ and such that there is no overlap between any of the sets (see figure). In each iteration $i$ we train a model for all combinations of parameters using the training set $Train_i$ and estimate their accuracy by predicting on the validation set $Val_i$. We then select the combination of parameters that gave the highest accuracy and train a new model using $Train_i\cup Val_i$ with these parameters and finally estimate its accuracy by predicting on the test set $Test_i$ saving the resulting accuracy as $acc_i$. After $i$ iterations we estimate the expected accuracy to be the average accuracy achieved, i.e. $\frac{acc_1 + acc_2 + ... + acc_i}{i}$.
 
 
 \begin{minipage}{0.7\linewidth}
-	To cross-validate parameters and accuracy we split the data set $M$ into $p$ parts. We then iterate $p$ times each time selecting different combinations of a test, validation and training set $Test_i, Val_i, Train_i\subset M$ such that $|Test_i|=|Val_i|=\frac{|M|}{p}$,  $|Train_i| = \frac{|M| * (p-2)}{p}$ and such that there is no overlap between any of the sets (figure \ref{fig:cross_validation}). In each iteration $i$ we train a model for all combinations of parameters using the training set $Train_i$ and estimate their accuracy by predicting on the validation set $Val_i$. We then select the combination of parameters that gave the highest accuracy and train a new model using $Train_i\cup Val_i$ with these parameters and finally estimate its accuracy by predicting on the test set $Test_i$ saving the resulting accuracy as $acc_i$. After $i$ iterations we estimate the expected accuracy to be the average accuracy achieved, i.e. $\frac{acc_1 + acc_2 + ... + acc_i}{i}$.
+	To cross-validate parameters and accuracy we split the dataset $M$ into $p$ parts. We then iterate $p$ times each time selecting different combinations of a test, validation and training set $Test_i, Val_i, Train_i\subset M$ such that $|Test_i|=|Val_i|=\frac{|M|}{p}$,  $|Train_i| = \frac{|M| * (p-2)}{p}$ and such that there is no overlap between any of the sets (figure \ref{fig:cross_validation}). In each iteration $i$ we train a model for all combinations of parameters using the training set $Train_i$ and estimate their accuracy by predicting on the validation set $Val_i$. We then select the combination of parameters that gave the highest accuracy and train a new model using $Train_i\cup Val_i$ with these parameters and finally estimate its accuracy by predicting on the test set $Test_i$ saving the resulting accuracy as $acc_i$. After $i$ iterations we estimate the expected accuracy to be the average accuracy achieved, i.e. $\frac{acc_1 + acc_2 + ... + acc_i}{i}$.
 \end{minipage}
 \hspace{0.5cm}
 \begin{minipage}[c]{0.3\linewidth}
@@ -736,15 +736,15 @@ The processes of computing the $M$ matrices and the $K$ matrix are ideal for par
 \section{Experiments}
 In this section we provide and discuss results based on computations made using our product. First we analyse the running time of our implementation compared to an implementation scripted in MATLAB. Later, we examine the effect on accuracy when adding gaps of different lengths.
 
-\subsection{Data sets}
-Basic specifications of the data sets used throughout our experiments are supplied in table \ref{table:data-sets}.
+\subsection{Datasets}
+Basic specifications of the datasets used throughout our experiments are supplied in table \ref{table:data-sets}.
 
 \begin{table}[H]
 		\centering
 		\hspace*{-0.7in}
 		\scalebox{0.6}{
 \begin{tabular}{c|c|c|c|c}
-	Data set & Number of graphs & Avg. nodes & Max nodes & Attr. dimensionality\\
+	Dataset & Number of graphs & Avg. nodes & Max nodes & Attr. dimensionality\\
 	\hline
 	Mutag  & 188 & 17.93 & 28 & 1\\
 	Enzymes  & 600 & 32.63 & 126 & 1\\
@@ -752,10 +752,11 @@ Basic specifications of the data sets used throughout our experiments are suppli
 	Airways subsampled & 500 & 221.31 & 651 & 1 \\
 	NCI1 & 4110 & 29.87 & 111 & 1\\
 	NCI109 & 4127 & 29.68 & 111 & 1 \\
-	Reddit binary & 2000 & 429.63 & 3782 & 1 \\
-	DD & 1178 & 284.32 & 5748 & 1
+	Reddit Binary & 2000 & 429.63 & 3782 & 1 \\
+	DD & 1178 & 284.32 & 5748 & 1\\
+	IMDB Binary & 1000 & 19.77 & 136 & 1\\
 \end{tabular}}
-	\caption{\textit{Data set specifications}}
+	\caption{\textit{Dataset specifications}}
 	\label{table:data-sets}
 \end{table}
 
@@ -764,11 +765,12 @@ Basic specifications of the data sets used throughout our experiments are suppli
 
 \textbf{Airways subsampled} consists of graph data converted from images of lung blood vessels. The task is to determine whether a given lung belongs to a healthy individual or one suffering from Chronic Obstructive Pulmonary Disease (COPD) \cite{graphhopper}.
 
-\textbf{Reddit binary} contains data from the social media website reddit.com. Each graph is a discussion thread belongning to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users iff one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node. The task is to determine whether a given thread belongs to a question/answer-based or discussion-based subreddit. The data is supplied in Pinar Yanardag's work\footnote{http://web.ics.purdue.edu/$\sim$ypinar/kdd/} with Deep Graph Kernels.
+\textbf{Reddit binary} \cite{yanardag} contains data from the social media website reddit.com. Each graph is a discussion thread belongning to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users iff one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node. The task is to determine whether a given thread belongs to a question/answer-based or discussion-based subreddit.
 
+\textbf{IMDB Binary} \cite{yanardag} contains movie-related collaboration data. Each graph is an \textit{ego network} generated for an actor/actress. Each node represents an actor and there is an edge between two nodes if they have appeared in the same movie. Each ego network belongs to a certain movie genre (comedy or romance) and the task it to identify which genre a given network belongs to.
 
 \subsection{Runtime experiments (C++ vs MATLAB)}
-In this section we wish to see whether we succeeded in creating a faster implementation using C++ compared to the existing implementation. The results show the running time in seconds when computing the $K$ matrix for a specified data set with both implementations using the same node kernel as specified. All tests are run without parallelization.
+In this section we wish to see whether we succeeded in creating a faster implementation using C++ compared to the existing implementation. The results show the running time in seconds when computing the $K$ matrix for a specified dataset with both implementations using the same node kernel as specified and without gaps. All tests are run without parallelization.
 
 \subsubsection{System specifications}
 The computations have been done in various environments as specified in table \ref{table:specs}.
@@ -797,7 +799,7 @@ The results are presented in table \ref{table:runtime_results}. The \textit{syst
 	\hspace*{-0.7in}
 	\scalebox{0.7} {
 		\begin{tabular}{c|c|c|c|c|c}
-			Data set & Node kernel & Runtime in MATLAB & Runtime in Mex C++ & System spec & Ratio\\
+			Dataset & Node kernel & Runtime in MATLAB & Runtime in Mex C++ & System spec & Ratio\\
 			\hline
 			Mutag & Dirac & 31.6 & \textbf{0.731} & A & 1:43.23\\
 			Enzymes & Dirac & 722.99 & \textbf{16.9} & A & 1:42.78\\
@@ -813,18 +815,122 @@ The results are presented in table \ref{table:runtime_results}. The \textit{syst
 \end{table}
 
 \subsubsection{Discussion}
-We have achieved superior running times in all of our tests seemingly varying mainly on the choice of node kernel but also the size of the data sets. The greatest difference is achieved when using \textbf{Dirac} where our implementation runs about 40 times faster reaching a 1:43.23 ratio on a very small data set and 1:36.94 on a larger data set. When using \textbf{Gaussian} the gain is significantly smaller as we only reach from 1:2.12 on a large data set up to 1:9.65 on a small data set. Comparing the tests on Enzymes (Symmetrized) with Gaussian vs. with \textbf{Dirac $\times$ Gaussian} we notice that while our implementation manages to \textbf{half} the running time by using Dirac $\times$ Gaussian the MATLAB implementation requires even more computations than when running Gaussian alone.
+We have achieved superior running times in all of our tests seemingly varying mainly on the choice of node kernel but also the size of the datasets. The greatest difference is achieved when using \textbf{Dirac} where our implementation runs about 40 times faster reaching a 1:43.23 ratio on a very small dataset and 1:36.94 on a larger dataset. When using \textbf{Gaussian} the gain is significantly smaller as we only reach from 1:2.12 on a large dataset up to 1:9.65 on a small dataset. Comparing the tests on Enzymes (Symmetrized) with Gaussian vs. with \textbf{Dirac $\times$ Gaussian} we notice that while our implementation manages to \textbf{half} the running time by using Dirac $\times$ Gaussian the MATLAB implementation requires even more computations than when running Gaussian alone.
 
 \subsection{Accuracy experiments (Gaps vs. no Gaps)}
+The accuracy experiments are run using 10-fold cross-validation of $c$ (slack variable constant, see \cite{svm-graph-kernels}) as well as kernel parameters where applicable (e.g.\ when using Gaussian). For reference we also provide our own results with the established Weisfeiler-Lehman kernel\cite{WL} (WL) and (where available) results published in \cite{yarnardag} using the proposed Deep Graphlet Kernel (DGK).
 
 \subsubsection{Results}
+The results here are divided by datasets. The graphs illustrate the effect of changing the gap size in GraphHopper (GH) and at the same time display results from other kernels for reference. The node kernels used are abbreviated as D for Dirac, G for Gaussian and DxG for Dirac $\times$ Gaussian.
+
+\textbf{Mutag}\\
+\begin{minipage}{0.6\linewidth}
+		\hspace*{-1in}
+		\includegraphics[width=10cm]{mutag}
+		\captionof{figure}{Mutag results}
+		\label{fig:mutag}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}
+	
+	\centering
+	\begin{tabular}{c|c|c|c}
+			Kernel & Node kernel & Gaps &  Result\\
+			\hline
+			GH & D & 0 & 83.111 (std. 1.9633)\\
+			GH & D & 1 & 79.00 (std. 2.2801)\\
+			GH & D & 2 & 79.3889 (std. 2.0861)\\
+			GH & D & 3 &  77.3333 (std. 1.2776)\\
+			WL & - & - & 83.611 (std. 2.3607)\\
+			DGK & - & - & 82.66 (std. 1.45)
+		\end{tabular}
+	\captionof{table}{Mutag results}
+	\label{table:mutag}
+\end{minipage}
+
+\textbf{Enzymes}\\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{-1in}
+	\includegraphics[width=10cm]{enzymes}
+	\captionof{figure}{Enzymes results}
+	\label{fig:enzymes}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}
+	
+	\centering
+	\begin{tabular}{c|c|c|c}
+		Kernel & Node kernel & Gaps & Result\\
+		\hline
+		GH & D & 0 & 35.133 (std. 2.050)\\
+		GH & D & 1 & 36.350 (std. 1.388)\\
+		GH & D & 2 & 34.833 (std. 1.317)\\
+		GH & D & 3 & 33.5667 (std. 1.4911)\\
+		WL & - & - & 52.4167 (std. 1.2478)\\
+		DGK & - & - & 27.08 (std. 0.79)
+	\end{tabular}
+	\captionof{table}{Enzymes results}
+	\label{table:enzymes}
+\end{minipage}
+
+\textbf{Enzymes (Symmetrized)}\\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{-1in}
+\iffalse	\includegraphics[width=10cm]{enzymes_symmetrized} \fi
+	\captionof{figure}{Enzymes (symmetrized) results}
+	\label{fig:enzymes_symmetrized}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}
+	
+	\centering
+	\begin{tabular}{c|c|c|c}
+		Kernel & Node kernel & Gaps & Result\\
+		\hline
+		GH & G (G) & 0 & 68.5833 (std. 1.6125)\\
+		GH & G & 1 & 68.5333 (std. 1.3352)\\
+		GH & G & 2 & 68.9500 (std. 0.9783)\\
+		GH & G & 3 & 68.8333 (std. 1.3744)\\
+		GH & G & 4 & 69.7500 (std. 1.3591)\\
+		GH & G & 5 & 68.8667 (std. 1.4673)\\
+		GH & DxG & 0 & 70.033 (std. 1.2977)\\
+		GH & DxG & 1 & 69.3167 (std. 1.1506)\\
+		GH & DxG & 2 & 70.5833 (std. 1.3293)\\
+		GH & DxG & 3 & 70.7000 (std. 0.9356)\\
+		GH & DxG & 4 & 70.5167 (std. 1.2582)\\
+		GH & DxG & 5 & 70.7167 (std. 0.9164)\\
+		WL & - & - &
+	\end{tabular}
+	\captionof{table}{Enzymes results}
+	\label{table:enzymes_symmetrized}
+\end{minipage}
+
+\textbf{Airways subsampled}\\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{-1in}
+	\iffalse	\includegraphics[width=10cm]{airways} \fi
+	\captionof{figure}{Airways subsampled results}
+	\label{fig:airways}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}
+	
+	\centering
+	\begin{tabular}{c|c|c|c}
+		Kernel & Node kernel & Gaps & Result\\
+		\hline
+		GH & G & 0 & 63.180 (std. 1.7900)\\
+		GH & G & 1 & 62.600 (std. 1.3233)\\
+		GH & G & 2 & 61.6800 (std. 2.0422)
+	\end{tabular}
+	\captionof{table}{Airways subsampled results}
+	\label{table:airways}
+\end{minipage}
+
+
 
 \begin{table}[H]
 	\centering
 	\hspace*{-0.7in}
 	\scalebox{0.6} {
 		\begin{tabular}{c|c|c|c|c|c|c|c}
-		Data set & Node kernel & Without gaps & With gaps (size 1) & Gap size 2 & Gap size 3 & Gap size 4 & Gap size 5\\
+		Dataset & Node kernel & Without gaps & With gaps (size 1) & Gap size 2 & Gap size 3 & Gap size 4 & Gap size 5\\
 		\hline
 		Mutag & Dirac & $\mathbf{83.111 (std. 1.9633)}$ & $79.000 (std. 2.2801)$ & 79.3889 (std. 2.0861) & 77.3333 (std. 1.2776) & & \\
 		Enzymes & Dirac & $\mathbf{35.133 (std. 2.050)}$ & $\mathbf{36.350 (std. 1.3888)}$ & 34.8333 (std. 1.3170) & 33.5667 (std. 1.4911) & & \\
@@ -835,7 +941,9 @@ We have achieved superior running times in all of our tests seemingly varying ma
 		NCI109 & Dirac & 71.0874 (std. 0.3168) & 66.5413 (std. 0.2810) & 64.3689 (std. 0.5451) & 63.9951 (std. 0.5259) & & \\
 		Reddit binary (unlabelled) & Dirac & 100.000 (std. 0.0000) & 99.9500 (std. $<$ 0.001) & & & &  \\
 Collab & Dirac & 78.6580 (std. 0.2647) & & & & & \\
-Collab (unlabelled) & Dirac & 63.3100 (std. 0.0750) & & & & &  
+Collab (unlabelled) & Dirac & 63.3100 (std. 0.0750) & & & & &  \\
+		IMDB Binary (labeled) & Dirac & 71.37 (std. 0.8486) & 71.89 (std. 0.7824) & & & & 72.53 (std. 0.5229) \\
+		IMDB Binary (unlabeled) & 
 		\end{tabular}
 	}
 	\caption{\textit{Accuracy results}}
@@ -895,6 +1003,22 @@ Gap size 50: 69.7833 (std. 1.4825)
 		Christina Leslie, Rui Kuang.
 		\emph{Fast String Kernels using Inexact Matching for Protein Sequences}.
 		Columbia University, 2004
+		
+		\bibitem{yanardag}
+		Pinar Yanardag, SVN Vishwanathan.
+		\emph{Deep Graph Kernels}.
+		Purdue University \& UC Santa Cruz, http://web.ics.purdue.edu/$\sim$ypinar/kdd/
+		
+		\bibitem{svn-introduction}
+		Nello Christianini, John Shawe-Taylor.
+		\emph{An introduction to Support Vector Machines and other Kernel-based Learning methods}.
+		Cambridge University Press, 2000.
+		
+		\bibitem{WL}
+		Nino Shervashidze, Pascal Schweitzer, Erik Jan van Leeuwen, Kurt
+		Mehlhorn, Karsten M. Borgwardt.
+		\emph{Weisfeiler-lehman graph kernels}.
+		Journal	of Machine Learning Research, 12:2539-2561, 2011.
 		
 \end{thebibliography}
 
@@ -981,8 +1105,19 @@ Assuming that the MEX-file is now accessible from MATLAB you may execute GraphHo
 		\item \textbf{both}: Loads both the discrete labels in \verb|nl.values| and the vector labels in \verb|nl.vecvalues|.
 	\end{itemize}
 	\item \textbf{Node kernel parameter}: A double value used in some node kernels (e.g. $\mu$ in Gaussian).
-	\item \textbf{Gap size}: A double value describing the max gap size. Use \textit{0} to run without gaps.
+	\item \textbf{Gap size}: A double value describing the max gap size. Use \textit{0} (or drop fifth parameter) to run without gaps.
 \end{enumerate}
+
+\textbf{Example calls}\\
+Running Gaussian with $\mu=0.5$ and gap size $s=3$:\\
+\verb|graphhopper(graphs, 'gaussian', 'vector', 0.5, 3)|
+
+Running Dirac with gaps size $s=3$ (note that the value of the node kernel parameter is not used):\\
+\verb|graphhopper(graphs, 'dirac', 'discrete', 0, 3)|
+
+Running Dirac $\times$ Gaussian with $\mu=0.5$ and without gaps:\\
+\verb|graphhoper(graphs, 'diracxgaussian', 'both', 0.5, 0)|
+
 
 \subsubsection{Graphs format}
 \label{appendix:graphs-format}
