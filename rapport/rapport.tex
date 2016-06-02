@@ -886,7 +886,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 \textbf{Enzymes (Symmetrized)}\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
-\iffalse	\includegraphics[width=10cm]{enzymes_symmetrized} \fi
+	\includegraphics[width=10cm]{enzymes_symmetrized}
 	\captionof{figure}{Enzymes (symmetrized) results}
 	\label{fig:enzymes_symmetrized}
 \end{minipage}
@@ -896,7 +896,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
-		GH & G (G) & 0 & 68.5833 (std. 1.6125)\\
+		GH & G & 0 & 68.5833 (std. 1.6125)\\
 		GH & G & 1 & 68.5333 (std. 1.3352)\\
 		GH & G & 2 & 68.9500 (std. 0.9783)\\
 		GH & G & 3 & 68.8333 (std. 1.3744)\\
@@ -908,7 +908,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		GH & DxG & 3 & 70.7000 (std. 0.9356)\\
 		GH & DxG & 4 & 70.5167 (std. 1.2582)\\
 		GH & DxG & 5 & 70.7167 (std. 0.9164)\\
-		WL & - & - &
+		WL & - & - & 52.1000 (std. 1.1282)
 	\end{tabular}
 	\captionof{table}{Enzymes results}
 	\label{table:enzymes_symmetrized}
@@ -917,7 +917,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 \textbf{Airways subsampled}\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
-	\iffalse	\includegraphics[width=10cm]{airways} \fi
+	\includegraphics[width=10cm]{airways}
 	\captionof{figure}{Airways subsampled results}
 	\label{fig:airways}
 \end{minipage}
@@ -929,11 +929,108 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		\hline
 		GH & G & 0 & 63.180 (std. 1.7900)\\
 		GH & G & 1 & 62.600 (std. 1.3233)\\
-		GH & G & 2 & 61.6800 (std. 2.0422)
+		GH & G & 2 & 61.6800 (std. 2.0422)\\
+		WL & - & - & 59.48 (std. 1.7080)
 	\end{tabular}
 	\captionof{table}{Airways subsampled results}
 	\label{table:airways}
 \end{minipage}
+
+\textbf{NCI1}\\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{-1in}
+	\iffalse	\includegraphics[width=10cm]{nci1} \fi
+	\captionof{figure}{NCI1 results}
+	\label{fig:nci1}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}
+	
+	\centering
+	\begin{tabular}{c|c|c|c}
+		Kernel & Node kernel & Gaps & Result\\
+		\hline
+		GH & D & 0 & 72.7908 (std. 0.2457)\\
+		GH & D & 1 & 67.8589 (std. 0.2417)\\
+		GH & D & 2 & 64.4161 (std. 0.6426)\\
+		GH & D & 3 & 64.9903 (std. 0.5475)\\
+		GH & D & 4 & 64.3698 (std. 0.4042)\\
+		GH & D & 5 & 64.4988 (std. 0.4535)\\
+		WL & - & - & \\
+		DKG & - & - & 62.48 (std. 0.25)
+	\end{tabular}
+	\captionof{table}{NCI1 results}
+	\label{table:nci1}
+\end{minipage}
+
+\textbf{NCI109}\\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{-1in}
+	\iffalse	\includegraphics[width=10cm]{nci109} \fi
+	\captionof{figure}{NCI109 results}
+	\label{fig:nci109}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}
+	
+	\centering
+	\begin{tabular}{c|c|c|c}
+		Kernel & Node kernel & Gaps & Result\\
+		\hline
+		GH & D & 0 & 71.0874 (std. 0.3168)\\
+		GH & D & 1 & 66.5413 (std. 0.2810)\\
+		GH & D & 2 & 64.3689 (std. 0.5451)\\
+		GH & D & 3 & 63.9951 (std. 0.5259)\\
+		WL & - & - & \\
+		DGK & - & - & 62.69 (std. 0.23)
+	\end{tabular}
+	\captionof{table}{NCI109 results}
+	\label{table:nci109}
+\end{minipage}
+
+
+\textbf{Reddit binary (unlabelled)}\\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{-1in}
+	\iffalse	\includegraphics[width=10cm]{reddit_binary_unlabelled} \fi
+	\captionof{figure}{Reddit binary (unlabelled) results}
+	\label{fig:reddit_binary_unlabelled}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}
+	
+	\centering
+	\begin{tabular}{c|c|c|c}
+		Kernel & Node kernel & Gaps & Result\\
+		\hline
+		GH & D & 0 & 100 (std. 0.0000)\\
+		GH & D & 1 & 99.9500 (std. < 0.0001)\\
+		WL & - & - & \\
+		DGK & - & - & 66.96 (std. 0.56)
+	\end{tabular}
+	\captionof{table}{Reddit binary (unlabelled) results}
+	\label{table:reddit_binary_unlabelled}
+\end{minipage}
+
+
+\textbf{Collab (labelled)}\\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{-1in}
+	\iffalse	\includegraphics[width=10cm]{collab} \fi
+	\captionof{figure}{Collab results}
+	\label{fig:collab}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}
+	
+	\centering
+	\begin{tabular}{c|c|c|c}
+		Kernel & Node kernel & Gaps & Result\\
+		\hline
+		GH & Dirac & 0 & 78.6580 (std. 0.2647)\\
+		WL & - & - & \\
+		DPK & - & - & 
+	\end{tabular}
+	\captionof{table}{Collab results}
+	\label{table:collab}
+\end{minipage}
+
 
 
 
@@ -954,7 +1051,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		Reddit binary (unlabelled) & Dirac & 100.000 (std. 0.0000) & 99.9500 (std. $<$ 0.001) & & & &  \\
 Collab & Dirac & 78.6580 (std. 0.2647) & & & & & \\
 Collab (unlabelled) & Dirac & 63.3100 (std. 0.0750) & & & & &  \\
-		IMDB Binary (labeled) & Dirac & 71.37 (std. 0.8486) & 71.89 (std. 0.7824) & & & & 72.53 (std. 0.5229) \\
+		IMDB Binary (labelled) & Dirac & 71.37 (std. 0.8486) & 71.89 (std. 0.7824) & & & & 72.53 (std. 0.5229) \\
 		IMDB Binary (unlabeled) & 
 		\end{tabular}
 	}
