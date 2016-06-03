@@ -15,7 +15,7 @@ void ThreadedLoops::computeInterval(double **K, vector<Graph*> *pGraphs,
                                     int from, int to){
 
   vector<Graph*>& graphs = *pGraphs;
-  for(int gii=from; gii<to; gii++){
+  for(int gii=from; gii<=to; gii++){
     for(int gji=gii; gji<_nGraphs; gji++){
       Graph *gi = graphs[gii];
       Graph *gj = graphs[gji];
@@ -86,7 +86,7 @@ void ThreadedLoops::computeK(double **K, vector<Graph*> *pGraphs,
   int from = 0;
   vector<thread*> threads;
   for(int i=0; i<_nThreads; i++){
-    int to = to + 1 == _nThreads ? _nGraphs -1 : from + chunkSize;
+    int to = min(from + chunkSize, _nGraphs - 1);
     thread *t = new thread(&ThreadedLoops::computeInterval, this,
                            K, pGraphs, kernel, from, to);
     from = to + 1;
