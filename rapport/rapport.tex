@@ -598,19 +598,21 @@ where $P_{G_{\tilde{v}}}$ is the set of all paths in $G_{\tilde{v}}$.
 Adding gappy paths simply consists of adding new edges to the shortest path DAG. Afterwards we compute $M$ and eventually $K$ in the same way as we normally would as discussed in section \ref{section:graphhopper}.
 
 \subsubsection{Computational analysis (continued)}
-When we add gaps, we look at a node and adds all of the parents up to $s$ gaps away from the given node itself, we can do this in a time complexity of $\mathcal{O}(s m)$, where $m$ is the number of edges in the graph. Because we do this for each node in the graph we add $n$ to the time complexity and get $\mathcal{O}(s m n)$. When we add all of our new parents to the current node's list of parents, can we analyse us to that the time complexity of this is equal to the time complexity of finding the new parents, we know this because we are going to iterate through the same amount of parents  and children as in our earlier step, and therefore we can eliminate this this part. We end up with the time complexity as seen in (\ref{eq:gaps_only_complexity}) for only calculating gaps.
+
 \begin{equation}
-\label{eq:gaps_only_complexity}
-\mathcal{O}(N(s m n))
+\mathcal{O}\left(v \Delta^{s + 1}\right)
 \end{equation}
-In (\ref{eq:gaps_complexity}) can the new time complexity be seen, where we added the time complexity for gaps.
+
 \begin{equation}
-\label{eq:gaps_complexity}
-\mathcal{O}\left(\multiset{N}{2}\left(n^2\left(d+\delta^2\right)\right) + N\left(n\left(m\log n + m\delta + n\delta^2 + sm\right)\right)\right)
+\mathcal{O}\left(v \left(\Delta^{s} + \Delta^{s}\right)\right)
 \end{equation}
-But because $sm \leq m \delta$ we can eliminate $sm$, this is true because $s$ cannot be larger than $\delta$, even if $s$ is set to be $s > \delta$, $s$ will stop when $s = \delta$. Therefore we end up with the same time complexity as without gaps. 
+
 \begin{equation}
-\mathcal{O}\left(\multiset{N}{2}\left(n^2\left(d+\delta^2\right)\right) + N\left(n\left(m\log n + m\delta + n\delta^2\right)\right)\right)
+\mathcal{O}\left(N\left(v \Delta^{s + 1}\right)\right)
+\end{equation}
+
+\begin{equation}
+\mathcal{O}\left(N\left(n\left(m\log n + m\delta + n\delta^2 + \Delta^{s + 1}\right)\right)\right)
 \end{equation}
 
 \subsubsection{Implementation}
@@ -1001,7 +1003,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
 		GH & D & 0 & 100 (std. 0.0000)\\
-		GH & D & 1 & 99.9500 (std. < 0.0001)\\
+		GH & D & 1 & 99.9500 (std. $<$ 0.0001)\\
 		WL & - & - & \\
 		DGK & - & - & 66.96 (std. 0.56)
 	\end{tabular}
@@ -1047,7 +1049,10 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
-		GH & Dirac & 0 & 63.3100 (std. 0.0750)\\
+		GH & Dirac & 0 & 63.3100 (std. 0.0750) \\
+		GH & Dirac & 1 & 54.2680 (std. 0.0193) \\
+		GH & Dirac & 2 & 54.2520 (std. 0.0543) \\
+		GH & Dirac & 3 & 54.2300 (std. 0.0738) \\
 		WL & - & - & \\
 		DGK & - & - &
 	\end{tabular}
@@ -1063,8 +1068,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 	\captionof{figure}{IMDB Binary (labelled) results}
 	\label{fig:imdb_labelled}
 \end{minipage}
-\begin{minipage}[c]{0.5\linewidth}
-	
+\begin{minipage}[c]{0.5\linewidth}	
 	\centering
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
@@ -1086,8 +1090,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 	\captionof{figure}{IMDB Binary (unlabelled) results}
 	\label{fig:imdb_unlabelled}
 \end{minipage}
-\begin{minipage}[c]{0.5\linewidth}
-	
+\begin{minipage}[c]{0.5\linewidth}	
 	\centering
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
@@ -1097,6 +1100,47 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 	\label{table:imdb_unlabelled}
 \end{minipage}
 
+\textbf{IMDB Multi (labelled)}\\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{-1in}
+	\iffalse	\includegraphics[width=10cm]{imdb_labelled} \fi
+	\captionof{figure}{IMDB Binary (labelled) results}
+	\label{fig:imdb_labelled}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}	
+	\centering
+	\begin{tabular}{c|c|c|c}
+		Kernel & Node kernel & Gaps & Result\\
+		\hline
+		GH & Dirac & 0 & 50.3133 (std. 0.5938) \\
+		GH & Dirac & 0 & 50.3133 (std. 0.5297) \\
+		WL & - & - & \\
+		DGK & - & - & \\
+	\end{tabular}
+	\captionof{table}{IMDB Multi (labelled) results}
+	\label{table:imdb_multi_labelled}
+\end{minipage}
+
+\textbf{IMDB Multi (unlabelled)}\\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{-1in}
+	\iffalse	\includegraphics[width=10cm]{imdb_unlabelled} \fi
+	\captionof{figure}{IMDB Binary (unlabelled) results}
+	\label{fig:imdb_unlabelled}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}	
+	\centering
+	\begin{tabular}{c|c|c|c}
+		Kernel & Node kernel & Gaps & Result\\
+		\hline
+		GH & - & - & \\
+		GH & - & - & \\
+		GH & Dirac & 2 & 29.4933 (std. 0.6683) \\
+		GH & Dirac & 3 & 39.2933 (std. 0.7168) \\
+	\end{tabular}
+	\captionof{table}{IMDB Multi (unlabelled) results}
+	\label{table:imdb_multi_unlabelled}
+\end{minipage}
 
 \begin{table}[H]
 	\centering
