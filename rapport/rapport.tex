@@ -471,6 +471,7 @@ end
 \end{figure}
 
 \subsection{Computational analysis}
+\label{sec:computational_analysis}
 To compute $k_{graphopper}$ we sum over each pair of nodes which, given precomputed $w(v,v')$ and $k_n(v,v')$, gives a complexity of $\mathcal{O}(n^2)$. Assuming that the complexity of computing $k_n(v,v')$ grows linearly relative to the dimension $d$ of the node attributes the complexity of computing all $k_n(v,v')$ has a complexity of $\mathcal{O}(n^2d)$. Computing the weight $w(v,v')$ between two nodes $v,v'$ (equation (\ref{eq:wmm})) consists of summing for $j\leq \delta,i\leq j$ giving $\mathcal{O}(\delta^2)$ and doing this for each pair gives a complexity of $\mathcal{O}(n^2\delta^2)$. Together this gives a complexity of $\mathcal{O}(n^2(d + \delta^2))$. Before doing these computations, however, we must first compute the $M$ matrices as described earlier (equation (\ref{eq:runtime_comp_m})) adding up to a total complexity of
 \begin{align}
 &\mathcal{O}\left(n^2\left(d + \delta^2\right) + n\left(m\log n + m\delta + n\delta^2\right)\right)\\
@@ -598,23 +599,32 @@ where $P_{G_{\tilde{v}}}$ is the set of all paths in $G_{\tilde{v}}$.
 Adding gappy paths simply consists of adding new edges to the shortest path DAG. Afterwards we compute $M$ and eventually $K$ in the same way as we normally would as discussed in section \ref{section:graphhopper}.
 
 \subsubsection{Computational analysis (continued)}
-
+When we compute $k_{graphhopper}$ with gaps, the time complexity changes a little bit, this reason for this is that we need to add all the new edges to the graph. We do this by going through the root nodes parents in the shortest path graph. The time complexity for finding all these new edges are shown in (\ref{eq:tc_gaps_1}), where $\Delta$ is the maximum degree of the graph.
 \begin{equation}
-\mathcal{O}\left(v \Delta^{s + 1}\right)
+\label{eq:tc_gaps_1}
+\mathcal{O}\left(n \Delta^{s + 1}\right)
 \end{equation}
-
+Now we need to add these new edges to our graph, this can be done by iterating through the list of the nodes with the new parents.
 \begin{equation}
-\mathcal{O}\left(v \left(\Delta^{s} + \Delta^{s}\right)\right)
+\label{eq:tc_gaps_2}
+\mathcal{O}\left(n \left(\Delta^{s} + \Delta^{s}\right)\right)
 \end{equation}
-
+And because we need to calculate this for every graph, we combine the two time complexities (\ref{eq:tc_gaps_2}) and (\ref{eq:tc_gaps_2}), and multiply them with $N$, the final time complexity for calculating gaps can be seen in (\ref{eq:tc_gaps_3}).
 \begin{equation}
-\mathcal{O}\left(N\left(v \Delta^{s + 1}\right)\right)
+\label{eq:tc_gaps_3}
+\mathcal{O}\left(N\left(n\left(\Delta^{s + 1} + \Delta^{s}\right)\right)\right)
 \end{equation}
-
+After calculating the time complexity for gaps, we can then combine our newly found time complexity, with the time complexity found in \ref{sec:computational_analysis}.
 \begin{equation}
-\mathcal{O}\left(N\left(n\left(m\log n + m\delta + n\delta^2 + \Delta^{s + 1}\right)\right)\right)
+\mathcal{O}\left(N\left(n\left(m\log n + m\delta + n\delta^2 + \Delta^{s + 1} + \Delta^{s}\right)\right)\right)
 \end{equation}
-
+The action of adding gaps can look time consuming, because the time complexity does not look good, but when we compare the theoretical time with the actual time, we can see that the time complexity is a bit misleading. In figure X can a comparison be seen of the theoretical and actual time, the actual time is the time of calculating $M$, we did this a $100$ times and calculated the mean, to get a more realistic result.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=10cm]{time_complexity_gaps}
+	\caption{\textit{Fill out}}
+	\label{fig:time_complexity_gaps}
+\end{figure}
 \subsubsection{Implementation}
 In this section we will show how simple it is to add gaps to our current graphhopper implementation.
 \begin{lstlisting}
@@ -1048,9 +1058,9 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
 		GH & Dirac & 0 & 63.3100 (std. 0.0750) \\
-		GH & Dirac & 1 & 54.2680 (std. 0.0193) \\
-		GH & Dirac & 2 & 54.2520 (std. 0.0543) \\
-		GH & Dirac & 3 & 54.2300 (std. 0.0738) \\
+		GH & Dirac & 1 & 63.1900 (std. 0.1595) \\
+		GH & Dirac & 2 & 63.1560 (std. 0.1964) \\
+		GH & Dirac & 3 & 63.1400 (std. 0.2022) \\
 		WL & - & - & \\
 		DGK & - & - &
 	\end{tabular}
@@ -1093,6 +1103,11 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
+		GH & D & 0 & 60.0200 (std. 1.9876)\\
+		GH & D & 1 & 57.8300 (std.1.9437)\\
+		GH & D & 5 & 58.0600 (std. 2.0791)\\
+		WL & - & - & - \\
+		DGK & - & - & \\
 	\end{tabular}
 	\captionof{table}{IMDB Binary (unlabelled) results}
 	\label{table:imdb_unlabelled}
@@ -1101,9 +1116,9 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 \textbf{IMDB Multi (labelled)}\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
-	\iffalse	\includegraphics[width=10cm]{imdb_labelled} \fi
-	\captionof{figure}{IMDB Binary (labelled) results}
-	\label{fig:imdb_labelled}
+	\iffalse	\includegraphics[width=10cm]{imdb_multi_labelled} \fi
+	\captionof{figure}{IMDB Multi (labelled) results}
+	\label{fig:imdb_multi_labelled}
 \end{minipage}
 \begin{minipage}[c]{0.5\linewidth}	
 	\centering
@@ -1111,7 +1126,9 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
 		GH & Dirac & 0 & 50.3133 (std. 0.5938) \\
-		GH & Dirac & 0 & 50.3133 (std. 0.5297) \\
+		GH & Dirac & 1 & 50.3133 (std. 0.5297) \\
+		GH & Dirac & 2 & 50.6133 (std. 0.6739) \\
+		GH & Dirac & 3 & 50.2067 (std. 0.5043) \\
 		WL & - & - & \\
 		DGK & - & - & \\
 	\end{tabular}
@@ -1122,18 +1139,18 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 \textbf{IMDB Multi (unlabelled)}\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
-	\iffalse	\includegraphics[width=10cm]{imdb_unlabelled} \fi
-	\captionof{figure}{IMDB Binary (unlabelled) results}
-	\label{fig:imdb_unlabelled}
+	\iffalse	\includegraphics[width=10cm]{imdb_multi_unlabelled} \fi
+	\captionof{figure}{IMDB Multi (unlabelled) results}
+	\label{fig:imdb_multi_unlabelled}
 \end{minipage}
 \begin{minipage}[c]{0.5\linewidth}	
 	\centering
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
-		GH & - & - & \\
-		GH & - & - & \\
-		GH & Dirac & 2 & 29.4933 (std. 0.6683) \\
+		GH & Dirac & 0 & 40.3600 (std. 0.9889) \\
+		GH & Dirac & 1 & 39.8467 (std. 0.8833) \\
+		GH & Dirac & 2 & 39.8267 (std. 0.7438) \\
 		GH & Dirac & 3 & 39.2933 (std. 0.7168) \\
 	\end{tabular}
 	\captionof{table}{IMDB Multi (unlabelled) results}
