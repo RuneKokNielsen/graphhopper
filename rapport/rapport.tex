@@ -620,6 +620,7 @@ where $P_{G_{\tilde{v}}}$ is the set of all paths in $G_{\tilde{v}}$.
 Adding gappy paths simply consists of adding new edges to the shortest path DAG. Afterwards we compute $M$ and eventually $K$ in the same way as we normally would as discussed in section \ref{section:graphhopper}.
 
 \subsubsection{Computational analysis (continued)}
+
 \iffalse
 The addition of gaps impacts the complexity of computing $M$. For each node in each shortest path DAG we traverse $\leq s$ levels up through its parents. One node can not have more than $\Delta$ parents where $\Delta$ is the maximum degree of any node in the graph\footnote{Degree being the amount of outgoing edges in one node.}. In worst case one node goes through $\leq\Delta^{s+1}$ parents so computing the gaps for all nodes in all DAGs in one graph amounts to
 \begin{equation}
@@ -631,6 +632,7 @@ Doing this for all N graphs we get
 \mathcal{O}\left(N(n^2\Delta^{s+1})\right)
 \end{equation}
 \fi
+
 
 When we compute $k_{graphhopper}$ with gaps, the time complexity changes a little bit, the reason for this is that we need to add all the new edges to the graph. We do this by iterating through the root nodes parents in the shortest path graph. The time complexity for finding all these new edges are shown in (\ref{eq:tc_gaps_1}), where $\Delta$ is the maximum degree of the graph.
 \begin{equation}
