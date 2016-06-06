@@ -109,16 +109,16 @@ mathescape
 \newpage
 
 \section{Introduction}
-This report presents our work and the theory used developing and testing an efficient implementation of the GraphHopper kernel with \textit{Gappy paths} in C++ for our Bachelor thesis. While we do introduce the basics behind SVM and kernels based on our earlier work in \cite{svm-graph-kernels} the focus will primarily lie on the algorithm behind the kernel itself as well as the introduction of \textit{Gaps}. Gaps have been proved useful in string kernels but have to our knowledge never before been implemented in a graph kernel. After presenting the theory we will provide the results of our experiments analysing the time efficiency of our implementation compared to an existing MATLAB-implementation as well as the effect on classification accuracy in different datasets when adding \textit{Gaps} to the kernel.
+This report presents our work and the theory used developing and testing an efficient implementation of the GraphHopper kernel\cite{gappy} with \textit{gappy paths} in C++ for our Bachelor thesis. While we do introduce the basics behind \textit{Support Vector Machines } (SVM) and kernels based on our earlier work in \cite{svm-graph-kernels} the focus will primarily lie on the algorithm behind the kernel itself as well as the introduction of \textit{gaps}. Gaps have been proved useful in string kernels but have to our knowledge never before been implemented in a graph kernel. After presenting the theory we will provide the results of our experiments analysing the time efficiency of our implementation compared to an existing MATLAB-implementation as well as the effect on classification accuracy in different datasets when adding gaps to the kernel.
 
 \section{SVM}
 Before introducing the GraphHopper kernel we need to establish some essential underlying theory. In this section we will focus on the basic theory of classification, SVM, kernels and cross-validation. This is a condensed summary of the most relevant parts of our former work \cite{svm-graph-kernels} where we discuss the topics thoroughly.
 
 \subsection{Classification}
-The core problem is data classification, i.e.\ determining the class of some data point from a limited number of predefined classes. In the context of this report we will be working with binary classification of graphs using SVM.
+The core problem is data classification, i.e.\ determining the class of a data point from a limited number of predefined classes. In the context of this report we will be working with binary classification of graphs using SVM.
 
 \subsection{SVM}
-SVM is a binary classification technique used to create classification models. The technique works by placing a hyperplane between two optimal data points in the training set (\textit{the support vectors}) such that the hyperplane successfully separates the data points by their classes as far possible. Such a hyperplane in a 2-dimensional, linear seperable case is illustrated in figure \ref{fig:hyperplane}. The accuracy of the model is then measured by how successfully the hyperplane classifies new data points with known classes.
+SVM is a binary classification technique used to create classification models. The technique works by placing a maximal margin hyperplane between two optimal data points in the training set (\textit{the support vectors}) such that the hyperplane achieves the biggest possible distance to any data points. Such a hyperplane in a 2-dimensional, linear seperable case is illustrated in figure \ref{fig:hyperplane}. The accuracy of the model is then measured by how successfully the hyperplane classifies new data points with known classes. To achieve a greater margin the technique allows for tolerating missclasifications in the training set by instead assigning a weight to points that are missclassified.
 
 \begin{figure}[H]
 	\centering
@@ -127,7 +127,27 @@ SVM is a binary classification technique used to create classification models. T
 	\label{fig:hyperplane}
 \end{figure}
 
-The challenge of finding the optimal hyperplane is solved by maximizing the dual Lagrange optimization problem
+Refering to figure \ref{fig:hyperplane} the direction of the hyperplane $B1$ is described by its orthogonal vector $w$ and its margins are described by the equations
+\begin{align}
+b11 &= w\cdot x + b = 1\\
+b12 &= w \cdot x + b = -1
+\end{align}
+where $x$ is a point on the margin, $b$ is a constant and $w$ \& $b$ are scaled such that the equations hold. It may then be showed (see \cite{svm-graph-kernels}) that the distance $d$ between the margins is given by
+\begin{equation}
+d = \frac{2}{||w||}
+\end{equation}
+Maximizing this distance is then achieved by minimizing $w$ which is formulated as an objective function
+\begin{equation}
+f(w) = \frac{||w||^2}{2}
+\end{equation}
+
+To consider the weight of missclassified points we extend this function as
+\begin{equation}
+f(w) = \frac{||w||^2}{2} + C\left(\sum_{i=1}^{N}\xi_i\right)^k
+\end{equation}
+where $N$ is the number of data points, $\xi_i$ is the distance with which point $x_i$ was missclassified (or 0 if correctly classified), $C$ and $k$ are parameters determining the tolerance for missclassifications.
+
+Using Lagrange multipliers this optimization problem is transformed into the following Dual Lagrange problem:
 \begin{equation}
 \label{eq:dual_lagrange_problem}
 L_D = \sum_{i=1}^{n}\lambda_i-\frac{1}{2}\sum_{i,j}\lambda_i\lambda_j y_iy_j x_ix_j
@@ -135,12 +155,12 @@ L_D = \sum_{i=1}^{n}\lambda_i-\frac{1}{2}\sum_{i,j}\lambda_i\lambda_j y_iy_j x_i
 where $x_i$ is a data point, $y_i\in \{-1, 1\}$ is its class and $\lambda_i$ is its Lagrange multiplier.
 
 \subsection{Kernels}
-The data illustrated in figure \ref{fig:hyperplane} is linearly separable, i.e.\ may be separated by a hyperplane. However, this is not at all the case for all data. When working with linearly inseparable data we may, however, transform the data points into some $x\leq\infty$-dimensional space such that the transformed data points become linearly separable. The optimization problem is then simply changed to
+The data illustrated in figure \ref{fig:hyperplane} is linearly separable, i.e.\ may be separated by a hyperplane. However, this is not at all the case for all data. When working with linearly inseparable data or non-euclidean data (e.g.\ graphs) we may transform the data points into some $d\leq\infty$-dimensional space such that the transformed data points become linearly separable. The optimization problem is then simply changed to
 \begin{equation}
 \label{eq:kernel_function_phi}
 L_D = \sum_{i=1}^{n}\lambda_i-\frac{1}{2}\sum_{i,j}\lambda_i\lambda_j y_iy_j\Phi(x_i)\cdot\Phi(x_j)
 \end{equation}
-where $\Phi:\chi_1\rightarrow\chi_2$ is some transformation that (hopefully) makes the data somewhat more separable.
+where $\Phi:\chi_1\rightarrow\chi_2$ is a transformation and $\chi_2$ is a space with a dot product.
 
 Finding this transformation $\Phi$ is, however, a daunting task (let alone transforming all the data). We work around this issue by using the \textit{kernel trick} based on Mercer's theorem.
 
@@ -149,17 +169,18 @@ Finding this transformation $\Phi$ is, however, a daunting task (let alone trans
 \begin{equation}
 \langle\Phi(x_i),\Phi(x_j)\rangle=k(x_i,x_j)
 \end{equation}
+\textit{where $\chi_2$ is a Hilbert space with an inner product $\langle x_i, x_j\rangle$.}
 
 We supply a proof for this theorem in \cite{svm-graph-kernels}.
 
-Using this knowledge we may now define a function $k(x_i,x_j)$ with the given properties and substitute this function (called a kernel function, or just kernel) into the optimization problem as seen in (\ref{eq:kernel_function}). This substitution is known as the kernel trick.
+Using this knowledge we may now define a symmetric, positive semidefinite function $k(x_i,x_j)$ and substitute this function (called a kernel function, or just kernel) into the optimization problem as seen in (\ref{eq:kernel_function}). This substitution is known as the kernel trick.
 
 \begin{equation}
 \label{eq:kernel_function}
 L_D = \sum_{i=1}^{n}\lambda_i-\frac{1}{2}\sum_{i,j}\lambda_i\lambda_j y_iy_jk(x_i,x_j)
 \end{equation}
 
-The task is then to find a kernel that manages to compare the features of the data in a meaningful way making them separable in the transformed space. The GraphHopper kernel attempts to do just that by analysing a combination of structure and node labels in graphs. As it is defined exclusively for graphs it belongs to a subgroup of kernels aptly named graph kernels.
+Besides comparing non-separable data in a higher-dimensional separable space this allows us to efficiently compare non-euclidean data such as graphs. The task is now to find a kernel that manages to compare the features of the data in a meaningful way making them separable in the transformed space. The GraphHopper kernel attempts to do just that by analysing a combination of structure and node labels in graphs. As it is defined exclusively for graphs it belongs to a subgroup of kernels aptly named graph kernels.
 
 Assuming a kernel function $k(x_i,x_j)$ we define the matrix $K$ to be an $N\times N$ matrix (where $N$ is the number of data points) such that $K_{ij}=k(x_i,x_j)$. Using SVM in practice then consists of computing $K$ and creating a model through SVM based on the result.
 
@@ -290,11 +311,11 @@ Let $\delta=width(G)$ and let $M$ be a $|V|\times\delta\times\delta$ matrix such
 w(v,v')=\sum_{j=1}^{\delta}\sum_{i=1}^{j}M(v)_{ij}*M'(v')_{ij}
 \label{eq:wmm}
 \end{equation}
-allowing us to easily find the weight between pairs of nodes by first computing $M$ and $M'$. Furthermore, when computing $K$ for multiple graphs we may compute all M matrices beforehand and use them in the pairwise computations instead of computing them for each pair of graphs.
+allowing us to easily find the weight between pairs of nodes by first computing $M$ and $M'$. Furthermore, when computing $K$ for multiple graphs we may compute all $M$ matrices beforehand and use them in the pairwise computations instead of computing them for each pair of graphs.
 
 
 \subsection{Computing $M$}
-The $M$ matrix can be computed in a number of ways. We will be using the message-passing algorithms presented in \cite{graphhopper}
+The $M$ matrix can be computed in a number of ways. We will be using the message-passing algorithms presented in \cite{graphhopper}.
 
 Let $\tilde{v}$ be a node in $V$ and let $P_{\tilde{v}}$ be the set of shortest paths in $G$ starting in $\tilde{v}$. Then $M(v)_{ij}$ becomes $\sum_{\tilde{v}\in V}$ number of times $v$ appears as the $i$'th node in each $\pi_{\tilde{v}}\in P_{\tilde{v}}$ of discrete length $j$. This means that we can compute $M$ by iterating over each node $\tilde{v}\in V$ and finding all shortest paths starting in $\tilde{v}$.
 
@@ -484,13 +505,13 @@ for comparing two graphs where $n$ is the greatest number of nodes in a single g
 \mathcal{O}\left(N\left(n\left(m\log n + m\delta + n\delta^2\right)\right)\right)
 \end{equation}
 
-We now have to compute $k_{graphhopper}$ on each unique pair of graphs. In practice, since a kernel is by definition symmetric, we do not consider all $N^2$ sequences. Instead, we count the number of multisets of cardinality 2 in the set of $N$ graphs, i.e.\ $\multiset{N}{2}$. This gives a complexity of
+We now have to compute $k_{graphhopper}$ on each pair of graphs. Since a kernel is by definition symmetric we only have to compute  $\binom{N}{2}=\frac{N!}{2!(N-2)!}\leq N^2$ unique pairs.
 \begin{equation}
-\mathcal{O}\left(\multiset{N}{2}\left(n^2\left(d+\delta^2\right)\right)\right)
+\mathcal{O}\left(\frac{N!}{2!(N-2)!}\left(n^2\left(d+\delta^2\right)\right)\right)
 \end{equation}
 Adding the complexity of precomputing the $M$ matrices we land at a total complexity of
 \begin{equation}
-\mathcal{O}\left(\multiset{N}{2}\left(n^2\left(d+\delta^2\right)\right) + N\left(n\left(m\log n + m\delta + n\delta^2\right)\right)\right)
+\mathcal{O}\left(\frac{N!}{2!(N-2)!}\left(n^2\left(d+\delta^2\right)\right) + N\left(n\left(m\log n + m\delta + n\delta^2\right)\right)\right)
 \end{equation}
 
 
@@ -498,9 +519,9 @@ Adding the complexity of precomputing the $M$ matrices we land at a total comple
 In this section we present the algorithm used in our implementation of GraphHopper described using pseudo-code. Based on the theory explained earlier we are able to effectively split the computation into two steps:
 \begin{enumerate}
 	\item Compute $M$ for all graphs.
-	\item Compute $K$ using all pairs of M.
+	\item Compute $K$ using all pairs of $M$.
 \end{enumerate}
-The code presented here will not be a 1:1 match with the actual implementation but rather an introduction to the algorithm. We will exclude unneeded details including optimizations that are not required to understand the implementation.
+The code presented here will not be a 1:1 match with the actual implementation but rather an introduction to the algorithm. We will exclude unnecessary details including optimizations that are not required to understand the implementation.
 
 \subsubsection{Computing M}
 
@@ -581,7 +602,7 @@ end
 \subsection{Gaps}
 The following section is based on the description of GraphHopper with gaps on trees from \cite{gappy}. While this paper only describes the use of gaps on trees we will be expanding the definitions to also work on graphs in general.
 
-When working on graph data (or string sequences, see \cite{string-kernels}) we may wish to identify paths that are very similar although they may contain small differences. These dissimilarities could be a result of many things depending on the given data e.g. mutations in DNA, missing data from image conversion etc. In the implementation detailed until now we have only been able to identify identical paths but this can be changed by allowing gaps. Introducing gaps allows us to create new paths called \textit{gappy paths} in the graphs which may skip up to $s$ nodes at a time (i.e.\ gaps of size $\leq s$). In figure \ref{fig:simple_gaps} is it shown how we can apply gaps to a simple graph.
+When working on graph data (or string sequences, see \cite{string-kernels}) we may wish to identify paths that are very similar although they may contain small differences. These dissimilarities could be a result of many things depending on the given data e.g. mutations in DNA, missing data from image conversion etc. In the implementation detailed until now we have only been able to identify identical paths but this can be changed by allowing gaps. Introducing gaps allows us to create new paths called \textit{gappy paths} in the graphs which may skip up to $s$ nodes at a time (i.e.\ gaps of size $\leq s$). In figure \ref{fig:simple_gaps} it is shown how we can apply gaps to a simple graph.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=12cm]{gaps}
@@ -600,6 +621,20 @@ where $P_{G_{\tilde{v}}}$ is the set of all paths in $G_{\tilde{v}}$.
 Adding gappy paths simply consists of adding new edges to the shortest path DAG. Afterwards we compute $M$ and eventually $K$ in the same way as we normally would as discussed in section \ref{section:graphhopper}.
 
 \subsubsection{Computational analysis (continued)}
+
+\iffalse
+The addition of gaps impacts the complexity of computing $M$. For each node in each shortest path DAG we traverse $\leq s$ levels up through its parents. One node can not have more than $\Delta$ parents where $\Delta$ is the maximum degree of any node in the graph\footnote{Degree being the amount of outgoing edges in one node.}. In worst case one node goes through $\leq\Delta^{s+1}$ parents so computing the gaps for all nodes in all DAGs in one graph amounts to
+\begin{equation}
+\mathcal{O}\left(n^2\Delta^{s+1}\right)
+\end{equation}
+
+Doing this for all N graphs we get
+\begin{equation}
+\mathcal{O}\left(N(n^2\Delta^{s+1})\right)
+\end{equation}
+\fi
+
+
 When we compute $k_{graphhopper}$ with gaps, the time complexity changes a little bit, the reason for this is that we need to add all the new edges to the graph. We do this by iterating through the root nodes parents in the shortest path graph. The time complexity for finding all these new edges are shown in (\ref{eq:tc_gaps_1}), where $\Delta$ is the maximum degree of the graph.
 \begin{equation}
 \label{eq:tc_gaps_1}
@@ -626,6 +661,8 @@ The action of adding gaps can look time consuming, because the time complexity d
 	\caption{\textit{Fill out}}
 	\label{fig:time_complexity_gaps}
 \end{figure}
+
+
 \subsubsection{Implementation}
 In this section we will show how simple it is to add gaps to our current graphhopper implementation.
 \begin{lstlisting}
@@ -838,7 +875,7 @@ The results are presented in table \ref{table:runtime_results}. The \textit{syst
 \end{table}
 
 \subsubsection{Discussion}
-We have achieved superior running times in all of our tests seemingly varying mainly on the choice of node kernel but also the size of the datasets. The greatest difference is achieved when using \textbf{Dirac} where our implementation runs about 40 times faster reaching a 1:43.23 ratio on a very small dataset and 1:36.94 on a larger dataset. When using \textbf{Gaussian} the gain is significantly smaller as we only reach from 1:2.12 on a large dataset up to 1:9.65 on a small dataset. Comparing the tests on Enzymes (Symmetrized) with Gaussian vs. with \textbf{Dirac $\times$ Gaussian} we notice that while our implementation manages to \textbf{half} the running time by using Dirac $\times$ Gaussian the MATLAB implementation requires even more computations than when running Gaussian alone.
+We have achieved superior running times compared to the previous MATLAB implementation in all of our tests seemingly varying mainly on the choice of node kernel but also the size of the datasets. The greatest difference is achieved when using \textbf{Dirac} where our implementation runs about 40 times faster reaching a 1:43.23 ratio on a very small dataset and 1:36.94 on a larger dataset. When using \textbf{Gaussian} the gain is significantly smaller as we only reach from 1:2.12 on a large dataset up to 1:9.65 on a small dataset. Comparing the tests on Enzymes (Symmetrized) with Gaussian vs. with \textbf{Dirac $\times$ Gaussian} we notice that while our implementation manages to \textbf{half} the running time by using Dirac $\times$ Gaussian the MATLAB implementation requires even more computations than when running Gaussian alone.
 
 \subsection{Accuracy experiments (Gaps vs. no Gaps)}
 The accuracy experiments are run using 10-fold cross-validation of $c$ (slack variable constant, see \cite{svm-graph-kernels}) as well as kernel parameters where applicable (e.g.\ when using Gaussian). For reference we also provide our own results (some new, some from \cite{svm-graph-kernels}) with the established Weisfeiler-Lehman kernel\cite{WL} (WL) and (where available) results published in \cite{yanardag} using the proposed Deep Graphlet Kernel (DGK). Some of the datasets from \cite{yanardag} have been tested both with and without node labels and are in both cases compared to the same result from \cite{yanardag} since DGK does not use node labels either way.
@@ -1142,7 +1179,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		GH & Dirac & 1 & 50.3133 (std. 0.5297) \\
 		GH & Dirac & 2 & 50.6133 (std. 0.6739) \\
 		GH & Dirac & 3 & 50.2067 (std. 0.5043) \\
-		WL & - & - & \\
+		WL & - & - & 49.7400 (std. 0.6336)\\
 		DGK & - & - & \\
 	\end{tabular}
 	\captionof{table}{IMDB Multi (labelled) results}
@@ -1165,6 +1202,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		GH & Dirac & 1 & 39.8467 (std. 0.8833) \\
 		GH & Dirac & 2 & 39.8267 (std. 0.7438) \\
 		GH & Dirac & 3 & 39.2933 (std. 0.7168) \\
+		WL & - & - & 49.7400 (std. 0.6336)
 	\end{tabular}
 	\captionof{table}{IMDB Multi (unlabelled) results}
 	\label{table:imdb_multi_unlabelled}
@@ -1183,7 +1221,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
-		GH & DxG & 0 & 81.00 (std. 1.7033)
+		GH & DxG ($\mu=1$) & 0 & 81.00 (std. 1.7033)
 	\end{tabular}
 	\captionof{table}{SEMI results}
 	\label{table:semi}
