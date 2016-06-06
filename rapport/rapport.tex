@@ -604,12 +604,12 @@ When we compute $k_{graphhopper}$ with gaps, the time complexity changes a littl
 \label{eq:tc_gaps_1}
 \mathcal{O}\left(n^2 \Delta^{s + 1}\right)
 \end{equation}
-The complexity shown in (\ref{eq:tc_gaps_1}) does not include adding the new edges to the graph, we need to do this can be done by iterating through the list of the nodes with the new parents.
+The complexity shown in (\ref{eq:tc_gaps_1}) does not include adding the new edges to the graph, this can be done by iterating through the list of the nodes with the new parents and the list with the new children, where each step is $\Delta^s$.
 \begin{equation}
 \label{eq:tc_gaps_2}
 \mathcal{O}\left(n^2 \Delta^{s}\right)
 \end{equation}
-And because we need to calculate this for every graph, we combine the two time complexities (\ref{eq:tc_gaps_1}) and (\ref{eq:tc_gaps_2}), and multiply them with $N$, the final time complexity for calculating gaps can be seen in (\ref{eq:tc_gaps_3}).
+The combined time complexity for (\ref{eq:tc_gaps_1}) and (\ref{eq:tc_gaps_2}) is $\mathcal{O}\left(n^2 \Delta^{s + 1}\right)$, but because we need to calculate this for every graph multiply them with $N$, the final time complexity for calculating gaps can be seen in (\ref{eq:tc_gaps_3}).
 \begin{equation}
 \label{eq:tc_gaps_3}
 \mathcal{O}\left(N n^2 \Delta^{s + 1}\right)
@@ -618,7 +618,7 @@ After calculating the time complexity for gaps, we can then combine our newly fo
 \begin{equation}
 \mathcal{O}\left(N\left(n\left(m\log n + m\delta + n\delta^2 + n\Delta^{s + 1}\right)\right)\right)
 \end{equation}
-The action of adding gaps can look time consuming, because the time complexity does not look good, but when we compare the theoretical time with the actual time, we can see that the time complexity is a bit misleading. In figure X can a comparison be seen of the theoretical and actual time, the actual time is the time of calculating $M$, we did this a $100$ times and calculated the mean, to get a more realistic result.
+The action of adding gaps can look time consuming, because the time complexity does not look good, but when we compare the theoretical time with the actual time, we can see that the time complexity is a bit misleading. In figure \ref{fig:time_complexity_gaps} can a comparison be seen of the theoretical and actual time, the actual time is the time of calculating $M$, we did this a $100$ times and calculated the mean, to get a more realistic result.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=10cm]{time_complexity_gaps}
