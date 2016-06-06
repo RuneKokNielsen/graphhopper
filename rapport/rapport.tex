@@ -621,44 +621,28 @@ where $P_{G_{\tilde{v}}}$ is the set of all paths in $G_{\tilde{v}}$.
 Adding gappy paths simply consists of adding new edges to the shortest path DAG. Afterwards we compute $M$ and eventually $K$ in the same way as we normally would as discussed in section \ref{section:graphhopper}.
 
 \subsubsection{Computational analysis (continued)}
-
-\iffalse
-The addition of gaps impacts the complexity of computing $M$. For each node in each shortest path DAG we traverse $\leq s$ levels up through its parents. One node can not have more than $\Delta$ parents where $\Delta$ is the maximum degree of any node in the graph\footnote{Degree being the amount of outgoing edges in one node.}. In worst case one node goes through $\leq\Delta^{s+1}$ parents so computing the gaps for all nodes in all DAGs in one graph amounts to
+The addition of gaps impacts the complexity of computing $M$. For each node in each shortest path DAG we traverse $\leq s$ levels up through its parents. One node can not have more than $\Delta$ parents where $\Delta$ is the maximum degree of any node in the graph\footnote{Degree being the amount of outgoing edges in one node.}. In worst case one node adds $\leq\Delta^{s+1}$ parents so computing the gaps for all nodes in all $n$ DAGs in one graph amounts to
 \begin{equation}
 \mathcal{O}\left(n^2\Delta^{s+1}\right)
 \end{equation}
 
 Doing this for all N graphs we get
 \begin{equation}
-\mathcal{O}\left(N(n^2\Delta^{s+1})\right)
+\mathcal{O}\left(N(n^2\Delta^{s + 1})\right)
 \end{equation}
-\fi
 
+Having calculated the complexity for adding gaps we can then combine this with the complexity found in \ref{sec:computational_analysis}:
 
-When we compute $k_{graphhopper}$ with gaps, the time complexity changes a little bit, the reason for this is that we need to add all the new edges to the graph. We do this by iterating through the root nodes parents in the shortest path graph. The time complexity for finding all these new edges are shown in (\ref{eq:tc_gaps_1}), where $\Delta$ is the maximum degree of the graph.
-\begin{equation}
-\label{eq:tc_gaps_1}
-\mathcal{O}\left(n^2 \Delta^{s + 1}\right)
-\end{equation}
-The complexity shown in (\ref{eq:tc_gaps_1}) does not include adding the new edges to the graph, this can be done by iterating through the list of the nodes with the new parents and the list with the new children, where each step is $\Delta^s$.
-\begin{equation}
-\label{eq:tc_gaps_2}
-\mathcal{O}\left(n^2 \Delta^{s}\right)
-\end{equation}
-The combined time complexity for (\ref{eq:tc_gaps_1}) and (\ref{eq:tc_gaps_2}) is $\mathcal{O}\left(n^2 \Delta^{s + 1}\right)$, but because we need to calculate this for every graph multiply them with $N$, the final time complexity for calculating gaps can be seen in (\ref{eq:tc_gaps_3}).
-\begin{equation}
-\label{eq:tc_gaps_3}
-\mathcal{O}\left(N n^2 \Delta^{s + 1}\right)
-\end{equation}
-After calculating the time complexity for gaps, we can then combine our newly found time complexity, with the time complexity found in \ref{sec:computational_analysis}.
 \begin{equation}
 \mathcal{O}\left(N\left(n\left(m\log n + m\delta + n\delta^2 + n\Delta^{s + 1}\right)\right)\right)
 \end{equation}
-The action of adding gaps can look time consuming, because the time complexity does not look good, but when we compare the theoretical time with the actual time, we can see that the time complexity is a bit misleading. In figure \ref{fig:time_complexity_gaps} can a comparison be seen of the theoretical and actual time, the actual time is the time of calculating $M$, we did this a $100$ times and calculated the mean, to get a more realistic result.
+
+The worst-case complexity of adding gaps looks intimidating. However, when comparing the theoretical time with the actual time spent the reality seems far from this case. In our tests the actual time required to compute $M$ when $s$ increases seems closer to being bound by $\sqrt{s+1}$ than the theoretical $\Delta^{s+1}$. This is illustrated in figure \ref{fig:time_complexity_gaps}.
+
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=10cm]{time_complexity_gaps}
-	\caption{\textit{Fill out}}
+	\caption{\textit{Growth in complexity of adding gaps in reality vs. theory.}}
 	\label{fig:time_complexity_gaps}
 \end{figure}
 
@@ -1055,6 +1039,20 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 	\end{tabular}
 	\captionof{table}{Reddit binary (unlabelled) results}
 	\label{table:reddit_binary_unlabelled}
+\end{minipage}
+
+K matrices on gray scale\\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{0.1in}
+	\includegraphics[width=5cm]{reddit_trolls_k}
+	\captionof{figure}{Reddit binary (unlabelled) K gray scale for GH.}
+	\label{fig:reddit_binary_unlabelled_k_gh}
+\end{minipage}
+\begin{minipage}{0.6\linewidth}
+\hspace*{-1in}
+\iffalse	\includegraphics[width=10cm]{reddit_binary_unlabelled_k_wl} \fi
+\captionof{figure}{Reddit binary (unlabelled) K gray scale for WL.}
+\label{fig:reddit_binary_unlabelled_k_wl}
 \end{minipage}
 
 
