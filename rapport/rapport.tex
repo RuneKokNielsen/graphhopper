@@ -830,7 +830,7 @@ The results are presented in table \ref{table:runtime_results}. The \textit{syst
 We have achieved superior running times in all of our tests seemingly varying mainly on the choice of node kernel but also the size of the datasets. The greatest difference is achieved when using \textbf{Dirac} where our implementation runs about 40 times faster reaching a 1:43.23 ratio on a very small dataset and 1:36.94 on a larger dataset. When using \textbf{Gaussian} the gain is significantly smaller as we only reach from 1:2.12 on a large dataset up to 1:9.65 on a small dataset. Comparing the tests on Enzymes (Symmetrized) with Gaussian vs. with \textbf{Dirac $\times$ Gaussian} we notice that while our implementation manages to \textbf{half} the running time by using Dirac $\times$ Gaussian the MATLAB implementation requires even more computations than when running Gaussian alone.
 
 \subsection{Accuracy experiments (Gaps vs. no Gaps)}
-The accuracy experiments are run using 10-fold cross-validation of $c$ (slack variable constant, see \cite{svm-graph-kernels}) as well as kernel parameters where applicable (e.g.\ when using Gaussian). For reference we also provide our own results (some new, some from \cite{svm-graph-kernels}) with the established Weisfeiler-Lehman kernel\cite{WL} (WL) and (where available) results published in \cite{yanardag} using the proposed Deep Graphlet Kernel (DGK).
+The accuracy experiments are run using 10-fold cross-validation of $c$ (slack variable constant, see \cite{svm-graph-kernels}) as well as kernel parameters where applicable (e.g.\ when using Gaussian). For reference we also provide our own results (some new, some from \cite{svm-graph-kernels}) with the established Weisfeiler-Lehman kernel\cite{WL} (WL) and (where available) results published in \cite{yanardag} using the proposed Deep Graphlet Kernel (DGK). Some of the datasets from \cite{yanardag} have been tested both with and without node labels and are in both cases compared to the same result from \cite{yanardag} since DGK does not use node labels either way.
 
 \subsubsection{Results}
 The results here are divided by datasets. The graphs illustrate the effect of changing the gap size in GraphHopper (GH) and at the same time display results from other kernels for reference. The node kernels used are abbreviated as D for Dirac, G for Gaussian and DxG for Dirac $\times$ Gaussian.
@@ -1003,7 +1003,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		GH & D & 0 & 100 (std. 0.0000)\\
 		GH & D & 1 & 99.9500 (std. $<$ 0.0001)\\
 		WL & - & - & \\
-		DGK & - & - & 66.96 (std. 0.56)
+		DGK & - & - & 78.04 (std. 0.39)
 	\end{tabular}
 	\captionof{table}{Reddit binary (unlabelled) results}
 	\label{table:reddit_binary_unlabelled}
@@ -1028,7 +1028,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		GH & Dirac & 2 & 79.0620 (std. 0.2461)\\
 		GH & Dirac & 3 & 78.9980 (std. 0.3615)\\
 		WL & - & - & \\
-		DGK & - & - & \\
+		DGK & - & - & 73.09 (std. 0.25)\\
 	\end{tabular}
 	\captionof{table}{Collab (labelled) results}
 	\label{table:collab}
@@ -1052,7 +1052,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		GH & Dirac & 2 & 54.2520 (std. 0.0543) \\
 		GH & Dirac & 3 & 54.2300 (std. 0.0738) \\
 		WL & - & - & \\
-		DGK & - & - &
+		DGK & - & - & 73.09 (std. 0.25)
 	\end{tabular}
 	\captionof{table}{Collab (unlabelled) results}
 	\label{table:collab_unlabelled}
@@ -1062,7 +1062,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 \textbf{IMDB Binary (labelled)}\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
-	\iffalse	\includegraphics[width=10cm]{imdb_labelled} \fi
+	\includegraphics[width=10cm]{imdb_labelled}
 	\captionof{figure}{IMDB Binary (labelled) results}
 	\label{fig:imdb_labelled}
 \end{minipage}
@@ -1073,9 +1073,16 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		\hline
 		GH & D & 0 & 71.37 (std. 0.8486)\\
 		GH & D & 1 & 71.89 (std. 0.7824)\\
+		GH & D & 2 & 71.69 (std. 1.0989)\\
 		GH & D & 5 & 72.53 (std. 0.5229)\\
+		GH & D & 7 & 72.25 (std. 0.8567)\\
+		GH & D & 10 & 71.71 (std. 1.3552)\\
+		GH & D & 15 & 71.90 (std. 0.2712)\\
+		GH & D & 20 & 72.24 (std. 1.1787)\\
+		GH & D & 25 & 71.72 (std. 1.3815)\\
+		GH & D & 50 & 71.76 (std. 1.0362)\\
 		WL & - & - & 73.39 (std. 0.5567) \\
-		DGK & - & - & \\
+		DGK & - & - & 66.96 (std. 0.56)\\
 	\end{tabular}
 	\captionof{table}{IMDB Binary (labelled) results}
 	\label{table:imdb_labelled}
@@ -1084,7 +1091,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 \textbf{IMDB Binary (unlabelled)}\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
-	\iffalse	\includegraphics[width=10cm]{imdb_unlabelled} \fi
+	\includegraphics[width=10cm]{imdb_unlabelled}
 	\captionof{figure}{IMDB Binary (unlabelled) results}
 	\label{fig:imdb_unlabelled}
 \end{minipage}
@@ -1093,6 +1100,16 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
+		GH & D & 0 & 61.79 (std. 1.4933)\\
+		GH & D & 1 & 58.46 (std. 1.3023)\\
+		GH & D & 2 & 58.09 (std. 1.5022)\\
+		GH & D & 3 & 58.17 (std. 1.5181)\\
+		GH & D & 5 & 57.72 (std. 1.7498)\\
+		GH & D & 10 & 59.56 (std. 1.3574)\\
+		GH & D & 25 & 59.48 (std. 1.3726)\\
+		GH & D & 50 & 58.14 (std. 2.2907)\\
+		WL & - & - & 72.90 (std. 0.68961)\\
+		DGK & - & - & 66.96 (std. 0.56) \\
 	\end{tabular}
 	\captionof{table}{IMDB Binary (unlabelled) results}
 	\label{table:imdb_unlabelled}
@@ -1101,9 +1118,9 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 \textbf{IMDB Multi (labelled)}\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
-	\iffalse	\includegraphics[width=10cm]{imdb_labelled} \fi
-	\captionof{figure}{IMDB Binary (labelled) results}
-	\label{fig:imdb_labelled}
+	\iffalse	\includegraphics[width=10cm]{imdb_multi_labelled} \fi
+	\captionof{figure}{IMDB Multi (labelled) results}
+	\label{fig:imdb_multi_labelled}
 \end{minipage}
 \begin{minipage}[c]{0.5\linewidth}	
 	\centering
@@ -1122,9 +1139,9 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 \textbf{IMDB Multi (unlabelled)}\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
-	\iffalse	\includegraphics[width=10cm]{imdb_unlabelled} \fi
-	\captionof{figure}{IMDB Binary (unlabelled) results}
-	\label{fig:imdb_unlabelled}
+	\iffalse	\includegraphics[width=10cm]{imdb_multi_unlabelled} \fi
+	\captionof{figure}{IMDB Multi (unlabelled) results}
+	\label{fig:imdb_multi_unlabelled}
 \end{minipage}
 \begin{minipage}[c]{0.5\linewidth}	
 	\centering
@@ -1139,6 +1156,27 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 	\captionof{table}{IMDB Multi (unlabelled) results}
 	\label{table:imdb_multi_unlabelled}
 \end{minipage}
+
+
+\textbf{SEMI}\\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{-1in}
+	\iffalse	\includegraphics[width=10cm]{semi} \fi
+	\captionof{figure}{SEMI results}
+	\label{fig:semi}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}	
+	\centering
+	\begin{tabular}{c|c|c|c}
+		Kernel & Node kernel & Gaps & Result\\
+		\hline
+		GH & DxG & 0 & 81.00 (std. 1.7033)
+	\end{tabular}
+	\captionof{table}{SEMI results}
+	\label{table:semi}
+\end{minipage}
+
+
 
 \begin{table}[H]
 	\centering
