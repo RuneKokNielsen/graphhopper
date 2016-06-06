@@ -599,24 +599,24 @@ where $P_{G_{\tilde{v}}}$ is the set of all paths in $G_{\tilde{v}}$.
 Adding gappy paths simply consists of adding new edges to the shortest path DAG. Afterwards we compute $M$ and eventually $K$ in the same way as we normally would as discussed in section \ref{section:graphhopper}.
 
 \subsubsection{Computational analysis (continued)}
-When we compute $k_{graphhopper}$ with gaps, the time complexity changes a little bit, this reason for this is that we need to add all the new edges to the graph. We do this by going through the root nodes parents in the shortest path graph. The time complexity for finding all these new edges are shown in (\ref{eq:tc_gaps_1}), where $\Delta$ is the maximum degree of the graph.
+When we compute $k_{graphhopper}$ with gaps, the time complexity changes a little bit, the reason for this is that we need to add all the new edges to the graph. We do this by iterating through the root nodes parents in the shortest path graph. The time complexity for finding all these new edges are shown in (\ref{eq:tc_gaps_1}), where $\Delta$ is the maximum degree of the graph.
 \begin{equation}
 \label{eq:tc_gaps_1}
 \mathcal{O}\left(n \Delta^{s + 1}\right)
 \end{equation}
-Now we need to add these new edges to our graph, this can be done by iterating through the list of the nodes with the new parents.
+The complexity shown in (\eq:tc_gaps_1) does not include adding the new edges to the graph, we need to do this can be done by iterating through the list of the nodes with the new parents.
 \begin{equation}
 \label{eq:tc_gaps_2}
-\mathcal{O}\left(n \left(\Delta^{s} + \Delta^{s}\right)\right)
+\mathcal{O}\left(n \Delta^{s}\right)
 \end{equation}
-And because we need to calculate this for every graph, we combine the two time complexities (\ref{eq:tc_gaps_2}) and (\ref{eq:tc_gaps_2}), and multiply them with $N$, the final time complexity for calculating gaps can be seen in (\ref{eq:tc_gaps_3}).
+And because we need to calculate this for every graph, we combine the two time complexities (\ref{eq:tc_gaps_1}) and (\ref{eq:tc_gaps_2}), and multiply them with $N$, the final time complexity for calculating gaps can be seen in (\ref{eq:tc_gaps_3}).
 \begin{equation}
 \label{eq:tc_gaps_3}
-\mathcal{O}\left(N\left(n\left(\Delta^{s + 1} + \Delta^{s}\right)\right)\right)
+\mathcal{O}\left(N n \Delta^{s + 1}\right)
 \end{equation}
 After calculating the time complexity for gaps, we can then combine our newly found time complexity, with the time complexity found in \ref{sec:computational_analysis}.
 \begin{equation}
-\mathcal{O}\left(N\left(n\left(m\log n + m\delta + n\delta^2 + \Delta^{s + 1} + \Delta^{s}\right)\right)\right)
+\mathcal{O}\left(N\left(n\left(m\log n + m\delta + n\delta^2 + \Delta^{s + 1}\right)\right)\right)
 \end{equation}
 The action of adding gaps can look time consuming, because the time complexity does not look good, but when we compare the theoretical time with the actual time, we can see that the time complexity is a bit misleading. In figure X can a comparison be seen of the theoretical and actual time, the actual time is the time of calculating $M$, we did this a $100$ times and calculated the mean, to get a more realistic result.
 \begin{figure}[H]
