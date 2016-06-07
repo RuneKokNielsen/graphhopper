@@ -1068,34 +1068,8 @@ K matrices on gray scale\\
 In figure \ref{fig:reddit_binary_unlabelled_k_gh} we provide a gray scale image of the kernel matrix. As illustrated almost all inner products are in one of the two extremes (being either white or black) divided perfectly by their graph label showing that the 100\% accuracy result is indeed not a result of an error in SVM but of the fact that the kernel matrix is perfectly separable.
 \end{minipage}
 
-\paragraph{Collab (labelled):}
-When inspecting the results of Collab (labelled) we see that GH outperforms WL. We also see a minor increase in GH's performance when adding gaps, but it is still within the standard deviation. \\
-\textbf{Collab (labelled)}\\
-\begin{minipage}{0.6\linewidth}
-	\hspace*{-1in}
-	\includegraphics[width=10cm]{collab_labelled}
-	\captionof{figure}{Collab (labelled) results}
-	\label{fig:collab}
-\end{minipage}
-\begin{minipage}[c]{0.5\linewidth}
-	
-	\centering
-	\begin{tabular}{c|c|c|c}
-		Kernel & Node kernel & Gaps & Result\\
-		\hline
-		GH & Dirac & 0 & \textbf{78.6580 (std. 0.2647)}\\
-		GH & Dirac & 1 & \textbf{78.8960 (std. 0.2084)}\\
-		GH & Dirac & 2 & \textbf{79.0620 (std. 0.2461)} \\
-		GH & Dirac & 3 & \textbf{78.9980 (std. 0.3615)}\\
-		WL & - & - & 77.1020 (std. 0.1604) \\
-		DGK\cite{yanardag} & - & - & 73.09 (std. 0.25)\\
-	\end{tabular}
-	\captionof{table}{Collab (labelled) results}
-	\label{table:collab}
-\end{minipage}
-
 \paragraph{Collab (unlabelled):}
-Opposite of the results from Collab (labelled), here WL outperforms GH. Gaps seems to have very small to none effect on the performance of GH. \\
+When inspecting the results from Collab (labelled), we see that WL outperforms GH. Gaps seems to have very small to none effect on the performance of GH. \\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{collab_unlabelled}
@@ -1119,8 +1093,30 @@ Opposite of the results from Collab (labelled), here WL outperforms GH. Gaps see
 	\label{table:collab_unlabelled}
 \end{minipage}
 
-
-
+\paragraph{Collab (labelled):}
+Opposite of Collab (unlabelled) we see that GH outperforms WL. We also see a minor increase in GH's performance when adding gaps, but it is still within the standard deviation. \\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{-1in}
+	\includegraphics[width=10cm]{collab_labelled}
+	\captionof{figure}{Collab (labelled) results}
+	\label{fig:collab}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}
+	
+	\centering
+	\begin{tabular}{c|c|c|c}
+		Kernel & Node kernel & Gaps & Result\\
+		\hline
+		GH & Dirac & 0 & \textbf{78.6580 (std. 0.2647)}\\
+		GH & Dirac & 1 & \textbf{78.8960 (std. 0.2084)}\\
+		GH & Dirac & 2 & \textbf{79.0620 (std. 0.2461)} \\
+		GH & Dirac & 3 & \textbf{78.9980 (std. 0.3615)}\\
+		WL & - & - & 77.1020 (std. 0.1604) \\
+		DGK\cite{yanardag} & - & - & 73.09 (std. 0.25)\\
+	\end{tabular}
+	\captionof{table}{Collab (labelled) results}
+	\label{table:collab}
+\end{minipage}
 
 \paragraph{IMDB Binary (unlabelled):}
 On the unlabelled dataset GH struggled to compete with either of the other graph kernels. Gaps decreased the performance.
@@ -1181,6 +1177,29 @@ On the labelled dataset GH almost reached the performance of WL when and achieve
 	\label{table:imdb_labelled}
 \end{minipage}
 
+\paragraph{IMDB Multi (unlabelled):}
+WL outperforms GH, and adding gaps to GH only decreases the performance.\\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{-1in}
+	\includegraphics[width=10cm]{imdb_multi_unlabelled}
+	\captionof{figure}{IMDB Multi (unlabelled) results}
+	\label{fig:imdb_multi_unlabelled}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}	
+	\centering
+	\begin{tabular}{c|c|c|c}
+		Kernel & Node kernel & Gaps & Result\\
+		\hline
+		GH & Dirac & 0 & 40.3600 (std. 0.9889) \\
+		GH & Dirac & 1 & 39.8467 (std. 0.8833) \\
+		GH & Dirac & 2 & 39.8267 (std. 0.7438) \\
+		GH & Dirac & 3 & 39.2933 (std. 0.7168) \\
+		WL & - & - & \textbf{50.9867 (std. 0.6819)} \\
+		DGK & - & - & 44.55 (std. 0.52) \\
+	\end{tabular}
+	\captionof{table}{IMDB Multi (unlabelled) results}
+	\label{table:imdb_multi_unlabelled}
+\end{minipage}
 
 \paragraph{IMDB Multi (labelled):}
 WL performs slightly better than GH, but GH is within the standard deviation of WL. When adding gaps we see a minor increase in GH's performance, but after gap size $2$ the performance start to decrease. \\
@@ -1204,30 +1223,6 @@ WL performs slightly better than GH, but GH is within the standard deviation of 
 	\end{tabular}
 	\captionof{table}{IMDB Multi (labelled) results}
 	\label{table:imdb_multi_labelled}
-\end{minipage}
-
-\paragraph{IMDB Multi (unlabelled):}
-WL outperforms GH, and adding gaps to GH only decreases the performance.\\
-\begin{minipage}{0.6\linewidth}
-	\hspace*{-1in}
-	\includegraphics[width=10cm]{imdb_multi_unlabelled}
-	\captionof{figure}{IMDB Multi (unlabelled) results}
-	\label{fig:imdb_multi_unlabelled}
-\end{minipage}
-\begin{minipage}[c]{0.5\linewidth}	
-	\centering
-	\begin{tabular}{c|c|c|c}
-		Kernel & Node kernel & Gaps & Result\\
-		\hline
-		GH & Dirac & 0 & 40.3600 (std. 0.9889) \\
-		GH & Dirac & 1 & 39.8467 (std. 0.8833) \\
-		GH & Dirac & 2 & 39.8267 (std. 0.7438) \\
-		GH & Dirac & 3 & 39.2933 (std. 0.7168) \\
-		WL & - & - & \textbf{50.9867 (std. 0.6819)} \\
-		DGK & - & - & 44.55 (std. 0.52) \\
-	\end{tabular}
-	\captionof{table}{IMDB Multi (unlabelled) results}
-	\label{table:imdb_multi_unlabelled}
 \end{minipage}
 
 
