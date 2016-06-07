@@ -867,7 +867,8 @@ The accuracy experiments are run using 10-fold cross-validation of $c$ (slack va
 \subsubsection{Results}
 The results here are divided by datasets. The graphs illustrate the effect of changing the gap size in GraphHopper (GH) and at the same time display results from other kernels for reference. The node kernels used are abbreviated as D for Dirac, G for Gaussian and DxG for Dirac $\times$ Gaussian.
 
-\textbf{Mutag}\\
+\paragraph{Mutag:}
+Running GH on Mutag without gaps gave a result comparable to WL and DGK. Adding gaps decreased the performance of GH substantionally.\\
 \begin{minipage}{0.6\linewidth}
 		\hspace*{-1in}
 		\includegraphics[width=10cm]{mutag}
@@ -880,18 +881,19 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 	\begin{tabular}{c|c|c|c}
 			Kernel & Node kernel & Gaps &  Result\\
 			\hline
-			GH & D & 0 & 83.111 (std. 1.9633)\\
+			GH & D & 0 & \textbf{83.111 (std. 1.9633)}\\
 			GH & D & 1 & 79.00 (std. 2.2801)\\
 			GH & D & 2 & 79.3889 (std. 2.0861)\\
 			GH & D & 3 &  77.3333 (std. 1.2776)\\
-			WL & - & - & 83.611 (std. 2.3607)\\
-			DGK\cite{yanardag} & - & - & 82.66 (std. 1.45)
+			WL & - & - & \textbf{83.611 (std. 2.3607)}\\
+			DGK\cite{yanardag} & - & - & \textbf{82.66 (std. 1.45)}
 		\end{tabular}
 	\captionof{table}{Mutag results}
 	\label{table:mutag}
 \end{minipage}
 
-\textbf{Enzymes}\\
+\paragraph{Enzymes:}
+GH performed substantially worse on Enzymes than WL but better than DGK. We saw a small increase when adding gaps of size 1 but a decrease when increasing $s$ further.\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{enzymes}
@@ -908,14 +910,15 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		GH & D & 1 & 36.350 (std. 1.388)\\
 		GH & D & 2 & 34.833 (std. 1.317)\\
 		GH & D & 3 & 33.5667 (std. 1.4911)\\
-		WL & - & - & 52.4167 (std. 1.2478)\\
+		WL & - & - & \textbf{52.4167 (std. 1.2478)}\\
 		DGK\cite{yanardag} & - & - & 27.08 (std. 0.79)
 	\end{tabular}
 	\captionof{table}{Enzymes results}
 	\label{table:enzymes}
 \end{minipage}
 
-\textbf{Enzymes (Symmetrized)}\\
+\paragraph{Enzymes (Symmetrized):}
+On the symmetrized Enzymes dataset with vector node labels GH outperformed WL. The best results were achieved when using the Dirac $\times$ Gaussian node kernel. Adding gaps seems to improve the results a little although within standard deviation.\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{enzymes_symmetrized}
@@ -934,19 +937,20 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		GH & G & 3 & 68.8333 (std. 1.3744)\\
 		GH & G & 4 & 69.7500 (std. 1.3591)\\
 		GH & G & 5 & 68.8667 (std. 1.4673)\\
-		GH & DxG & 0 & 70.033 (std. 1.2977)\\
+		GH & DxG & 0 & \textbf{70.033 (std. 1.2977)}\\
 		GH & DxG & 1 & 69.3167 (std. 1.1506)\\
-		GH & DxG & 2 & 70.5833 (std. 1.3293)\\
-		GH & DxG & 3 & 70.7000 (std. 0.9356)\\
-		GH & DxG & 4 & 70.5167 (std. 1.2582)\\
-		GH & DxG & 5 & 70.7167 (std. 0.9164)\\
+		GH & DxG & 2 & \textbf{70.5833 (std. 1.3293)}\\
+		GH & DxG & 3 & \textbf{70.7000 (std. 0.9356)}\\
+		GH & DxG & 4 & \textbf{70.5167 (std. 1.2582)}\\
+		GH & DxG & 5 & \textbf{70.7167 (std. 0.9164)}\\
 		WL & - & - & 52.1000 (std. 1.1282)
 	\end{tabular}
 	\captionof{table}{Enzymes results}
 	\label{table:enzymes_symmetrized}
 \end{minipage}
 
-\textbf{Airways subsampled}\\
+\paragraph{Airways subsampled:}
+GH outperformed WL on the airways data. Adding seems to negatively affect on performance but within standard deviation.\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{airways}
@@ -959,16 +963,17 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
-		GH & G & 0 & 63.180 (std. 1.7900)\\
-		GH & G & 1 & 62.600 (std. 1.3233)\\
-		GH & G & 2 & 61.6800 (std. 2.0422)\\
+		GH & G & 0 & \textbf{63.180 (std. 1.7900)}\\
+		GH & G & 1 & \textbf{62.600 (std. 1.3233)}\\
+		GH & G & 2 & \textbf{61.6800 (std. 2.0422)}\\
 		WL & - & - & 59.48 (std. 1.7080)
 	\end{tabular}
 	\captionof{table}{Airways subsampled results}
 	\label{table:airways}
 \end{minipage}
 
-\textbf{NCI1}\\
+\paragraph{NCI1:}
+GH could not compete with WL on NCI1. Adding gaps decreased performance substantially.\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{nci1}
@@ -987,14 +992,15 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		GH & D & 3 & 64.9903 (std. 0.5475)\\
 		GH & D & 4 & 64.3698 (std. 0.4042)\\
 		GH & D & 5 & 64.4988 (std. 0.4535)\\
-		WL & - & - & 85.0096 (std. 0.1907)\\
+		WL & - & - & \textbf{85.0096 (std. 0.1907)}\\
 		DKG\cite{yanardag} & - & - & 62.48 (std. 0.25)
 	\end{tabular}
 	\captionof{table}{NCI1 results}
 	\label{table:nci1}
 \end{minipage}
 
-\textbf{NCI109}\\
+\paragraph{NCI109:}
+The results on NCI109 resembles those on NCI1: WL outperforms GH and gaps have a negative effect on performance.\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{nci109} 
@@ -1019,7 +1025,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 \end{minipage}
 
 
-\textbf{Reddit binary (unlabelled)}\\
+\paragraph{Reddit binary (unlabelled):} This dataset is interesting as both GH and WL manages to score 100\% accuracy with no deviation. At first glance this may seem like an error but drawing the generated K matrix on a gray scale (figure \ref{fig:reddit_binary_unlabelled_k_gh}) we note that all points are either white or gray. Inspecting the values in K it appears that all the inner products\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{reddit_binary_unlabelled}
@@ -1219,6 +1225,7 @@ In figure \ref{fig:reddit_binary_unlabelled_k_gh} we provide a gray scale image 
 		GH & DxG ($\mu=1$) & 0 & 81.00 (std. 1.7033)\\
 		GH & DxG ($\mu=1$) & 2 & 78.1667 (std. 1.6102)\\
 		GH & DxG ($\mu=1$) & 5 & 75.6667 (std. 1.4055)\\
+		WL & - & - & 87.4167 (std. 1.7765)\\
 	\end{tabular}
 	\captionof{table}{SEMI results}
 	\label{table:semi}
