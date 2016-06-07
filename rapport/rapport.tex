@@ -171,7 +171,7 @@ Finding this transformation $\Phi$ is, however, a daunting task (let alone trans
 \end{equation}
 \textit{where $\chi_2$ is a Hilbert space with an inner product $\langle x_i, x_j\rangle$.}
 
-We supply a proof for this theorem in \cite{svm-graph-kernels}.
+We provide a proof for this theorem in \cite{svm-graph-kernels}.
 
 Using this knowledge we may now define a symmetric, positive semidefinite function $k(x_i,x_j)$ and substitute this function (called a kernel function, or just kernel) into the optimization problem as seen in (\ref{eq:kernel_function}). This substitution is known as the kernel trick.
 
@@ -187,11 +187,8 @@ Assuming a kernel function $k(x_i,x_j)$ we define the matrix $K$ to be an $N\tim
 \subsection{Cross-validation}
 There may be several parameters involved when using SVM to create a classification model. To properly select these parameters and realistically predict the resulting model's accuracy we take advantage of cross-validation.
 
-To cross-validate parameters and accuracy we split the dataset $M$ into $p$ parts. We then iterate $p$ times each time selecting different combinations of a test, validation and training set $Test_i, Val_i, Train_i\subset M$ such that $|Test_i|=|Val_i|=\frac{|M|}{p}$,  $|Train_i| = \frac{|M| * (p-2)}{p}$ and such that there is no overlap between any of the sets (see figure). In each iteration $i$ we train a model for all combinations of parameters using the training set $Train_i$ and estimate their accuracy by predicting on the validation set $Val_i$. We then select the combination of parameters that gave the highest accuracy and train a new model using $Train_i\cup Val_i$ with these parameters and finally estimate its accuracy by predicting on the test set $Test_i$ saving the resulting accuracy as $acc_i$. After $i$ iterations we estimate the expected accuracy to be the average accuracy achieved, i.e. $\frac{acc_1 + acc_2 + ... + acc_i}{i}$.
-
-
 \begin{minipage}{0.7\linewidth}
-	To cross-validate parameters and accuracy we split the dataset $M$ into $p$ parts. We then iterate $p$ times each time selecting different combinations of a test, validation and training set $Test_i, Val_i, Train_i\subset M$ such that $|Test_i|=|Val_i|=\frac{|M|}{p}$,  $|Train_i| = \frac{|M| * (p-2)}{p}$ and such that there is no overlap between any of the sets (figure \ref{fig:cross_validation}). In each iteration $i$ we train a model for all combinations of parameters using the training set $Train_i$ and estimate their accuracy by predicting on the validation set $Val_i$. We then select the combination of parameters that gave the highest accuracy and train a new model using $Train_i\cup Val_i$ with these parameters and finally estimate its accuracy by predicting on the test set $Test_i$ saving the resulting accuracy as $acc_i$. After $i$ iterations we estimate the expected accuracy to be the average accuracy achieved, i.e. $\frac{acc_1 + acc_2 + ... + acc_i}{i}$.
+	To cross-validate parameters and accuracy we split the dataset $M$ into $p$ parts. We then iterate $p$ times each time selecting different combinations of a test, validation and training set $Test_i, Val_i, Train_i\subset M$ such that $|Test_i|=|Val_i|=\frac{|M|}{p}$,  $|Train_i| = \frac{|M| * (p-2)}{p}$ and such that there is no overlap between any of the sets (figure \ref{fig:cross_validation}). In each iteration $i$ we train a model for all combinations of parameters using the training set $Train_i$ and estimate their accuracy by predicting on the validation set $Val_i$. We then select the combination of parameters that gave the highest accuracy and train a new model using $Train_i\cup Val_i$ with these parameters and finally estimate its accuracy by predicting on the test set $Test_i$ saving the resulting accuracy as $acc_i$. After $p$ iterations we estimate the expected accuracy to be the average accuracy achieved, i.e. $\frac{acc_1 + acc_2 + ... + acc_p}{p}$.
 \end{minipage}
 \hspace{0.5cm}
 \begin{minipage}[c]{0.3\linewidth}
@@ -205,7 +202,7 @@ To cross-validate parameters and accuracy we split the dataset $M$ into $p$ part
 \label{section:graphhopper}
 The following description of the GraphHopper kernel is based on the presentation in \cite{graphhopper}.
 
-GraphHopper is a graph kernel, i.e.\ a kernel for comparing graph data. The kernel effectively analyses the structure of the graphs by comparing shortest paths similarly to \textit{shortest path kernel}\footnote{We give a detailed description of the shortest path kernel in \cite{svm-graph-kernels}.} (SPK)\cite{shortest-path}. An advantage of these kernels is that they may analyse the structure of the graphs along with the properties of their nodes.
+GraphHopper is a graph kernel, i.e.\ a kernel for comparing graph data. The kernel effectively analyses the structure of the graphs by comparing shortest paths similarly to the \textit{shortest path kernel}\footnote{We give a detailed description of the shortest path kernel in \cite{svm-graph-kernels}.} (SPK)\cite{shortest-path}. An advantage of these kernels is that they may analyse the structure of the graphs along with the properties of their nodes.
 While SPK compares all shortest paths with a complexity of $\mathcal{O}(n^4)$, where $n$ is the number of nodes, GraphHopper only compares shortest paths of equal length with complexity $\mathcal{O}(n^2(m+\log n+\delta^2 + d))$ where $m$ is the number of edges, $\delta$ is the diameter of the graph and $d$ is the dimension of the node attributes. The complexity will be explained along with the algorithm itself.
 
 Let $G=(V,E)$ and $G'=(V',E')$ be graphs such that $V,V'$ are nodes and $E,E'$ are edges and let $P,P'$ be the sets of all shortest paths in $G$ and $G'$ respectively. The kernel is then a sum of path kernel $k_p$ over each pair of shortest paths $\pi\in P,\ \pi'\in P'$:
@@ -286,16 +283,7 @@ k_{graphhopper}(G,G')=\sum_{v\in V}\sum_{v'\in V'}w(v,v')k_n(v,v')
 \end{equation}
 
 
-When calculating $w(v,v')$ we sum the number of pairs $\pi,\pi'$ such that $|\pi|=|\pi'|$ and $\pi(i)=\pi'(i)$ for some $i$. Let $width(G)$ be the discrete length of the longest shortest path $\pi\in P$ and let $\delta=min(width(G), width(G'))$. Since we only consider pairs of paths of same length and the longest shortest path we do not have to consider any paths of length greater than $\delta$.
-
-\iffalse
-\begin{proof}[Proof: We may ignore paths of length greather than $\delta$]\\
-Consider any two graphs $G,\ G'$ such that $width(G)=\delta$. Then we either have $\delta=width(G')$ or $\delta<width(G')$.\\
-Let $width(G)=\delta=width(G')$ and let $\pi'\in P'$ such that $|\pi'|>\delta$. Since $G'$ is at least as wide as any shortest paths within it we have $width(G')\geq |\pi'|>\delta = width(G')$ which is an absurdity.\\
-Let $width(G)=\delta < width(G')$ and let $\pi'\in P'$ such that $|\pi'|>\delta$. Now assume that there exists some $\pi\in P$ such that $|\pi|=|\pi'|$. We now see that $width(G)\geq |\pi| = |\pi'|>\delta=width(G)$ which is an absurdity.\\
-We have now proven that there can not exist any pairs of paths $\pi\in P,\ \pi'\in P'$ such that $|\pi|=|\pi'|>\delta$.
-\end{proof}
-\fi
+When calculating $w(v,v')$ we sum the number of pairs $\pi,\pi'$ such that $|\pi|=|\pi'|$ and $\pi(i)=\pi'(i)$ for some $i$. Let $width(G)$ be the discrete length of the longest shortest path $\pi\in P$ and let $\delta=min(width(G), width(G'))$. Since we only consider pairs of paths of same length we do not have to consider any paths of length greater than $\delta$.
 
 Beside from this limitation it is trivial that for a pair of paths $\pi,\ \pi'$ such that $|\pi|=|\pi'|=j$ we only have to consider nodes at index $i=1..j$ since there cannot exist any nodes at index $i>j$.
 
@@ -317,7 +305,7 @@ allowing us to easily find the weight between pairs of nodes by first computing 
 \subsection{Computing $M$}
 The $M$ matrix can be computed in a number of ways. We will be using the message-passing algorithms presented in \cite{graphhopper}.
 
-Let $\tilde{v}$ be a node in $V$ and let $P_{\tilde{v}}$ be the set of shortest paths in $G$ starting in $\tilde{v}$. Then $M(v)_{ij}$ becomes $\sum_{\tilde{v}\in V}$ number of times $v$ appears as the $i$'th node in each $\pi_{\tilde{v}}\in P_{\tilde{v}}$ of discrete length $j$. This means that we can compute $M$ by iterating over each node $\tilde{v}\in V$ and finding all shortest paths starting in $\tilde{v}$.
+Let $\tilde{v}$ be a node in $V$ and let $P_{\tilde{v}}$ be the set of shortest paths in $G$ starting in $\tilde{v}$. Then $M(v)_{ij}$ becomes the sum of shortest paths $\pi_{\tilde{v}}\in P_{\tilde{v}}$ of discrete length $j$ for all $\tilde{v}\in V$ such that $v$ appears as the $i$'th node in $\pi_{\tilde{v}}$. This means that we can compute $M$ by iterating over each node $\tilde{v}\in V$ and finding all shortest paths starting in $\tilde{v}$.
 
 Before we move on, we will first introduce the shortest path DAG $G_{\tilde{v}}=(V, E_{\tilde{v}})$ for $\tilde{v}$ where $E_{\tilde{v}}$ are edges kept in $G_{\tilde{v}}$. The shortest path DAG $G_{\tilde{v}}$ is created by removing a minimum amount of edges from $G$ so that it only contains edges that are part of some shortest path starting in $\tilde{v}$. We call $\tilde{v}$ the root node in the resulting DAG. This is illustrated in figure \ref{fig:shortest-path-dag} where we present a graph $G$ and the shortest path DAG $G_{a}$ rooted in $a$.
 
@@ -361,7 +349,7 @@ Before we move on, we will first introduce the shortest path DAG $G_{\tilde{v}}=
 		;
 		\end{tikzpicture}
 	\end{minipage}
-	\caption{\textit{Left: G. Right: $G_{\tilde{a}}$}}
+	\caption{\textit{Left: G. Right: $G_{a}$}}
 	\label{fig:shortest-path-dag}
 \end{figure}
 
@@ -371,7 +359,7 @@ We now introduce two more constructs used for computing $M$: $\mathfrak{O}_{\til
 Let $\mathfrak{O}_{\tilde{v}}$ be a $n\times\delta$ matrix where $\mathfrak{O}_{\tilde{v}}(v,i)$ is the number of paths from $\tilde{v}$ to $v$ in the shortest path DAG $G_{\tilde{v}}$ with discrete length $i$.
 
 \textbf{Example}\\
-Using the graph illustrated in figure \ref{fig:shortest-path-dag}, we find that there are two paths from $a$ to $c$ in $G_{\tilde{a}}$ of discrete length 2 and 3 so $\mathfrak{O}_{a}(c,1)=0,\ \mathfrak{O}_{a}(c,2)=1,\ \mathfrak{O}_{a}(c,3)=1$.
+Using the graph illustrated in figure \ref{fig:shortest-path-dag}, we find that there are two paths from $a$ to $c$ in $G_{a}$ of discrete length 2 and 3 so $\mathfrak{O}_{a}(c,1)=0,\ \mathfrak{O}_{a}(c,2)=1,\ \mathfrak{O}_{a}(c,3)=1$.
 
 The rows of $\mathfrak{O}_{\tilde{v}}$, denoted by $\mathfrak{o}_{\tilde{v}}^v$, are computed recursively using a message-passing algorithm starting at the root. Intuitively, there is always exactly one path from the root to itself in the shortest path DAG and this path is of discrete length 1 so $\mathfrak{o}_{\tilde{v}}^{\tilde{v}}=[1]$. From the current node, the algorithm passes a message to each of its reachable neighbours (children) containing its own row shifted one place to the right and adds the contents to the child's row. The algorithm then repeats on the next level of nodes. This is illustrated in figure \ref{fig:compute_o}.
 
@@ -394,7 +382,7 @@ Now, let $V_{\tilde{v}}^j$ be the nodes in $G_{\tilde{v}}$ such that there exist
 $\mathfrak{o}_{\tilde{v}}^{\tilde{v}}=[1]$
 $\mathfrak{o}_{\tilde{v}}^v=[0], for\ v\in V \ {\tilde{v}}$
 for $j=1..\delta$
-   for $v\in V_{\tilde{V}}^j$
+   for $v\in V_{\tilde{v}}^j$
       for $w$ in $v$.children
          $\mathfrak{o}_{\tilde{v}}^w=\mathfrak{o}_{\tilde{v}}^w\oplus[0,\mathfrak{o}_{\tilde{v}}^v]$
       end
