@@ -885,7 +885,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 			GH & D & 2 & 79.3889 (std. 2.0861)\\
 			GH & D & 3 &  77.3333 (std. 1.2776)\\
 			WL & - & - & 83.611 (std. 2.3607)\\
-			DGK & - & - & 82.66 (std. 1.45)
+			DGK\cite{yanardag} & - & - & 82.66 (std. 1.45)
 		\end{tabular}
 	\captionof{table}{Mutag results}
 	\label{table:mutag}
@@ -909,7 +909,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		GH & D & 2 & 34.833 (std. 1.317)\\
 		GH & D & 3 & 33.5667 (std. 1.4911)\\
 		WL & - & - & 52.4167 (std. 1.2478)\\
-		DGK & - & - & 27.08 (std. 0.79)
+		DGK\cite{yanardag} & - & - & 27.08 (std. 0.79)
 	\end{tabular}
 	\captionof{table}{Enzymes results}
 	\label{table:enzymes}
@@ -988,7 +988,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		GH & D & 4 & 64.3698 (std. 0.4042)\\
 		GH & D & 5 & 64.4988 (std. 0.4535)\\
 		WL & - & - & 85.0096 (std. 0.1907)\\
-		DKG & - & - & 62.48 (std. 0.25)
+		DKG\cite{yanardag} & - & - & 62.48 (std. 0.25)
 	\end{tabular}
 	\captionof{table}{NCI1 results}
 	\label{table:nci1}
@@ -1012,7 +1012,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		GH & D & 2 & 64.3689 (std. 0.5451)\\
 		GH & D & 3 & 63.9951 (std. 0.5259)\\
 		WL & - & - & 85.1845 (std. 0.2438)\\
-		DGK & - & - & 62.69 (std. 0.23)
+		DGK\cite{yanardag} & - & - & 62.69 (std. 0.23)
 	\end{tabular}
 	\captionof{table}{NCI109 results}
 	\label{table:nci109}
@@ -1022,7 +1022,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 \textbf{Reddit binary (unlabelled)}\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
-	\iffalse	\includegraphics[width=10cm]{reddit_binary_unlabelled} \fi
+	\includegraphics[width=10cm]{reddit_binary_unlabelled}
 	\captionof{figure}{Reddit binary (unlabelled) results}
 	\label{fig:reddit_binary_unlabelled}
 \end{minipage}
@@ -1034,8 +1034,8 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		\hline
 		GH & D & 0 & 100 (std. 0.0000)\\
 		GH & D & 1 & 99.9500 (std. $<$ 0.0001)\\
-		WL & - & - & \\
-		DGK & - & - & 78.04 (std. 0.39)
+		WL & - & - & 100 (std. 0.0000)\\
+		DGK\cite{yanardag} & - & - & 78.04 (std. 0.39)
 	\end{tabular}
 	\captionof{table}{Reddit binary (unlabelled) results}
 	\label{table:reddit_binary_unlabelled}
@@ -1049,10 +1049,7 @@ K matrices on gray scale\\
 	\label{fig:reddit_binary_unlabelled_k_gh}
 \end{minipage}
 \begin{minipage}{0.6\linewidth}
-\hspace*{-1in}
-\iffalse	\includegraphics[width=10cm]{reddit_binary_unlabelled_k_wl} \fi
-\captionof{figure}{Reddit binary (unlabelled) K gray scale for WL.}
-\label{fig:reddit_binary_unlabelled_k_wl}
+In figure \ref{fig:reddit_binary_unlabelled_k_gh} we provide a gray scale image of the kernel matrix. As illustrated almost all inner products are in one of the two extremes (being either white or black) divided perfectly by their graph label showing that the 100\% accuracy result is indeed not a result of an error in SVM but of the fact that the kernel matrix is perfectly separable.
 \end{minipage}
 
 
@@ -1074,7 +1071,7 @@ K matrices on gray scale\\
 		GH & Dirac & 2 & 79.0620 (std. 0.2461)\\
 		GH & Dirac & 3 & 78.9980 (std. 0.3615)\\
 		WL & - & - & 77.1020 (std. 0.1604) \\
-		DGK & - & - & 73.09 (std. 0.25)\\
+		DGK\cite{yanardag} & - & - & 73.09 (std. 0.25)\\
 	\end{tabular}
 	\captionof{table}{Collab (labelled) results}
 	\label{table:collab}
@@ -1098,7 +1095,7 @@ K matrices on gray scale\\
 		GH & Dirac & 2 & 63.1560 (std. 0.1964) \\
 		GH & Dirac & 3 & 63.1400 (std. 0.2022) \\
 		WL & - & - & 77.1020 (std. 0.1604)  \\
-		DGK & - & - & 73.09 (std. 0.25)
+		DGK\cite{yanardag} & - & - & 73.09 (std. 0.25)
 	\end{tabular}
 	\captionof{table}{Collab (unlabelled) results}
 	\label{table:collab_unlabelled}
@@ -1128,7 +1125,7 @@ K matrices on gray scale\\
 		GH & D & 25 & 71.72 (std. 1.3815)\\
 		GH & D & 50 & 71.76 (std. 1.0362)\\
 		WL & - & - & 73.39 (std. 0.5567) \\
-		DGK & - & - & 66.96 (std. 0.56)\\
+		DGK\cite{yanardag} & - & - & 66.96 (std. 0.56)\\
 	\end{tabular}
 	\captionof{table}{IMDB Binary (labelled) results}
 	\label{table:imdb_labelled}
@@ -1155,7 +1152,7 @@ K matrices on gray scale\\
 		GH & D & 25 & 59.48 (std. 1.3726)\\
 		GH & D & 50 & 58.14 (std. 2.2907)\\
 		WL & - & - & 72.90 (std. 0.68961)\\
-		DGK & - & - & 66.96 (std. 0.56) \\
+		DGK\cite{yanardag} & - & - & 66.96 (std. 0.56) \\
 	\end{tabular}
 	\captionof{table}{IMDB Binary (unlabelled) results}
 	\label{table:imdb_unlabelled}
@@ -1178,7 +1175,7 @@ K matrices on gray scale\\
 		GH & Dirac & 2 & 50.6133 (std. 0.6739) \\
 		GH & Dirac & 3 & 50.2067 (std. 0.5043) \\
 		WL & - & - & 50.9867 (std. 0.6819)\\
-		DGK & - & - & 44.55 (std. 0.52) \\
+		DGK\cite{yanardag} & - & - & 44.55 (std. 0.52) \\
 	\end{tabular}
 	\captionof{table}{IMDB Multi (labelled) results}
 	\label{table:imdb_multi_labelled}
@@ -1220,14 +1217,16 @@ K matrices on gray scale\\
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
-		GH & DxG ($\mu=1$) & 0 & 81.00 (std. 1.7033)
+		GH & DxG ($\mu=1$) & 0 & 81.00 (std. 1.7033)\\
+		GH & DxG ($\mu=1$) & 2 & 78.1667 (std. 1.6102)\\
+		GH & DxG ($\mu=1$) & 5 & 75.6667 (std. 1.4055)\\
 	\end{tabular}
 	\captionof{table}{SEMI results}
 	\label{table:semi}
 \end{minipage}
 
 
-
+\iffalse
 \begin{table}[H]
 	\centering
 	\hspace*{-0.7in}
@@ -1257,13 +1256,12 @@ K matrices on gray scale\\
 	\label{table:raccuracy_results}
 \end{table}
 Enzymes (Symmetrized) \\
+\fi
 \iffalse
 Gap size 10: 70.5833 (std. 2.2515) \\
 Gap size 13: 69.9500 (std. 1.2274) \\
 Gap size 15: 70.8167 (std. 1.1479) \\
-\fi
 Gap size 20: 70.4333 (std. 0.9336) \\
-\iffalse
 Gap size 21: 69.4167 (std. 1.5321) \\
 Gap size 25: 69.7833 (std. 1.4825) \\
 Gap size 30: 70.6333 (std. 1.4694) \\
