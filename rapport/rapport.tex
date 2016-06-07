@@ -1022,7 +1022,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 \textbf{Reddit binary (unlabelled)}\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
-	\iffalse	\includegraphics[width=10cm]{reddit_binary_unlabelled} \fi
+	\includegraphics[width=10cm]{reddit_binary_unlabelled}
 	\captionof{figure}{Reddit binary (unlabelled) results}
 	\label{fig:reddit_binary_unlabelled}
 \end{minipage}
@@ -1034,7 +1034,7 @@ The results here are divided by datasets. The graphs illustrate the effect of ch
 		\hline
 		GH & D & 0 & 100 (std. 0.0000)\\
 		GH & D & 1 & 99.9500 (std. $<$ 0.0001)\\
-		WL & - & - & \\
+		WL & - & - & 100 (std. 0.0000)\\
 		DGK & - & - & 78.04 (std. 0.39)
 	\end{tabular}
 	\captionof{table}{Reddit binary (unlabelled) results}
@@ -1049,10 +1049,7 @@ K matrices on gray scale\\
 	\label{fig:reddit_binary_unlabelled_k_gh}
 \end{minipage}
 \begin{minipage}{0.6\linewidth}
-\hspace*{-1in}
-\iffalse	\includegraphics[width=10cm]{reddit_binary_unlabelled_k_wl} \fi
-\captionof{figure}{Reddit binary (unlabelled) K gray scale for WL.}
-\label{fig:reddit_binary_unlabelled_k_wl}
+In figure \ref{fig:reddit_binary_unlabelled_k_gh} we provide a gray scale image of the kernel matrix. As illustrated almost all inner products are in one of the two extremes (being either white or black) divided perfectly by their graph label showing that the 100\% accuracy result is indeed not a result of an error in SVM but of the fact that the kernel matrix is perfectly separable.
 \end{minipage}
 
 
@@ -1219,7 +1216,9 @@ K matrices on gray scale\\
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
-		GH & DxG ($\mu=1$) & 0 & 81.00 (std. 1.7033)
+		GH & DxG ($\mu=1$) & 0 & 81.00 (std. 1.7033)\\
+		GH & DxG ($\mu=1$) & 2 & 78.1667 (std. 1.6102)\\
+		GH & DxG ($\mu=1$) & 5 & 75.6667 (std. 1.4055)\\
 	\end{tabular}
 	\captionof{table}{SEMI results}
 	\label{table:semi}
