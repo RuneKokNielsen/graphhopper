@@ -1058,8 +1058,8 @@ K matrices on gray scale\\
 In figure \ref{fig:reddit_binary_unlabelled_k_gh} we provide a gray scale image of the kernel matrix. As illustrated almost all inner products are in one of the two extremes (being either white or black) divided perfectly by their graph label showing that the 100\% accuracy result is indeed not a result of an error in SVM but of the fact that the kernel matrix is perfectly separable.
 \end{minipage}
 
-
-\textbf{Collab (labelled)}\\
+\paragraph{Collab (labelled):}
+When inspecting the results of Collab (labelled) we see that GH outperforms WL. We also see a minor increase in GH's performance when adding gaps, but it is still within the standard deviation. \\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{collab_labelled}
@@ -1072,10 +1072,10 @@ In figure \ref{fig:reddit_binary_unlabelled_k_gh} we provide a gray scale image 
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
-		GH & Dirac & 0 & 78.6580 (std. 0.2647)\\
-		GH & Dirac & 1 & 78.8960 (std. 0.2084)\\
-		GH & Dirac & 2 & 79.0620 (std. 0.2461)\\
-		GH & Dirac & 3 & 78.9980 (std. 0.3615)\\
+		GH & Dirac & 0 & \textbf{78.6580 (std. 0.2647)}\\
+		GH & Dirac & 1 & \textbf{78.8960 (std. 0.2084)}\\
+		GH & Dirac & 2 & \textbf{79.0620 (std. 0.2461)} \\
+		GH & Dirac & 3 & \textbf{78.9980 (std. 0.3615)}\\
 		WL & - & - & 77.1020 (std. 0.1604) \\
 		DGK\cite{yanardag} & - & - & 73.09 (std. 0.25)\\
 	\end{tabular}
@@ -1083,7 +1083,8 @@ In figure \ref{fig:reddit_binary_unlabelled_k_gh} we provide a gray scale image 
 	\label{table:collab}
 \end{minipage}
 
-\textbf{Collab (unlabelled)}\\
+\paragraph{Collab (unlabelled):}
+Opposite of the results from Collab (labelled), here WL outperforms GH. Gaps seems to have very small to none effect on the performance of GH. \\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{collab_unlabelled}
@@ -1100,7 +1101,7 @@ In figure \ref{fig:reddit_binary_unlabelled_k_gh} we provide a gray scale image 
 		GH & Dirac & 1 & 63.1900 (std. 0.1595) \\
 		GH & Dirac & 2 & 63.1560 (std. 0.1964) \\
 		GH & Dirac & 3 & 63.1400 (std. 0.2022) \\
-		WL & - & - & 77.1020 (std. 0.1604)  \\
+		WL & - & - & \textbf{77.1020 (std. 0.1604)}  \\
 		DGK\cite{yanardag} & - & - & 73.09 (std. 0.25)
 	\end{tabular}
 	\captionof{table}{Collab (unlabelled) results}
@@ -1164,7 +1165,8 @@ In figure \ref{fig:reddit_binary_unlabelled_k_gh} we provide a gray scale image 
 	\label{table:imdb_unlabelled}
 \end{minipage}
 
-\textbf{IMDB Multi (labelled)}\\
+\paragraph{IMDB Multi (labelled):}
+WL performs slightly better than GH, but GH is within the standard deviation of WL. When adding gaps we see a minor increase in GH's performance, but after gap size $2$ the performance start to decrease. \\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{imdb_multi_labelled}
@@ -1176,18 +1178,19 @@ In figure \ref{fig:reddit_binary_unlabelled_k_gh} we provide a gray scale image 
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
-		GH & Dirac & 0 & 49.9933 (std. 0.3150) \\
-		GH & Dirac & 1 & 50.3133 (std. 0.5297) \\
-		GH & Dirac & 2 & 50.6133 (std. 0.6739) \\
-		GH & Dirac & 3 & 50.2067 (std. 0.5043) \\
-		WL & - & - & 50.9867 (std. 0.6819)\\
+		GH & Dirac & 0 & \textbf{49.9933 (std. 0.3150)} \\
+		GH & Dirac & 1 & \textbf{50.3133 (std. 0.5297)} \\
+		GH & Dirac & 2 & \textbf{50.6133 (std. 0.6739)} \\
+		GH & Dirac & 3 & \textbf{50.2067 (std. 0.5043)} \\
+		WL & - & - & \textbf{50.9867 (std. 0.6819)}\\
 		DGK\cite{yanardag} & - & - & 44.55 (std. 0.52) \\
 	\end{tabular}
 	\captionof{table}{IMDB Multi (labelled) results}
 	\label{table:imdb_multi_labelled}
 \end{minipage}
 
-\textbf{IMDB Multi (unlabelled)}\\
+\paragraph{IMDB Multi (unlabelled):}
+WL outperforms GH, and adding gaps to GH only decreases the performance.\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{imdb_multi_unlabelled}
@@ -1203,7 +1206,7 @@ In figure \ref{fig:reddit_binary_unlabelled_k_gh} we provide a gray scale image 
 		GH & Dirac & 1 & 39.8467 (std. 0.8833) \\
 		GH & Dirac & 2 & 39.8267 (std. 0.7438) \\
 		GH & Dirac & 3 & 39.2933 (std. 0.7168) \\
-		WL & - & - & 50.9867 (std. 0.6819) \\
+		WL & - & - & \textbf{50.9867 (std. 0.6819)} \\
 		DGK & - & - & 44.55 (std. 0.52) \\
 	\end{tabular}
 	\captionof{table}{IMDB Multi (unlabelled) results}
