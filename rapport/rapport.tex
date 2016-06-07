@@ -1017,7 +1017,7 @@ The results on NCI109 resembles those on NCI1: WL outperforms GH and gaps have a
 		GH & D & 1 & 66.5413 (std. 0.2810)\\
 		GH & D & 2 & 64.3689 (std. 0.5451)\\
 		GH & D & 3 & 63.9951 (std. 0.5259)\\
-		WL & - & - & 85.1845 (std. 0.2438)\\
+		WL & - & - & \textbf{85.1845 (std. 0.2438)}\\
 		DGK\cite{yanardag} & - & - & 62.69 (std. 0.23)
 	\end{tabular}
 	\captionof{table}{NCI109 results}
@@ -1025,7 +1025,17 @@ The results on NCI109 resembles those on NCI1: WL outperforms GH and gaps have a
 \end{minipage}
 
 
-\paragraph{Reddit binary (unlabelled):} This dataset is interesting as both GH and WL manages to score 100\% accuracy with no deviation. At first glance this may seem like an error but drawing the generated K matrix on a gray scale (figure \ref{fig:reddit_binary_unlabelled_k_gh}) we note that all points are either white or gray. Inspecting the values in K it appears that all the inner products\\
+\begin{minipage}{0.6\linewidth}
+	\paragraph{Reddit binary (unlabelled):} This dataacset is interesting as both GH and WL manages to score 100\% accuracy with no deviation. At first glance this may seem like an error but drawing the generated K matrix on a gray scale (figure \ref{fig:reddit_binary_unlabelled_k_gh}) we note that all points are either white or gray. Inspecting the values in K and referencing the graph labels it becomes evident that the results in K are 0 exactly when comparing two differently labelled graphs. This shows that the kernel manages to perfectly distinguish between graphs in relation to their types which allows SVM to create a perfect model.\\
+\end{minipage}
+\hspace*{0.2in}
+\begin{minipage}{0.5\linewidth}
+	\includegraphics[width=5cm]{reddit_trolls_k}
+	\captionof{figure}{Gray scale representation of K matrice computed using GH.}
+	\label{fig:reddit_binary_unlabelled_k_gh}
+\end{minipage}
+
+
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{reddit_binary_unlabelled}
@@ -1038,15 +1048,16 @@ The results on NCI109 resembles those on NCI1: WL outperforms GH and gaps have a
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
-		GH & D & 0 & 100 (std. 0.0000)\\
+		GH & D & 0 & \textbf{100 (std. 0.0000)}\\
 		GH & D & 1 & 99.9500 (std. $<$ 0.0001)\\
-		WL & - & - & 100 (std. 0.0000)\\
+		WL & - & - & \textbf{100 (std. 0.0000)}\\
 		DGK\cite{yanardag} & - & - & 78.04 (std. 0.39)
 	\end{tabular}
 	\captionof{table}{Reddit binary (unlabelled) results}
 	\label{table:reddit_binary_unlabelled}
 \end{minipage}
 
+<<<<<<< HEAD
 K matrices on gray scale\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{0.1in}
@@ -1060,6 +1071,9 @@ In figure \ref{fig:reddit_binary_unlabelled_k_gh} we provide a gray scale image 
 
 \paragraph{Collab (labelled):}
 When inspecting the results of Collab (labelled) we see that GH outperforms WL. We also see a minor increase in GH's performance when adding gaps, but it is still within the standard deviation. \\
+=======
+\textbf{Collab (labelled)}\\
+>>>>>>> 92218ab695468b1616a265f17269c9384383edd9
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{collab_labelled}
@@ -1109,7 +1123,39 @@ Opposite of the results from Collab (labelled), here WL outperforms GH. Gaps see
 \end{minipage}
 
 
-\textbf{IMDB Binary (labelled)}\\
+
+
+\paragraph{IMDB Binary (unlabelled):}
+On the unlabelled dataset GH struggled to compete with either of the other graph kernels. Gaps decreased the performance.
+\\
+\begin{minipage}{0.6\linewidth}
+	\hspace*{-1in}
+	\includegraphics[width=10cm]{imdb_unlabelled}
+	\captionof{figure}{IMDB Binary (unlabelled) results}
+	\label{fig:imdb_unlabelled}
+\end{minipage}
+\begin{minipage}[c]{0.5\linewidth}	
+	\centering
+	\begin{tabular}{c|c|c|c}
+		Kernel & Node kernel & Gaps & Result\\
+		\hline
+		GH & D & 0 & 61.79 (std. 1.4933)\\
+		GH & D & 1 & 58.46 (std. 1.3023)\\
+		GH & D & 2 & 58.09 (std. 1.5022)\\
+		GH & D & 3 & 58.17 (std. 1.5181)\\
+		GH & D & 5 & 57.72 (std. 1.7498)\\
+		GH & D & 10 & 59.56 (std. 1.3574)\\
+		GH & D & 25 & 59.48 (std. 1.3726)\\
+		GH & D & 50 & 58.14 (std. 2.2907)\\
+		WL & - & - & \textbf{72.90 (std. 0.68961)}\\
+		DGK\cite{yanardag} & - & - & 66.96 (std. 0.56) \\
+	\end{tabular}
+	\captionof{table}{IMDB Binary (unlabelled) results}
+	\label{table:imdb_unlabelled}
+\end{minipage}
+
+\paragraph{IMDB Binary (labelled):}
+On the labelled dataset GH almost reached the performance of WL when and achieved its best result with $s=5$.
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{imdb_labelled}
@@ -1131,39 +1177,13 @@ Opposite of the results from Collab (labelled), here WL outperforms GH. Gaps see
 		GH & D & 20 & 72.24 (std. 1.1787)\\
 		GH & D & 25 & 71.72 (std. 1.3815)\\
 		GH & D & 50 & 71.76 (std. 1.0362)\\
-		WL & - & - & 73.39 (std. 0.5567) \\
+		WL & - & - & \textbf{73.39 (std. 0.5567)} \\
 		DGK\cite{yanardag} & - & - & 66.96 (std. 0.56)\\
 	\end{tabular}
 	\captionof{table}{IMDB Binary (labelled) results}
 	\label{table:imdb_labelled}
 \end{minipage}
 
-\textbf{IMDB Binary (unlabelled)}\\
-\begin{minipage}{0.6\linewidth}
-	\hspace*{-1in}
-	\includegraphics[width=10cm]{imdb_unlabelled}
-	\captionof{figure}{IMDB Binary (unlabelled) results}
-	\label{fig:imdb_unlabelled}
-\end{minipage}
-\begin{minipage}[c]{0.5\linewidth}	
-	\centering
-	\begin{tabular}{c|c|c|c}
-		Kernel & Node kernel & Gaps & Result\\
-		\hline
-		GH & D & 0 & 61.79 (std. 1.4933)\\
-		GH & D & 1 & 58.46 (std. 1.3023)\\
-		GH & D & 2 & 58.09 (std. 1.5022)\\
-		GH & D & 3 & 58.17 (std. 1.5181)\\
-		GH & D & 5 & 57.72 (std. 1.7498)\\
-		GH & D & 10 & 59.56 (std. 1.3574)\\
-		GH & D & 25 & 59.48 (std. 1.3726)\\
-		GH & D & 50 & 58.14 (std. 2.2907)\\
-		WL & - & - & 72.90 (std. 0.68961)\\
-		DGK\cite{yanardag} & - & - & 66.96 (std. 0.56) \\
-	\end{tabular}
-	\captionof{table}{IMDB Binary (unlabelled) results}
-	\label{table:imdb_unlabelled}
-\end{minipage}
 
 \paragraph{IMDB Multi (labelled):}
 WL performs slightly better than GH, but GH is within the standard deviation of WL. When adding gaps we see a minor increase in GH's performance, but after gap size $2$ the performance start to decrease. \\
