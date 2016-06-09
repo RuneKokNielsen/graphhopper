@@ -109,7 +109,7 @@ mathescape
 \newpage
 
 \section{Introduction}
-This report presents our work and the theory used developing and testing an efficient implementation of the GraphHopper kernel\cite{gappy} with \textit{gappy paths} in C++ for our Bachelor thesis. While we do introduce the basics behind \textit{Support Vector Machines } (SVM) and kernels based on our earlier work in \cite{svm-graph-kernels} the focus will primarily lie on the algorithm behind the kernel itself as well as the introduction of \textit{gaps}. Gaps have been proved useful in string kernels but have to our knowledge never before been implemented in a graph kernel. After presenting the theory we will provide the results of our experiments analysing the time efficiency of our implementation compared to an existing MATLAB-implementation as well as the effect on classification accuracy in different datasets when adding gaps to the kernel.
+This report presents our work and the theory used developing and testing an efficient implementation of the GraphHopper kernel\cite{gappy} with \textit{gappy paths} in C++ for our Bachelor thesis. While we do introduce the basics behind \textit{Support Vector Machines } (SVM) and kernels based on our earlier work in \cite{svm-graph-kernels} the focus will primarily lie on the algorithm behind the kernel itself as well as the introduction of \textit{gaps}. Gaps have been proved useful in string kernels\cite{string-kernels} but have to our knowledge never before been implemented in a graph kernel. After presenting the theory we will provide the results of our experiments analysing the time efficiency of our implementation compared to an existing MATLAB-implementation as well as the effect on classification accuracy in different datasets when adding gaps to the kernel.
 
 \section{SVM}
 Before introducing the GraphHopper kernel we need to establish some essential underlying theory. In this section we will focus on the basic theory of classification, SVM, kernels and cross-validation. This is a condensed summary of the most relevant parts of our former work \cite{svm-graph-kernels} where we discuss the topics thoroughly.
@@ -283,7 +283,7 @@ k_{graphhopper}(G,G')=\sum_{v\in V}\sum_{v'\in V'}w(v,v')k_n(v,v')
 \end{equation}
 
 
-When calculating $w(v,v')$ we sum the number of pairs $\pi,\pi'$ such that $|\pi|=|\pi'|$ and $\pi(i)=\pi'(i)$ for some $i$. Let $width(G)$ be the discrete length of the longest shortest path $\pi\in P$ and let $\delta=min(width(G), width(G'))$. Since we only consider pairs of paths of same length we do not have to consider any paths of length greater than $\delta$.
+When calculating $w(v,v')$ we sum the number of pairs $\pi,\pi'$ such that $|\pi|=|\pi'|$,  $\pi(i)=v$ and $\pi'(i)=v'$ for some $i$. Let $width(G)$ be the discrete length of the longest shortest path $\pi\in P$ and let $\delta=min(width(G), width(G'))$. Since we only consider pairs of paths of same length we do not have to consider any paths of length greater than $\delta$.
 
 Beside from this limitation it is trivial that for a pair of paths $\pi,\ \pi'$ such that $|\pi|=|\pi'|=j$ we only have to consider nodes at index $i=1..j$ since there cannot exist any nodes at index $i>j$.
 
@@ -307,7 +307,7 @@ The $M$ matrix can be computed in a number of ways. We will be using the message
 
 Let $\tilde{v}$ be a node in $V$ and let $P_{\tilde{v}}$ be the set of shortest paths in $G$ starting in $\tilde{v}$. Then $M(v)_{ij}$ becomes the sum of shortest paths $\pi_{\tilde{v}}\in P_{\tilde{v}}$ of discrete length $j$ for all $\tilde{v}\in V$ such that $v$ appears as the $i$'th node in $\pi_{\tilde{v}}$. This means that we can compute $M$ by iterating over each node $\tilde{v}\in V$ and finding all shortest paths starting in $\tilde{v}$.
 
-Before we move on, we will first introduce the shortest path DAG $G_{\tilde{v}}=(V, E_{\tilde{v}})$ for $\tilde{v}$ where $E_{\tilde{v}}$ are edges kept in $G_{\tilde{v}}$. The shortest path DAG $G_{\tilde{v}}$ is created by removing a minimum amount of edges from $G$ so that it only contains edges that are part of some shortest path starting in $\tilde{v}$. We call $\tilde{v}$ the root node in the resulting DAG. This is illustrated in figure \ref{fig:shortest-path-dag} where we present a graph $G$ and the shortest path DAG $G_{a}$ rooted in $a$.
+Before we move on, we will first introduce the shortest path DAG $G_{\tilde{v}}=(V, E_{\tilde{v}})$ for $\tilde{v}$ where $E_{\tilde{v}}$ are edges kept in $G_{\tilde{v}}$. The shortest path DAG $G_{\tilde{v}}$ is created by removing all unnecessary edges from $E$ so that it only contains edges that are part of some shortest path starting in $\tilde{v}$. We call $\tilde{v}$ the root node in the resulting DAG. This is illustrated in figure \ref{fig:shortest-path-dag} where we present a graph $G$ and the shortest path DAG $G_{a}$ rooted in $a$.
 
 \begin{figure}[H]
 	\begin{minipage}[t]{0.7\linewidth}
@@ -438,7 +438,7 @@ When computing $\mathfrak{D}_{\tilde{v}}$ with the algorithm detailed in figure 
 Having computed $\mathfrak{O}_{\tilde{v}}$ and $\mathfrak{D}_{\tilde{v}}$ we now observe that the number of times that $v$ appears as the $i$'th node in a path of discrete length $j$ in $G_{\tilde{v}}$ must be the number of paths from $\tilde{v}$ to $v$ in $G_{\tilde{v}}$ of length $i$ times the number of paths of length $j-i+1$ in $G_{\tilde{v}}$ starting in $v$; i.e.\ $\mathfrak{O}_{\tilde{v}}^v(v,i)\mathfrak{D}_{\tilde{v}}(v,j - i + 1)$.
 
 \textbf{Example}\\
-Consider the node $d$ in figure \ref{fig:shortest-path-dag}. Trying to find the number of paths in $G_{a}$ such that $d$ is the 2nd node in a path of length 3 we can intuitively see that there is one such path: $[a,d,c]$. This equivalent to the number of paths of length 2 from $a$ to $d$ times the number of paths of length $3-2+1=2$ starting in $d$.
+Consider the node $d$ in figure \ref{fig:shortest-path-dag}. Trying to find the number of paths in $G_{a}$ such that $d$ is the 2nd node in a path of length 3 we can intuitively see that there is one such path: $[a,d,c]$. This is equivalent to the number of paths of length 2 from $a$ to $d$ times the number of paths of length $3-2+1=2$ starting in $d$.
 This could be computed using the $\mathfrak{o}_a^d$ and $\mathfrak{d}_a^d$ computed earlier in figures \ref{fig:compute_o} and \ref{fig:compute_d}:
 \begin{align}
 \mathfrak{o}_a^d(2)\mathfrak{d}_a^d(3-2+1)&=\mathfrak{o}_a^d(2)\mathfrak{d}_a^d(2)\\
@@ -679,7 +679,7 @@ end
 
 \section{Node kernels}
 \label{section:node-kernels}
-As mentioned in section $\ref{section:graphhopper}$ one of the advantages of GraphHopper is that we apply any node kernel to compare the nodes. In this section we introduce the node kernels that we have chosen to include in our implementation. The following equations will be comparing two values $x,x'$ which when used as node kernel represent the labels of two nodes $v,v'$.
+As mentioned in section $\ref{section:graphhopper}$ one of the advantages of GraphHopper is that we may apply any node kernel to compare the nodes. In this section we introduce the node kernels that we have chosen to include in our implementation. The following equations will be comparing two values $x,x'$ which when used as node kernel represent the labels of two nodes $v,v'$.
 
 \subsection{Dirac}
 Dirac is a simple kernel best suited for comparing discrete values representing non-continuous data, e.g. categorized nodes. The kernel returns 1 if the two values are equal and 0 otherwise. The kernel is formally described in (\ref{eq:dirac}).
@@ -941,7 +941,7 @@ On the symmetrized Enzymes dataset with vector node labels GH outperformed WL. T
 \end{minipage}
 
 \paragraph{Airways subsampled:}
-GH outperformed WL on the airways data. Adding seems to negatively affect on performance but within standard deviation.\\
+GH outperformed WL on the airways data. Adding gaps barely seem to affect performance.\\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{airways}
@@ -956,7 +956,9 @@ GH outperformed WL on the airways data. Adding seems to negatively affect on per
 		\hline
 		GH & G & 0 & \textbf{63.180 (std. 1.7900)}\\
 		GH & G & 1 & \textbf{62.600 (std. 1.3233)}\\
-		GH & G & 2 & \textbf{61.6800 (std. 2.0422)}\\
+		GH & G & 2 & \textbf{61.680 (std. 2.0422)}\\
+		GH & G & 5 & \textbf{62.440 (std. 1.2030)}\\
+		GH & G & 10 & \textbf{62.620 (std. 1.1526)}\\
 		WL & - & - & 59.48 (std. 1.7080)
 	\end{tabular}
 	\captionof{table}{Airways subsampled results}
@@ -1048,19 +1050,9 @@ The results on NCI109 resembles those on NCI1: WL outperforms GH and gaps have a
 	\label{table:reddit_binary_unlabelled}
 \end{minipage}
 
-K matrices on gray scale\\
-\begin{minipage}{0.6\linewidth}
-	\hspace*{0.1in}
-	\includegraphics[width=5cm]{reddit_trolls_k}
-	\captionof{figure}{Reddit binary (unlabelled) K gray scale for GH.}
-	\label{fig:reddit_binary_unlabelled_k_gh}
-\end{minipage}
-\begin{minipage}{0.6\linewidth}
-In figure \ref{fig:reddit_binary_unlabelled_k_gh} we provide a gray scale image of the kernel matrix. As illustrated almost all inner products are in one of the two extremes (being either white or black) divided perfectly by their graph label showing that the 100\% accuracy result is indeed not a result of an error in SVM but of the fact that the kernel matrix is perfectly separable.
-\end{minipage}
 
 \paragraph{Collab (unlabelled):}
-When inspecting the results from Collab (labelled), we see that WL outperforms GH. Gaps seems to have very small to none effect on the performance of GH. \\
+When inspecting the results from Collab (unlabelled), we see that WL outperforms GH. Gaps seems to have very small to none effect on the performance of GH. \\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{collab_unlabelled}
@@ -1139,7 +1131,7 @@ On the unlabelled dataset GH struggled to compete with either of the other graph
 \end{minipage}
 
 \paragraph{IMDB Binary (labelled):}
-On the labelled dataset GH almost reached the performance of WL when and achieved its best result with $s=5$. \\
+On the labelled dataset GH almost reached the performance of WL and achieved its best result with $s=5$. \\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
 	\includegraphics[width=10cm]{imdb_labelled}
@@ -1294,7 +1286,7 @@ Gap size 50: 69.7833 (std. 1.4825)
 \subsubsection{Discussion}
 On graphs with discrete node labels WL generally outperforms GH (Enzymes, NCI1, NCI109, Collab unlabelled, IMDB). GH is, however, designed to take advantage of continuous node labels and on graphs with this property GH often gets the best result (Enzymes symmetrized, Airways subsampled) even when the continuous labels just represent the node degree (Collab labelled). On SEMI WL did get the best accuracy compared to GH despite the nodes having continuous vector labels but this may change when testing more choices of $\mu$.
 
-We did not see a consistent improvement in accuracy when adding gaps to GH. In most cases we saw no meaningful change in performance in either direction. The most promising result was achieved on SEMI where adding gaps had a massive positive impact ($>10\%$) for a specific choice of $\mu$. However, actually computing the best result with GH would require cross-validating $\mu$ and $s$ together and at this time we can not say whether the best combination of these parameters includes a positive value of $s$.
+We did not see a consistent improvement in accuracy when adding gaps to GH. In most cases we saw no meaningful improvement or some decrease in performance. Gaps seemed to have a negative impact on data based on chemical compounds while it did better on the social media data. The airways data scanned from images gave inconclusive results so further testing on data based on images would be interesting. The most promising result was achieved on the 3D data in SEMI where adding gaps had a massive positive impact ($>10\%$) for a specific choice of $\mu$. However, actually computing the best result with GH would require cross-validating $\mu$ and $s$ together and at this time we can not say whether the best combination of these parameters includes a positive value of $s$.
 
 \section{Conclusion}
 We have managed to implement the GraphHopper kernel in C++ and consistently achieve superior running times compared to the existing MATLAB-implementation. We have also implemented gappy paths and experimented with the impact on model accuracy when allowing gaps in graph classification. The results of the latter were inconclusive in that the impact was minimal or negative across most datasets but massively positive in one of our tests. In said test we did not, however, cross-validate the choice of a node kernel parameter ($\mu$) due to sheer size. Before concluding that adding gaps has a meaningful, positive impact on this data we need to cross-validate $\mu$ as well as the gap size $s$ and verify that the best result arises from a positive $s$ parameter and that this result is substantially better than any result achieved with $s=0$. In conclusion we believe that more time should be invested in researching the effect of gaps on graph classification.
