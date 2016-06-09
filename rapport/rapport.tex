@@ -802,6 +802,8 @@ Basic specifications of the datasets used throughout our experiments are supplie
 
 \textbf{IMDB Binary} \cite{yanardag} contains movie-related collaboration data. Each graph is an \textit{ego network} generated for an actor/actress. Each node represents an actor and there is an edge between two nodes if they have appeared in the same movie. Each ego network belongs to a certain movie genre (comedy or romance) and the task it to identify which genre a given network belongs to.
 
+\textbf{SEMI} \cite{robot-grasping} consists of 126 graphs each representing a 3D point cloud simulating laser range data, viewing one of 26 objects from an angle. Each node represents a vertex in the 3D model and contains information about which of five categories of parts of the object that the node belongs to as well as continuous data describing the 3D location of the vertex as well as its normal unit vector. The task is to identify which of 11 object categories that the object modelled in the graph belongs to.
+
 \subsection{Runtime experiments (C++ vs MATLAB)}
 In this section we wish to see whether we succeeded in creating a faster implementation using C++ compared to the existing implementation. The results show the running time in seconds when computing the $K$ matrix for a specified dataset with both implementations using the same node kernel as specified and without gaps. All tests are run without parallelization.
 
@@ -1217,7 +1219,7 @@ WL performs slightly better than GH, but GH is within the standard deviation of 
 
 
 \paragraph{SEMI:}
-Due to the size of the graphs in SEMI we do not have time to properly cross-validate the choice of $\mu$ for the D$\times$G node kernel. Instead, we have chosen two values and compared the results. Interestingly, for $\mu=1$ we saw a significant improvement when using gaps while we saw a negative impact on performance for $\mu=0.1$ showing that the impact of gaps relies on, amongst other factors, the choice of node kernel parameters.
+Due to the size of the graphs in SEMI we do not have time to properly cross-validate the choice of $\mu$ for the D$\times$G node kernel. Instead, we have chosen two values and compared the results. Interestingly, for $\mu=1$ we saw a significant improvement when using gaps while we saw a negative impact on performance for $\mu=0.1$ showing that the impact of gaps relies on, amongst other factors, the choice of node kernel parameters. In the end, GH was outperformed by WL.
 \\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
@@ -1240,7 +1242,7 @@ Due to the size of the graphs in SEMI we do not have time to properly cross-vali
 		GH & DxG ($\mu=0.1$) & 2 & 63.9167 (std. 2.6367)\\
 		GH & DxG ($\mu=0.1$) & 3 & 62.8333 (std. 2.5215)\\
 		GH & DxG ($\mu=0.1$) & 5 & 57.1667 (std. 3.1963)\\
-		WL & - & - & 87.4167 (std. 1.7765)\\
+		WL & - & - & \textbf{87.4167 (std. 1.7765)}\\
 	\end{tabular}
 	\captionof{table}{SEMI results}
 	\label{table:semi}
@@ -1290,9 +1292,12 @@ Gap size 40: 69.4333 (std. 1.5480) \\
 Gap size 50: 69.7833 (std. 1.4825)
 \fi
 \subsubsection{Discussion}
+On graphs with discrete node labels WL generally outperforms GH (Enzymes, NCI1, NCI109, Collab unlabelled, IMDB). GH is, however, designed to take advantage of continuous node labels and on graphs with this property GH often gets the best result (Enzymes symmetrized, Airways subsampled) even when the continuous labels just represent the node degree (Collab labelled). On SEMI WL did get the best accuracy compared to GH despite the nodes having continuous vector labels but this may change when testing more choices of $\mu$.
+
+We did not see a consistent improvement in accuracy when adding gaps to GH. In most cases we saw no meaningful change in performance in either direction. The most promising result was achieved on SEMI where adding gaps had a massive positive impact ($>10\%$) for a specific choice of $\mu$. However, actually computing the best result with GH would require cross-validating $\mu$ and $s$ together and at this time we can not say whether the best combination of these parameters includes a positive value of $s$.
 
 \section{Conclusion}
-
+We have managed to implement the GraphHopper kernel in C++ and consistently achieve superior running times compared to the existing MATLAB-implementation. We have also implemented gappy paths and experimented with the impact on model accuracy when allowing gaps in graph classification. The results of the latter were inconclusive in that the impact was minimal or negative across most datasets but massively positive in one of our tests. In said test we did not, however, cross-validate the choice of a node kernel parameter ($\mu$) due to sheer size. Before concluding that adding gaps has a meaningful, positive impact on this data we need to cross-validate $\mu$ as well as the gap size $s$ and verify that the best result arises from a positive $s$ parameter and that this result is substantially better than any result achieved with $s=0$. In conclusion we believe that more time should be invested in researching the effect of gaps on graph classification.
 
 
 \newpage
@@ -1345,6 +1350,11 @@ Gap size 50: 69.7833 (std. 1.4825)
 		Mehlhorn, Karsten M. Borgwardt.
 		\emph{Weisfeiler-lehman graph kernels}.
 		Journal	of Machine Learning Research, 12:2539-2561, 2011.
+		
+		\bibitem{robot-grasping}
+		Marion Neumann, Plinio Moreno, Laura Antanas, Roman Garnett, Kristian Kersting.
+		\emph{Graph Kernels for Object Category Prediction in Task-Dependent Robot Grasping}.
+		2013
 		
 \end{thebibliography}
 
@@ -1448,7 +1458,7 @@ Running Dirac $\times$ Gaussian on a single thread with $\mu=0.5$ and without ga
 
 \subsubsection{Graphs format}
 \label{appendix:graphs-format}
-The graphs variable must be a $1\times N$ struct (where $N$ is the number of graphs) containing a column labeled \verb|am| and a column labeled \verb|nl|. A row in the \verb|am| column should be a (full or sparse) adjacency matrix. A row in the \verb|nl| column should be a struct containing either a field named \verb|values| with discrete values if using discrete node labels and/or a field named \verb|vecvalues| if using vector node labels or both if using both node labels.
+The graphs variable must be a $1\times N$ struct (where $N$ is the number of graphs) containing a column labeled \verb|am| and a column labeled \verb|nl|. A row in the \verb|am| column should be a (full or sparse) adjacency matrix. A row in the \verb|nl| column should be a struct containing either a field named \verb|values| containing $n\times 1$ discrete values if using discrete node labels and/or a field named \verb|vecvalues| containing $n\times d$ continuous values if using vector node labels or both if using both node labels.
 
 \section{Synopsis}
 \includepdf[pages=-]{synopsis/synopsis.pdf}
