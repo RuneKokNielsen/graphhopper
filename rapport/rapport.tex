@@ -807,7 +807,7 @@ Basic specifications of the datasets used throughout our experiments are supplie
 
 \textbf{Reddit binary} \cite{yanardag} contains data from the social media website reddit.com. Each graph is a discussion thread belonging to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users if one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node. The task is to determine whether a given thread belongs to a question/answer-based or discussion-based subreddit.
 
-\textbf{Reddit multi} \cite{yanardag} consist of the same type of data as Reddit binary, but instead of only containing two different subreddits, it contains five different (\textit{worldnews}, \textit{videos}, \textit{AdviceAnimals}, \textit{aww} and \textit{midlyinteresting}).
+\textbf{Reddit multi} \cite{yanardag} consist of data somewhat like Reddit binary, but instead of containing four subreddits in two categories it contains five different subreddits (\textit{worldnews}, \textit{videos}, \textit{AdviceAnimals}, \textit{aww} and \textit{midlyinteresting}) and the task is to predict which of the five subreddits a given thread belongs to.
 
 \textbf{IMDB Binary} \cite{yanardag} contains movie-related collaboration data. Each graph is an \textit{ego network} generated for an actor/actress. Each node represents an actor and there is an edge between two nodes if they have appeared in the same movie. Each ego network belongs to a certain movie genre (comedy or romance) and the task it to identify which genre a given network belongs to.
 
@@ -1028,7 +1028,7 @@ The results on NCI109 resembles those on NCI1: WL outperforms GH and gaps have a
 
 
 \begin{minipage}{0.6\linewidth}
-	\paragraph{Reddit binary (unlabelled):} This dataset is interesting as both GH and WL manages to score 100\% accuracy with no deviation. At first glance this may seem like an error but drawing the generated K matrix on a gray scale (figure \ref{fig:reddit_binary_unlabelled_k_gh}) we note that all points are either white or gray. Inspecting the values in K and referencing the graph labels it becomes evident that the results in K are 0 exactly when comparing two differently labelled graphs. This shows that the kernel manages to perfectly distinguish between graphs in relation to their types which allows SVM to create a perfect model.\\
+	\paragraph{Reddit binary (unlabelled) + Reddit multi 5k (unlabelled):} The Reddit binary dataset is interesting as both GH and WL manages to score 100\% accuracy with no deviation. At first glance this may seem like an error but drawing the generated K matrix on a gray scale (figure \ref{fig:reddit_binary_unlabelled_k_gh}) we note that all points are either white or gray. Inspecting the values in K and referencing the graph labels it becomes evident that the results in K are 0 exactly when comparing two differently labelled graphs. This shows that the kernel manages to perfectly distinguish between graphs in relation to their types which allows SVM to create a perfect model. To verify that it is not trivial to score 100\% we tested with a simple graph kernel named \textit{degree distributions}\cite{svm-graph-kernels} (DD) that compares the node degree distributions of two graphs. While this kernel scored a high accuracy (83.65\%) it is still far from a perfect result.\\
 While both WL and GH scores a $100\%$ in Reddit binary (unlabelled), only GH scores a $100\%$ on the dataset Reddit multi 5K (unlabelled), where WL scores $97.5152\%$ and DGK scores $41.27\%$.
 \end{minipage}
 \hspace*{0.2in}
@@ -1054,6 +1054,7 @@ While both WL and GH scores a $100\%$ in Reddit binary (unlabelled), only GH sco
 		GH & D & 0 & \textbf{100 (std. 0.0000)}\\
 		GH & D & 1 & 99.9500 (std. $<$ 0.0001)\\
 		WL & - & - & \textbf{100 (std. 0.0000)}\\
+		DD\footnote{Degree distributions} & G & - & 83.6497 (std. 0.5506)\\
 		DGK\cite{yanardag} & - & - & 78.04 (std. 0.39)
 	\end{tabular}
 	\captionof{table}{Reddit binary (unlabelled) results}
