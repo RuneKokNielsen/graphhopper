@@ -1028,7 +1028,7 @@ The results on NCI109 resembles those on NCI1: WL outperforms GH and gaps have a
 
 
 \begin{minipage}{0.6\linewidth}
-	\paragraph{Reddit binary (unlabelled) + Reddit multi 5k (unlabelled):} The Reddit binary dataset is interesting as both GH and WL manages to score 100\% accuracy with no deviation. At first glance this may seem like an error but drawing the generated K matrix on a gray scale (figure \ref{fig:reddit_binary_unlabelled_k_gh}) we note that all points are either white or gray. Inspecting the values in K and referencing the graph labels it becomes evident that the results in K are 0 exactly when comparing two differently labelled graphs. This shows that the kernel manages to perfectly distinguish between graphs in relation to their types which allows SVM to create a perfect model. To verify that it is not trivial to score 100\% we tested with a simple graph kernel named \textit{degree distributions}\cite{svm-graph-kernels} (DD) that compares the node degree distributions of two graphs. While this kernel scored a high accuracy (83.65\%) it is still far from a perfect result.\\
+	\paragraph{Reddit binary (unlabelled) + Reddit multi 5k (unlabelled):} The Reddit binary dataset is interesting as both GH and WL manages to score 100\% accuracy with no deviation. At first glance this may seem like an error but drawing the generated K matrix on a gray scale (figure \ref{fig:reddit_binary_unlabelled_k_gh}) we note that all points are either white or gray. Inspecting the values in K and referencing the graph labels it becomes evident that the results in K are 0 exactly when comparing two differently labelled graphs. This shows that the kernel manages to perfectly distinguish between graphs in relation to their types which allows SVM to create a perfect model. To verify that it is not trivial to score 100\% we tested with two simple graph kernels described in \cite{svm-graph-kernels}: \textit{baseline 2} (BL2) that compares the number of nodes in the graphs and \textit{degree distributions} (DD) that compares the node degree distributions of the graphs. These kernels scored 76.97\% and 83.65\% respectively showing that perfect classification is not trivial in this case.\\
 While both WL and GH scores a $100\%$ in Reddit binary (unlabelled), only GH scores a $100\%$ on the dataset Reddit multi 5K (unlabelled), where WL scores $97.5152\%$ and DGK scores $41.27\%$.
 \end{minipage}
 \hspace*{0.2in}
@@ -1055,6 +1055,7 @@ While both WL and GH scores a $100\%$ in Reddit binary (unlabelled), only GH sco
 		GH & D & 1 & 99.9500 (std. $<$ 0.0001)\\
 		WL & - & - & \textbf{100 (std. 0.0000)}\\
 		DD\footnote{Degree distributions} & G & - & 83.6497 (std. 0.5506)\\
+		BL2\footnote{Baseline 2} & G & - & 76.9695 (std. 0.2902)\\
 		DGK\cite{yanardag} & - & - & 78.04 (std. 0.39)
 	\end{tabular}
 	\captionof{table}{Reddit binary (unlabelled) results}
