@@ -1211,7 +1211,8 @@ WL performs slightly better than GH, but GH is within the standard deviation of 
 
 
 \paragraph{SEMI:}
-Due to the size of the graphs in SEMI we do not have time to properly cross-validate the choice of $\mu$ for the D$\times$G node kernel. Instead, we have chosen two values and compared the results. Interestingly, for $\mu=1$ we saw a significant improvement when using gaps while we saw a negative impact on performance for $\mu=0.1$ showing that the impact of gaps relies on, amongst other factors, the choice of node kernel parameters. In the end, GH was outperformed by WL.
+Due to the size of the graphs in SEMI we do not have time to properly cross-validate the choice of $\mu$ for the D$\times$G node kernel. Instead, we have chosen a number of values and compared the results.
+In three of four cases we saw a significant improvement when using gaps. The greatest change in performance was going from $s=0$ to $s=1$ with $\mu=10$ in which case the accuracy effectively \textbf{doubled} from $\sim 37\%$ to $\sim 74\%$. In the end, GH was outperformed by WL.
 \\
 \begin{minipage}{0.6\linewidth}
 	\hspace*{-1in}
@@ -1224,16 +1225,27 @@ Due to the size of the graphs in SEMI we do not have time to properly cross-vali
 	\begin{tabular}{c|c|c|c}
 		Kernel & Node kernel & Gaps & Result\\
 		\hline
-		GH & DxG ($\mu=1$) & 0 & 67.6667 (std. 2.0337)\\
-		GH & DxG ($\mu=1$) & 1 & 66.5000 (std. 2.5398)\\
-		GH & DxG ($\mu=1$) & 2 & 78.1667 (std. 1.6102)\\
-		GH & DxG ($\mu=1$) & 3 & 77.000 (std. 1.7656)\\
-		GH & DxG ($\mu=1$) & 5 & 75.6667 (std. 1.4055)\\
 		GH & DxG ($\mu=0.1$) & 0 & 66.7500 (std. 2.1677)\\
 		GH & DxG ($\mu=0.1$) & 1 & 66.7500 (std. 1.5933)\\
 		GH & DxG ($\mu=0.1$) & 2 & 63.9167 (std. 2.6367)\\
 		GH & DxG ($\mu=0.1$) & 3 & 62.8333 (std. 2.5215)\\
 		GH & DxG ($\mu=0.1$) & 5 & 57.1667 (std. 3.1963)\\
+		GH & DxG ($\mu=1/6$) & 0 & 31.0 (std. 2.6586)\\
+		GH & DxG ($\mu=1/6$) & 1 & 47.4167 (std. 2.8178)\\
+		GH & DxG ($\mu=1/6$) & 2 & 38.5833 (std. 2.4548)\\
+		GH & DxG ($\mu=1/6$) & 3 & 56.6667 (std. 3.9284)\\
+		GH & DxG ($\mu=1/6$) & 5 & 53.3333 (std. 3.6641)\\
+		GH & DxG ($\mu=1$) & 0 & 67.6667 (std. 2.0337)\\
+		GH & DxG ($\mu=1$) & 1 & 66.5000 (std. 2.5398)\\
+		GH & DxG ($\mu=1$) & 2 & 78.1667 (std. 1.6102)\\
+		GH & DxG ($\mu=1$) & 3 & 77.000 (std. 1.7656)\\
+		GH & DxG ($\mu=1$) & 5 & 75.6667 (std. 1.4055)\\
+		GH & DxG ($\mu=10$) & 0 & 37.0833 (std. 2.2309)\\
+		GH & DxG ($\mu=10$) & 1 & 74.00 (std. 3.0378)\\
+		GH & DxG ($\mu=10$) & 2 & 66.333 (std. 2.4280)\\
+		GH & DxG ($\mu=10$) & 3 & 61.50 (std. 2.7999)\\
+		GH & DxG ($\mu=10$) & 5 & 56.3333 (std. 2.0861)\\
+		
 		WL & - & - & \textbf{87.4167 (std. 1.7765)}\\
 	\end{tabular}
 	\captionof{table}{SEMI results}
@@ -1286,10 +1298,10 @@ Gap size 50: 69.7833 (std. 1.4825)
 \subsubsection{Discussion}
 On graphs with discrete node labels WL generally outperforms GH (Enzymes, NCI1, NCI109, Collab unlabelled, IMDB). GH is, however, designed to take advantage of continuous node labels and on graphs with this property GH often gets the best result (Enzymes symmetrized, Airways subsampled) even when the continuous labels just represent the node degree (Collab labelled). On SEMI WL did get the best accuracy compared to GH despite the nodes having continuous vector labels but this may change when testing more choices of $\mu$.
 
-We did not see a consistent improvement in accuracy when adding gaps to GH. In most cases we saw no meaningful improvement or some decrease in performance. Gaps seemed to have a negative impact on data based on chemical compounds while it did better on the social media data. The airways data scanned from images gave inconclusive results so further testing on data based on images would be interesting. The most promising result was achieved on the 3D data in SEMI where adding gaps had a massive positive impact ($>10\%$) for a specific choice of $\mu$. However, actually computing the best result with GH would require cross-validating $\mu$ and $s$ together and at this time we can not say whether the best combination of these parameters includes a positive value of $s$.
+We did not see a consistent improvement in accuracy when adding gaps to GH. In most cases we saw no meaningful improvement or some decrease in performance. Gaps seemed to have a negative impact on data based on chemical compounds while it did better on the social media data. The airways data scanned from images gave inconclusive results so further testing on data based on images would be interesting. The most promising results were achieved on the 3D data in SEMI where adding gaps had a massive positive impact for most choices of $\mu$. However, actually computing the best result with GH would require cross-validating $\mu$ and $s$ together and at this time we can not say whether the best combination of these parameters includes a positive value of $s$.
 
 \section{Conclusion}
-We have managed to implement the GraphHopper kernel in C++ and consistently achieve superior running times compared to the existing MATLAB-implementation. We have also implemented gappy paths and experimented with the impact on model accuracy when allowing gaps in graph classification. The results of the latter were inconclusive in that the impact was minimal or negative across most datasets but massively positive in one of our tests. In said test we did not, however, cross-validate the choice of a node kernel parameter ($\mu$) due to sheer size. Before concluding that adding gaps has a meaningful, positive impact on this data we need to cross-validate $\mu$ as well as the gap size $s$ and verify that the best result arises from a positive $s$ parameter and that this result is substantially better than any result achieved with $s=0$. In conclusion we believe that more time should be invested in researching the effect of gaps on graph classification.
+We have managed to implement the GraphHopper kernel in C++ and consistently achieve superior running times compared to the existing MATLAB-implementation. We have also implemented gappy paths and experimented with the impact on model accuracy when allowing gaps in graph classification. The results of the latter were inconclusive in that the impact was minimal or negative across most datasets but massively positive in one of our tests. In said test we did not, however, cross-validate the choice of a node kernel parameter ($\mu$) due to sheer size. Before concluding that adding gaps has a meaningful, positive impact on this data we need to cross-validate $\mu$ as well as the gap size $s$ and verify that the best result arises from a positive $s$ parameter and that this result is substantially better than any result achieved with $s=0$. In conclusion, we believe that more time should be invested in researching the effect of gaps on graph classification.
 
 
 \newpage
