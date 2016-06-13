@@ -124,7 +124,7 @@ Before introducing the GraphHopper kernel we need to establish some essential un
 The core problem is data classification, i.e.\ determining the class of a data point from a limited number of predefined classes. In the context of this report we will be working with binary classification of graphs using SVM.
 
 \subsection{SVM}
-SVM is a binary classification technique used to create classification models. The technique works by placing a maximal margin hyperplane between two optimal data points in the training set (\textit{the support vectors}) such that the hyperplane achieves the biggest possible distance to any data points. Such a hyperplane in a 2-dimensional, linear seperable case is illustrated in figure \ref{fig:hyperplane}. The accuracy of the model is then measured by how successfully the hyperplane classifies new data points with known classes. To achieve a greater margin the technique allows for tolerating missclasifications in the training set by instead assigning a weight to points that are missclassified.
+SVM is a binary classification technique used to create classification models. The technique works by placing a maximal margin hyperplane between two optimal data points in the training set (\textit{the support vectors}) such that the hyperplane achieves the biggest possible distance to any data points. Such a hyperplane in a 2-dimensional, linear separable case is illustrated in figure \ref{fig:hyperplane}. The accuracy of the model is then measured by how successfully the hyperplane classifies new data points with known classes. To achieve a greater margin the technique allows for tolerating misclassification in the training set by instead assigning a weight to points that are misclassified.
 
 \begin{figure}[H]
 	\centering
@@ -133,7 +133,7 @@ SVM is a binary classification technique used to create classification models. T
 	\label{fig:hyperplane}
 \end{figure}
 
-Refering to figure \ref{fig:hyperplane} the direction of the hyperplane $B1$ is described by its orthogonal vector $w$ and its margins are described by the equations
+Referring to figure \ref{fig:hyperplane} the direction of the hyperplane $B1$ is described by its orthogonal vector $w$ and its margins are described by the equations
 \begin{align}
 b11 &= w\cdot x + b = 1\\
 b12 &= w \cdot x + b = -1
@@ -147,11 +147,11 @@ Maximizing this distance is then achieved by minimizing $w$ which is formulated 
 f(w) = \frac{||w||^2}{2}
 \end{equation}
 
-To consider the weight of missclassified points we extend this function as
+To consider the weight of misclassified points we extend this function as
 \begin{equation}
 f(w) = \frac{||w||^2}{2} + C\left(\sum_{i=1}^{N}\xi_i\right)^k
 \end{equation}
-where $N$ is the number of data points, $\xi_i$ is the distance with which point $x_i$ was missclassified (or 0 if correctly classified), $C$ and $k$ are parameters determining the tolerance for missclassifications.
+where $N$ is the number of data points, $\xi_i$ is the distance with which point $x_i$ was misclassified (or 0 if correctly classified), $C$ and $k$ are parameters determining the tolerance for misclassification.
 
 Using Lagrange multipliers this optimization problem is transformed into the following Dual Lagrange problem:
 \begin{equation}
@@ -760,7 +760,7 @@ The product consists of a C++ application which may be compiled using a MEX-comp
 \textit{https://sites.google.com/site/aasaferagen/home/software} 
 
 \subsection{Implemented functionality}
-The application computes, utilising an arbitrary amount of threads, the GraphHopper kernel matrix on a set of graphs using a (possibly parameterized) node kernel and allowing gaps of size $s\geq 0$ as specified by the user. The implemented node kernels are detailed in section \ref{section:node-kernels}. It is mainly supposed to be compiled using a MEX-compiler and executed directly in MATLAB but may also be compiled as a standalone application using file-based in- and output.
+The application computes, utilising an arbitrary amount of threads, the GraphHopper kernel matrix on a set of graphs using a (possibly parametrized) node kernel and allowing gaps of size $s\geq 0$ as specified by the user. The implemented node kernels are detailed in section \ref{section:node-kernels}. It is mainly supposed to be compiled using a MEX-compiler and executed directly in MATLAB but may also be compiled as a standalone application using file-based in- and output.
 
 The project also contains a MATLAB script for cross-validating node kernel parameters (extending the functionality of scripts supplied with \cite{graphhopper}\footnote{https://www.bsse.ethz.ch/mlcb/research/machine-learning/graph-kernels/scalable-kernels-for-graphs-with-continuos-attributes.html}) and a C++ application for translating .mat files into the file format accepted by the standalone GraphHopper application.
 
@@ -791,6 +791,7 @@ Basic specifications of the datasets used throughout our experiments are supplie
 	NCI1 & 4110 & 29.87 & 111 & 1\\
 	NCI109 & 4127 & 29.68 & 111 & 1 \\
 	Reddit Binary & 2000 & 429.63 & 3782 & 1 \\
+	Reddit Multi (5K) & 4999 & 508.52 & 3648 & 1 \\
 	DD & 1178 & 284.32 & 5748 & 1\\
 	IMDB Binary & 1000 & 19.77 & 136 & 1\\
 	SEMI & 126 & 1442.36 & 4447 & 1 + 6\\
@@ -804,7 +805,9 @@ Basic specifications of the datasets used throughout our experiments are supplie
 
 \textbf{Airways subsampled} consists of graph data converted from images of lung blood vessels. The task is to determine whether a given lung belongs to a healthy individual or one suffering from Chronic Obstructive Pulmonary Disease (COPD) \cite{graphhopper}.
 
-\textbf{Reddit binary} \cite{yanardag} contains data from the social media website reddit.com. Each graph is a discussion thread belongning to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users iff one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node. The task is to determine whether a given thread belongs to a question/answer-based or discussion-based subreddit.
+\textbf{Reddit binary} \cite{yanardag} contains data from the social media website reddit.com. Each graph is a discussion thread belonging to one of four \textit{subreddits}\footnote{Discussion board limited to a specific subject.}. Two of these subreddits (\textit{IAmA} and \textit{AskReddit}) are classified as question/answer-based while the two others (\textit{TrollXChromosomes} and \textit{atheism}) are classified as discussion-based subreddits. Each node represents a user who participated in the given thread and there is an edge between any pair of users if one of the users submitted a comment to any of the other user's comments. The node labels for a given node is a discrete value equal to the number of edges going to/from this node. The task is to determine whether a given thread belongs to a question/answer-based or discussion-based subreddit.
+
+\textbf{Reddit multi} \cite{yanardag} consist of the same type of data as Reddit binary, but instead of only containing two different subreddits, it contains five different (\textit{worldnews}, \textit{videos}, \textit{AdviceAnimals}, \textit{aww} and \textit{midlyinteresting}).
 
 \textbf{IMDB Binary} \cite{yanardag} contains movie-related collaboration data. Each graph is an \textit{ego network} generated for an actor/actress. Each node represents an actor and there is an edge between two nodes if they have appeared in the same movie. Each ego network belongs to a certain movie genre (comedy or romance) and the task it to identify which genre a given network belongs to.
 
@@ -1025,7 +1028,8 @@ The results on NCI109 resembles those on NCI1: WL outperforms GH and gaps have a
 
 
 \begin{minipage}{0.6\linewidth}
-	\paragraph{Reddit binary (unlabelled):} This dataacset is interesting as both GH and WL manages to score 100\% accuracy with no deviation. At first glance this may seem like an error but drawing the generated K matrix on a gray scale (figure \ref{fig:reddit_binary_unlabelled_k_gh}) we note that all points are either white or gray. Inspecting the values in K and referencing the graph labels it becomes evident that the results in K are 0 exactly when comparing two differently labelled graphs. This shows that the kernel manages to perfectly distinguish between graphs in relation to their types which allows SVM to create a perfect model.\\
+	\paragraph{Reddit binary (unlabelled):} This dataset is interesting as both GH and WL manages to score 100\% accuracy with no deviation. At first glance this may seem like an error but drawing the generated K matrix on a gray scale (figure \ref{fig:reddit_binary_unlabelled_k_gh}) we note that all points are either white or gray. Inspecting the values in K and referencing the graph labels it becomes evident that the results in K are 0 exactly when comparing two differently labelled graphs. This shows that the kernel manages to perfectly distinguish between graphs in relation to their types which allows SVM to create a perfect model.\\
+While both WL and GH scores a $100\%$ in Reddit binary (unlabelled), only GH scores a $100\%$ on the dataset Reddit multi 5K (unlabelled), where WL scores $97.5152\%$ and DGK scores $41.27\%$.
 \end{minipage}
 \hspace*{0.2in}
 \begin{minipage}{0.5\linewidth}
