@@ -96,7 +96,7 @@ mathescape
   node_/.style     = {shape=circle,draw,align=center}
 }
 \author{Rune Kok Nielsen (qkd362), Andreas Nugaard Holm (jnh508)}
-\title{GraphHopper kernel in C++}
+\title{GraphHopper Kernel with Gaps in C++}
 \DeclareMathOperator{\Ran}{Ran}
 \DeclareMathOperator{\Dom}{Dom}
 
@@ -104,6 +104,12 @@ mathescape
 \begin{document}
 	
 \maketitle
+
+\renewcommand\abstractname{\textit{Abstract}}
+\begin{abstract}
+	We have implemented the GraphHopper kernel in C++ with support for gaps and compared the running time in relation to an existing MATLAB-implementation and the effect of allowing gaps in path-based graph data classification. In our tests, the C++ implementation is 2 to 43 times faster depending on the parameters of the execution. The effect of gaps appears to be very dependent on the type of the data being classified as well as other parameters in the kernel. In one case the best accuracy achieved with gaps was $\sim 10\%$ higher than the best achieved without.
+\end{abstract}
+
 \newpage
 \tableofcontents
 \newpage
