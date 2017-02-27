@@ -129,13 +129,15 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
       int total = 0;
       ir = mxGetIr(am);
       jc = mxGetJc(am);
+      m = mxGetPr(am);
       for(int j = 0; j < nNodes; j++) {
         starting_row_index = jc[j];
         stopping_row_index = jc[j + 1];
         for(current_row_index = starting_row_index;
             current_row_index < stopping_row_index;
             current_row_index++) {
-           g->V[ir[current_row_index]]->adj.push_back(g->V[j]);
+          g->V[j]->adj.push_back(g->V[ir[current_row_index]]);
+          g->V[j]->adj_d.push_back(m[current_row_index]);
         }
       }
     } else {
@@ -145,6 +147,7 @@ vector<Graph*> matlabRead(const mxArray *data, LabelType labelType) {
           double v = m[j + k * nNodes];
           if(v > 0) {
             g -> V[j] -> adj.push_back(g -> V[k]);
+            g -> V[j] -> adj_d.push_back(v);
           }
         }
       }
@@ -186,6 +189,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     mexPrintf("Running on %d threads.\n", nThreads);
     mexPrintf("Computing M matrices..\n");
     mexFlush();
+
 
     int gaps = (int) mxGetScalar(prhs[4]);
 

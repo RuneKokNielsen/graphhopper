@@ -90,6 +90,7 @@ void Graph::prepareNode(Node *src, int gaps){
   for(int i=0; i<V.size(); i++){
     Node *v = V[i];
     v->tmp_d = 999999;
+    v->tmp_width = 0;
     v->tmp_parents.clear();
     v->tmp_children.clear();
 
@@ -97,6 +98,7 @@ void Graph::prepareNode(Node *src, int gaps){
   }
   src->tmp_d = 0;
 
+  // Dijkstra
   make_heap(q.begin(), q.end(), nodeCompare);
   int maxWidth = 0;
   while(!q.empty()){
@@ -104,16 +106,17 @@ void Graph::prepareNode(Node *src, int gaps){
     pop_heap(q.begin(), q.end());
     q.pop_back();
 
-
-    int d = u->tmp_d + 1;
+    int tmp_width = u->tmp_width + 1;
     for(int i=0; i<u->adj.size(); i++){
       Node *v = u->adj[i];
+      double d = u->tmp_d + u->adj_d[i];
       if(v->tmp_d >= d){
         if(v->tmp_d > d){
-          maxWidth = max(maxWidth, d);
+          maxWidth = max(maxWidth, tmp_width);
           v->tmp_parents.clear();
         }
         v->tmp_d = d;
+        v->tmp_width = tmp_width;
         v->tmp_parents.push_back(u);
       }
     }
@@ -140,7 +143,7 @@ void Graph::prepareNode(Node *src, int gaps){
     Node *v = V[i];
     if(v->tmp_d == 999999) continue;
 
-    src->tmp_ordered[v->tmp_d].push_back(v);
+    src->tmp_ordered[v->tmp_width].push_back(v);
     for(int j=0; j<v->tmp_parents.size(); j++){
       v->tmp_parents[j]->tmp_children.push_back(v);
       /*
@@ -227,7 +230,7 @@ vector<int> *Graph::compDRec(Node *src, Node *v){
     int sizea = (int) src->D[v->index].size();
     int sizeb = (int) b.size();
     for(int i=0; i<sizeb; i++){
-      int ia = i + 1; 
+      int ia = i + 1;
       if(ia < sizea){
         src->D[v->index][ia] += b[i];
       }else{
