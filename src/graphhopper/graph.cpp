@@ -112,11 +112,11 @@ void Graph::prepareNode(Node *src, int gaps){
       double d = u->tmp_d + u->adj_d[i];
       if(v->tmp_d >= d){
         if(v->tmp_d > d){
+          v->tmp_width = tmp_width;
           maxWidth = max(maxWidth, tmp_width);
           v->tmp_parents.clear();
         }
         v->tmp_d = d;
-        v->tmp_width = tmp_width;
         v->tmp_parents.push_back(u);
       }
     }
