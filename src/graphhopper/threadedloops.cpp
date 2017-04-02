@@ -99,4 +99,5 @@ void ThreadedLoops::computeK(double **K, vector<Graph*> *pGraphs,
 
   _complete = true;
   syncPrint.join();
+  std::this_thread::sleep_for(std::chrono::milliseconds(150));
 }
