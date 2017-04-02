@@ -80,7 +80,7 @@ void ThreadedLoops::computeK(double **K, vector<Graph*> *pGraphs,
   _reportEveryN = max(_kSize / 100, 1);
 
   _complete = false;
-  thread syncPrint = thread(&ThreadedLoops::printComputed, this);
+  // thread syncPrint = thread(&ThreadedLoops::printComputed, this);
 
   int chunkSize = (int) ceil(_nGraphs / _nThreads);
   int from = 0;
@@ -98,6 +98,5 @@ void ThreadedLoops::computeK(double **K, vector<Graph*> *pGraphs,
   }
 
   _complete = true;
-  syncPrint.join();
-  std::this_thread::sleep_for(std::chrono::milliseconds(150));
+  //  syncPrint.join();
 }

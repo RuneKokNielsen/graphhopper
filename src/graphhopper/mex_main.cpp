@@ -201,7 +201,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     //Print M computation status on syncronized thread
     bool *complete = new bool();
     *complete = false;
-    thread syncPrint = thread(printCompleted, nGraphs, completed, complete);
+    // thread syncPrint = thread(printCompleted, nGraphs, completed, complete);
 
     vector<thread*> threads;
     int chunkSize = (int) ceil(nGraphs / nThreads);
@@ -221,8 +221,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       delete t;
     }
     *complete = true;
-    syncPrint.join();
-    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+    //syncPrint.join();
 
     //computeM(graphs, 0, ((int) graphs.size()) -1, (int) mxGetScalar(prhs[4]));
 
