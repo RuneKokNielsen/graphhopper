@@ -222,6 +222,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
     }
     *complete = true;
     syncPrint.join();
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
 
     //computeM(graphs, 0, ((int) graphs.size()) -1, (int) mxGetScalar(prhs[4]));
 
