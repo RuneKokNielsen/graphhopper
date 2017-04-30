@@ -83,7 +83,6 @@ void Graph::calculateM(int gaps){
 }
 
 
-
 void Graph::prepareNode(Node *src, int gaps){
   //Init tmp values
   vector<Node*> q;
@@ -179,15 +178,23 @@ void Graph::prepareNode(Node *src, int gaps){
       tmpNodes.clear();
       tmptmpNodes.clear();
     }
-    //Use grand parents as children
+    //Use grand parents as parents
     for(int i=0; i<V.size(); i++){
       Node *v = V[i];
       while(!v->tmp_grandParents.empty()){
-        v->tmp_parents.push_back(v->tmp_grandParents.back());
+        Node* grandParent = v->tmp_grandParents.back();
+        if(std::find(v->tmp_parents.begin(), v->tmp_parents.end(),
+                     grandParent) == v->tmp_parents.end()){
+          v->tmp_parents.push_back(grandParent);
+        }
         v->tmp_grandParents.pop_back();
       }
       while(!v->tmp_grandChildren.empty()){
-        v->tmp_children.push_back(v->tmp_grandChildren.back());
+        Node *grandChild = v->tmp_grandChildren.back();
+        if(std::find(v->tmp_children.begin(), v->tmp_children.end(),
+                     grandChild) == v->tmp_children.end()){
+          v->tmp_children.push_back(grandChild);
+        }
         v->tmp_grandChildren.pop_back();
       }
       v -> tmp_grandParents.clear();
