@@ -24,7 +24,7 @@ std::vector<std::string> split(const std::string &s, char delim) {
 
 template<class T>
 bool vector_contains(vector<T> &v, T el){
-  for(std::vector<T>::iterator it = v.begin(); it != v.end(); ++it) {
+  for(typename std::vector<T>::iterator it = v.begin(); it != v.end(); ++it) {
     if(*it == el){
       return true;
     }
