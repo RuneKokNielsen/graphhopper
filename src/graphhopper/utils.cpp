@@ -22,6 +22,17 @@ std::vector<std::string> split(const std::string &s, char delim) {
     return elems;
 }
 
+template<class T>
+bool vector_contains(vector<T> &v, T el){
+  for(std::vector<T>::iterator it = v.begin(); it != v.end(); ++it) {
+    if(*it == el){
+      return true;
+    }
+  }
+  return false;
+}
+
+
 
 vector<Graph*> loadData(const char *file, LabelType labelType){
   vector<Graph*> graphs;

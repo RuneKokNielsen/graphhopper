@@ -3,7 +3,6 @@
 #include <climits>
 #include <queue>
 #include "utils.cpp"
-#include <algorithm>
 
 Graph::Graph(int n){
   V.reserve(n);
@@ -184,16 +183,14 @@ void Graph::prepareNode(Node *src, int gaps){
       Node *v = V[i];
       while(!v->tmp_grandParents.empty()){
         Node* grandParent = v->tmp_grandParents.back();
-        if(std::find(v->tmp_parents.begin(), v->tmp_parents.end(),
-                     grandParent) == v->tmp_parents.end()){
+        if(!vector_contains(v->tmp_parents, grandParent)){
           v->tmp_parents.push_back(grandParent);
         }
         v->tmp_grandParents.pop_back();
       }
       while(!v->tmp_grandChildren.empty()){
         Node *grandChild = v->tmp_grandChildren.back();
-        if(std::find(v->tmp_children.begin(), v->tmp_children.end(),
-                     grandChild) == v->tmp_children.end()){
+        if(!vector_contains(v->tmp_children, grandChild)){
           v->tmp_children.push_back(grandChild);
         }
         v->tmp_grandChildren.pop_back();
