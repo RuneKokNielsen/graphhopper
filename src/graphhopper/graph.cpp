@@ -3,6 +3,7 @@
 #include <climits>
 #include <queue>
 #include "utils.cpp"
+#include <algorithm>
 
 Graph::Graph(int n){
   V.reserve(n);
