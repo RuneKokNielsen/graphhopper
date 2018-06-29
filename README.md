@@ -1,6 +1,15 @@
-"# graphhopper" 
+# GraphHopper with gaps C++ implementation
 
-This is the project repository for our Bachelor's thesis regarding the implementation of the GraphHopper kernel in C++.
+This was the project repository for our Bachelor's thesis regarding the implementation of the GraphHopper kernel in C++ and the first use of gappy paths in graph kernels.
+
+When using this software for your research, please cite the following paper:
+
+*Rune K. Nielsen, Andreas N. Holm, Aasa Feragen. Learning from graphs with structural variation. NIPS 2017 workshop Learning on Distrubtions, Functions, Graphs and Groups. 2017* (arxiv link coming) 
+
+
+
+
+
 
 The compiled program and the thesis is available for download at:
 https://drive.google.com/drive/folders/0BxPtSV8mme0xM0RWelp4dTRvRWs
