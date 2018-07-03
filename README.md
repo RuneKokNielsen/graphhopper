@@ -4,7 +4,9 @@ This was the project repository for our Bachelor's thesis regarding the implemen
 
 When using this software for your research, please cite the following paper:
 
-*Rune K. Nielsen, Andreas N. Holm, Aasa Feragen. Learning from graphs with structural variation. NIPS 2017 workshop Learning on Distrubtions, Functions, Graphs and Groups. 2017* (arxiv link coming) 
+*Rune K. Nielsen, Andreas N. Holm, Aasa Feragen. Learning from graphs with structural variation. NIPS 2017 workshop Learning on Distrubtions, Functions, Graphs and Groups. 2017*
+
+See https://arxiv.org/abs/1806.11377
 
 
 
